@@ -3,7 +3,6 @@ const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
 const apiMocker = require('webpack-api-mocker');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const pathBuilder = require('path');
 
 const entryPath = pathBuilder.resolve('src', 'index.tsx');
@@ -170,7 +169,7 @@ function entry(mode) {
         template: templateHtmlPath,
         inject:true
       })
-    ].concat(mode === 'analyze' ? new BundleAnalyzerPlugin() : [])
+    ]
   }
 }
 

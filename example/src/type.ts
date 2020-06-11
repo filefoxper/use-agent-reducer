@@ -20,7 +20,7 @@ export interface ClassifyQueryState {
     loading: boolean,
     list?: Array<Record>,
     page: number,
-    size: number
+    total: number
 }
 
 export interface RequestParams extends Form {
@@ -31,5 +31,5 @@ export interface RequestParams extends Form {
 export interface RequestResult {
     list: Array<Record>,
     page: number,
-    size: number
+    total: number
 }

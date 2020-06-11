@@ -1,5 +1,5 @@
 import {ClassifyQueryState, Form, Position, Record, RequestParams} from "./type";
-import {OriginAgent} from "../../../agent-reducer/src";
+import {OriginAgent} from "agent-reducer";
 import {fetchData} from "./service";
 
 const getDefaultClassifyQueryState = (): ClassifyQueryState => ({
@@ -10,7 +10,7 @@ const getDefaultClassifyQueryState = (): ClassifyQueryState => ({
     loading: false,
     list: undefined,
     page: 1,
-    size: 3
+    total: 0
 });
 
 export class ClassifyQueryAgent implements OriginAgent<ClassifyQueryState> {
@@ -40,22 +40,22 @@ export class ClassifyQueryAgent implements OriginAgent<ClassifyQueryState> {
         this.handleFormChange({position});
     }
 
-    private handleResultChange(list: Array<Record>, page: number, size: number) {
-        return {...this.state, loading: false, list, page, size};
+    private handleResultChange(list: Array<Record>, page: number, total: number) {
+        return {...this.state, loading: false, list, page, total};
     }
 
     //this function returns a promise, so it will not be a dispatch function, but it can deploy dispatch functions to change next state.
-    public async handlePageChange(page: number, size: number) {
+    public async handlePageChange(page: number) {
         this.loadingBeforeQuery();
-        const requestParams: RequestParams = {...this.effectiveForm, page, size};
-        const {list, page: p, size: s} = await fetchData(requestParams);
-        this.handleResultChange(list, p, s);
+        const requestParams: RequestParams = {...this.effectiveForm, page, size: 10};
+        const {list, page: p, total} = await fetchData(requestParams);
+        this.handleResultChange(list, p, total);
     }
 
     //this function returns void, so it will not be a dispatch function, but it can deploy dispatch functions or other functions to change next state.
     public handleQueryClick() {
         this.effectiveForm = this.state.form;
-        this.handlePageChange(1, 10);
+        this.handlePageChange(1);
     }
 
 }
