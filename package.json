@@ -1,11 +1,11 @@
 {
   "name": "use-agent-reducer",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
   "scripts": {
-    "build": "webpack --config ./webpack.config.js --env.mode=production",
+    "build": "webpack --config ./webpack.config.js",
     "test": "jest --coverage"
   },
   "repository": {
@@ -29,14 +29,15 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "agent-reducer": "^0.0.1"
+    "react": ">=16.8.0",
+    "react-dom": ">=16.8.0",
+    "agent-reducer": ">=0.0.1"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",
     "@babel/runtime": "7.3.0",
     "@babel/preset-env": "^7.5.2",
+    "@babel/preset-react": "^7.0.0",
     "@babel/preset-typescript": "^7.3.3",
     "@babel/plugin-proposal-async-generator-functions": "7.2.0",
     "@babel/plugin-proposal-class-properties": "7.3.0",
@@ -52,8 +53,8 @@
     "@types/jest": "^23.3.12",
     "@types/react": "16.7.18",
     "@types/react-dom": "^16.8.4",
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
+    "react": "^16.8.0",
+    "react-dom": "^16.8.0",
     "agent-reducer": "^0.0.1",
     "jest": "^26.0.1",
     "typescript": "^3.8.3",

@@ -8,8 +8,26 @@ const entryPath = pathBuilder.resolve('src', 'index.ts');
 
 const targetPath = pathBuilder.resolve('dist');
 
+const reactExternal = {
+    root: 'React',
+    commonjs2: 'react',
+    commonjs: 'react',
+    amd: 'react',
+};
+
+const reactDOMExternal = {
+    root: 'ReactDOM',
+    commonjs2: 'react-dom',
+    commonjs: 'react-dom',
+    amd: 'react-dom',
+};
+
 function entry() {
     return {
+        externals: {
+            'react': reactExternal,
+            'react-dom': reactDOMExternal,
+        },
         mode: 'production',
         devtool: false,
         entry: {
@@ -60,6 +78,7 @@ function entry() {
                                             modules: false
                                         }
                                     ],
+                                    '@babel/preset-react'
                                 ]
                             }
                         },
