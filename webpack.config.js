@@ -13,8 +13,8 @@ function entry() {
         mode: 'production',
         devtool: false,
         entry: {
-            ['use-agent']: entryPath,
-            ['use-agent.min']: entryPath
+            ['use-agent-reducer']: entryPath,
+            ['use-agent-reducer.min']: entryPath
         },
         output: {
             path: targetPath,
