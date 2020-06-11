@@ -138,7 +138,7 @@ interface Env {
                              //It is useful sometimes ( like consecutive dispatch in react ). But, we do not recommend doing this.
 }
 ```
-### example
+### example (you can retrieve a true example from [example](https://github.com/filefoxper/use-agent/tree/master/example))
 ```typescript jsx
 import {useAgent,OriginAgent} from 'use-agent';
 
