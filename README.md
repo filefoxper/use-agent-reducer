@@ -1,8 +1,8 @@
 [![npm][npm-image]][npm-url]
 [![standard][standard-image]][standard-url]
 
-[npm-image]: https://img.shields.io/npm/v/use-agent.svg?style=flat-square
-[npm-url]: https://www.npmjs.com/package/use-agent
+[npm-image]: https://img.shields.io/npm/v/use-agent-reducer.svg?style=flat-square
+[npm-url]: https://www.npmjs.com/package/use-agent-reducer
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
 
