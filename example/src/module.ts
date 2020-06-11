@@ -1,0 +1,61 @@
+import {ClassifyQueryState, Form, Position, Record, RequestParams} from "./type";
+import {OriginAgent} from "../../../agent-reducer/src";
+import {fetchData} from "./service";
+
+const getDefaultClassifyQueryState = (): ClassifyQueryState => ({
+    form: {
+        name: '',
+        position: Position.USER
+    },
+    loading: false,
+    list: undefined,
+    page: 1,
+    size: 3
+});
+
+export class ClassifyQueryAgent implements OriginAgent<ClassifyQueryState> {
+
+    effectiveForm: Form = getDefaultClassifyQueryState().form;
+
+    state: ClassifyQueryState = getDefaultClassifyQueryState();
+
+    private handleFormChange(formLike: { name?: string, position?: Position }) {
+        const {form} = this.state;
+        const newForm = {...form, ...formLike};
+        return {...this.state, form: newForm};
+    }
+
+    private loadingBeforeQuery() {
+        return {...this.state, loading: true};
+    }
+
+    //this function return a state, and it will dispatch a next state to change the state in store or something remains reducer state.
+    public handleFormNameChange(name: string) {
+        //before this.handleFormChange running, the agent has hold a parent dispatch function for it,
+        // so this.handleFormChange here will not run dispatch. it just compute the next state for it's parent 'handleFormNameChange'
+        this.handleFormChange({name});
+    }
+
+    public handleFormPositionChange(position: Position) {
+        this.handleFormChange({position});
+    }
+
+    private handleResultChange(list: Array<Record>, page: number, size: number) {
+        return {...this.state, loading: false, list, page, size};
+    }
+
+    //this function returns a promise, so it will not be a dispatch function, but it can deploy dispatch functions to change next state.
+    public async handlePageChange(page: number, size: number) {
+        this.loadingBeforeQuery();
+        const requestParams: RequestParams = {...this.effectiveForm, page, size};
+        const {list, page: p, size: s} = await fetchData(requestParams);
+        this.handleResultChange(list, p, s);
+    }
+
+    //this function returns void, so it will not be a dispatch function, but it can deploy dispatch functions or other functions to change next state.
+    public handleQueryClick() {
+        this.effectiveForm = this.state.form;
+        this.handlePageChange(1, 10);
+    }
+
+}
