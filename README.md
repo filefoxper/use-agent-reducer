@@ -21,7 +21,7 @@ So, we use [agent-reducer](https://www.npmjs.com/package/agent-reducer) to enhan
 ### make useReducer a little better
 Now, let's write a reducer like this:
 ```typescript jsx
-import {useAgent, OriginAgent} from "use-agent";
+import {useAgent, OriginAgent} from "use-agent-reducer";
 
 class Counter implements OriginAgent<number> {
 
@@ -140,7 +140,7 @@ interface Env {
 ```
 ### example (you can retrieve a true example from [example](https://github.com/filefoxper/use-agent/tree/master/example))
 ```typescript jsx
-import {useAgent,OriginAgent} from 'use-agent';
+import {useAgent,OriginAgent} from 'use-agent-reducer';
 
 const getDefaultClassifyQueryState = (): ClassifyQueryState => ({
     form: {
