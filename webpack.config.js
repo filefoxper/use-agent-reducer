@@ -22,11 +22,19 @@ const reactDOMExternal = {
     amd: 'react-dom',
 };
 
+const agentReducerExternal = {
+    root: 'AgentReducer',
+    commonjs2: 'agent-reducer',
+    commonjs: 'agent-reducer',
+    amd: 'agent-reducer',
+};
+
 function entry() {
     return {
         externals: {
             'react': reactExternal,
             'react-dom': reactDOMExternal,
+            'agent-reducer':agentReducerExternal
         },
         mode: 'production',
         devtool: false,

@@ -6,7 +6,7 @@
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
 
-# use-agent-reducer
+# use-agent-reducer (stable)
 
 ### reducer
 Reducer brings us a lot of benefits when we organize states in our code. 
