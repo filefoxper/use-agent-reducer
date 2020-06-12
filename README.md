@@ -19,6 +19,8 @@ We can not find out which branch in reducer has invoked easily.
 
 So, we use [agent-reducer](https://www.npmjs.com/package/agent-reducer) to enhancer <strong>react hook useReducer</strong>.
 ### make useReducer a little better
+workable [example](https://github.com/filefoxper/use-agent/tree/master/example)
+
 Now, let's write a reducer like this:
 ```typescript jsx
 import {useAgent, OriginAgent} from "use-agent-reducer";
