@@ -1,7 +1,7 @@
 # install
 
 ```
-cd /use-agent/src/example
+cd /use-agent/example
 npm install
 ```
 # start

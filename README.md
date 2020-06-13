@@ -8,6 +8,8 @@
 
 # use-agent-reducer (stable)
 
+recommend [use-redux-agent](https://github.com/filefoxper/use-redux-agent)
+
 ### reducer
 Reducer brings us a lot of benefits when we organize states in our code. 
 It provides a pure functional writing mode to make our state predictable, 
