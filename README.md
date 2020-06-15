@@ -21,7 +21,7 @@ We can not find out which branch in reducer has invoked easily.
 
 So, we use [agent-reducer](https://www.npmjs.com/package/agent-reducer) to enhancer <strong>react hook useReducer</strong>.
 ### make useReducer a little better
-workable [example](https://github.com/filefoxper/use-agent/tree/master/example)
+workable [example](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
 
 Now, let's write a reducer like this:
 ```typescript jsx
@@ -142,7 +142,7 @@ interface Env {
                              //It is useful sometimes ( like consecutive dispatch in react ). But, we do not recommend doing this.
 }
 ```
-### example (you can retrieve a true example from [example](https://github.com/filefoxper/use-agent/tree/master/example))
+### example (you can retrieve a true example from [example](https://github.com/filefoxper/use-agent-reducer/tree/master/example))
 ```typescript jsx
 import {useAgent,OriginAgent} from 'use-agent-reducer';
 
