@@ -28,7 +28,7 @@ export default memo(() => {
                 </Select>
                 <Button type="primary" onClick={handleQueryClick}>search</Button>
             </div>
-            <Table dataSource={state.list} loading={state.loading} pagination={false}>
+            <Table dataSource={state.list} loading={state.loading} pagination={false} rowKey="id">
                 <Column title="id" dataIndex="id"/>
                 <Column title="name" dataIndex="name"/>
                 <Column title="position" dataIndex="position"/>
