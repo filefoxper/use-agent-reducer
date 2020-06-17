@@ -8,16 +8,16 @@
 
 # use-agent-reducer (stable)
 
-recommend [use-redux-agent](https://github.com/filefoxper/use-redux-agent)
+recommend [use-redux-agent](https://www.npmjs.com/package/use-redux-agent), another react hook for enhance react-redux.
 
 ### reducer
-Reducer brings us a lot of benefits when we organize states in our code. 
-It provides a pure functional writing mode to make our state predictable, 
-and simplify the logic what state flows by keyword <strong>return</strong>.
+reducer brings us a lot of benefits when we organize states. 
+It provides a pure functional writing mode to make our state predictable. 
+When we use keyword <strong>return</strong> to give out then next state, the rest logic can be negligible.
 
 But it has some problems too. When we dispatch an action, we have to use `dispatch({type:'...',payload:{...}})` to tell 
 reducer driver, we have put an action, please handle it, and give out the next state. 
-We can not find out which branch in reducer has invoked easily. 
+We can not use it easily as deploy a function. 
 
 So, we use [agent-reducer](https://www.npmjs.com/package/agent-reducer) to enhancer <strong>react hook useReducer</strong>.
 ### make useReducer a little better
@@ -49,15 +49,15 @@ class Counter implements OriginAgent<number> {
 
 }
 
-function CounterComponent({count}:{count:number}) {
+function CounterComponent({initialCount}:{initialCount:number}) {
     
-  const agent = useAgent(new Counter(count));
+  const {state:count,addOne,add,addOneAfterOneSecond} = useAgent(new Counter(initialCount));
   
   return (
       <div>
-        <button onClick={agent.addOne}>count:{agent.state}</button>
-        <button onClick={()=>agent.add(1)}>add</button>
-        <button onClick={agent.addOneAfterOneSecond}>addOneAfterOneSecond</button>
+        <button onClick={addOne}>count:{count}</button>
+        <button onClick={()=>add(1)}>add</button>
+        <button onClick={addOneAfterOneSecond}>addOneAfterOneSecond</button>
       </div>
   );
 }
@@ -69,56 +69,90 @@ and provide a handler for usage.
 
 Let's analyze this code. 
 
-The function `addOne` and `add` returns a next state, like a true reducer, it will change the state as what useReducer do.
-So, it like a dispatch, but can set arguments more friendly, and do not need a type string as a notifier, 
-because it is a function. The current state can be retrieve from this.state. So, We don't have to write a reducer like this now:
-```typescript
+The function `addOne` above returns a next state, like a true reducer, it will change the state in store. 
+And when you deploy it from agent like `agent.addOne()`, it dispatch an action.
+The current state can be retrieved from `agent.state` or `this.state`. So, We don't have to write a reducer like this now:
+
+workable [example](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
+```typescript jsx
+import {useReducer} from 'react';
+
 const countReducer=(state:number,action)=>{
     if(action.type === 'ADD_ONE'){
         return state + 1;
     }
     if(action.type === 'ADD'){
         const {payload}=action;
-        return payload.state + payload.addition;
+        return state + payload;
     }
     return state;
 };
 
-function addOneAfterOneSecond(){
-    setTimeout(()=>dispatch({type:'ADD_ONE'}),1000);
+function CounterComponent({initialCount}:{initialCount:number}) {
+    
+  const [count,dispatch] = useReducer(countReducer,initialCount);
+  
+  function addOneAfterOneSecond(){
+      setTimeout(()=>dispatch({type:'ADD_ONE'}),1000);
+  }
+  
+  return (
+      <div>
+        <button onClick={()=>dispatch({type:'ADD_ONE'})}>count:{count}</button>
+        <button onClick={()=>dispatch({type:'ADD',payload:1})}>add</button>
+        <button onClick={addOneAfterOneSecond}>addOneAfterOneSecond</button>
+      </div>
+  );
 }
 ```
 If you are using typescript, the type system will give you more infos to keep your code reliable.
 There are some rules for you for using this tool better, and trust me, they are simple enough.
 
 ### rules
-1 . The class or object which will replace reducer call <strong>agent</strong> here. To be an <strong>agent</strong>, 
-it must has a <strong>state</strong> property, and do not modify <strong>state</strong> manually. 
-this.state preserve the current state, so you can compute a <strong>next state</strong> by this.state and arguments from an <strong>agent</strong> function.
-```
-like agent.state
-```
-2 . The function in your <strong>agent</strong> which returns an object <strong>not</strong> undefined or promise, 
-will be an <strong>dispatch function</strong>, when you deploy, it like dispatch an action to reducer. 
-when this function invoke, it like a branch in a reducer function. 
+1 . The class or object to `useAgent` function is called <strong> originAgent</strong>. To be an <strong>originAgent</strong>, 
+it must has a <strong>state</strong> property. Do not modify <strong>state</strong> manually. 
+this.state preserve the current state, so you can compute a <strong>next state</strong> by this.state and params in an <strong>originAgent</strong> function.
+
+2 . The object `useAgent(originAgent)` is called <strong>agent</strong>. 
+And the function in your <strong>agent</strong> which returns an object <strong>not</strong> undefined or promise, 
+will be an <strong>dispatch function</strong>, when you deploy it, an action contains next state will be dispatched to a true reducer.  
 ```
 like agent.addOne, agent.add
 ```
-3 . The function which returns <strong>undefined | promise | void</strong> is just a simple function,
+3 . The function which returns <strong>undefined | promise</strong> is just a simple function,
 which can deploy <strong>dispatch functions</strong> to change state.
 ```
 like agent.addOneAfterOneSecond
 ```
 4 . <strong>Do not use namespace property</strong> in your agent. 
-The property '<strong>namespace</strong>' will be used to connect with global state like combined reducers mapping state in redux.
-( We will try to remove this rule by next version. )
+The property '<strong>namespace</strong>' will be used by `useAgent` inside.
+( We will try to remove this rule by next big version. )
 
 ### features
-1. Do not afraid about using <strong>this.xxx</strong>, when you are using <strong>useAgent(agent:OriginAgent)</strong>.
-The <strong>result useAgent</strong> return is rebuild by proxy and Object.defineProperties, and the functions in it have bind <strong>this</strong> by using sourceFunction.apply(agentProxy,...args),
-so you can use those functions by reassign to any other object, and <strong>this</strong> in this function is locked to the <strong>result useAgent</strong> return.
-
+1. Do not worry about using <strong>this.xxx</strong>, when you use <strong>agent</strong> created by <strong>useAgent(originAgent)</strong>.
+The <strong>agent</strong> has been rebuild by proxy and Object.defineProperties, the functions inside have bind <strong>this</strong> by using sourceFunction.apply(agentProxy,...args),
+so you can use those functions by reassign to any other object, and <strong>this</strong> in this function is locked to the <strong>agent</strong> object.
+2. The <strong>agent</strong> created by <strong>useAgent(originAgent)</strong> will lose effectiveness after your component unmount.
+So, don't worry about dispatch an action after the component is unmount.
 ### api
+useAgent(originAgent,e?:Env)
+###### params
+1. originAgent：a class or object with state property and functions, for replacing the reducer
+2. e（Env）：agent running environment
+
+e（Env）：
+
+1 . strict：true|false       （force the agent update state by reducer driver）
+
+defaults true. When true, the agent state will be updated exactly by reducer driver state changes. 
+When false, the agent state will be updated quickly by the result invoked from the <strong>dispatch function</strong>.
+
+###### return
+agent （like function reducer(state:State,action:Action):State}）：
+
+A proxy from originAgent, which can dispatch actions by deploy <strong>dispatch functions</strong>,
+and retrieve current state by using agent.state.
+
 ```typescript
 /**
 * 
@@ -142,7 +176,7 @@ interface Env {
                              //It is useful sometimes ( like consecutive dispatch in react ). But, we do not recommend doing this.
 }
 ```
-### example (you can retrieve a true example from [example](https://github.com/filefoxper/use-agent-reducer/tree/master/example))
+### workable [example](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
 ```typescript jsx
 import {useAgent,OriginAgent} from 'use-agent-reducer';
 
@@ -229,4 +263,4 @@ const MyComponent=()=>{
 };
 ```
 # summary
-This tool is designed for replacing <strong>useReducer in React Hook</strong>, so please use it as what useReducer use in your component.
+This tool is designed for replacing <strong>useReducer in React Hook</strong>, so use it if you think a useReducer can be using.
