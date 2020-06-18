@@ -6,6 +6,8 @@
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
 
+[中文文档](https://github.com/filefoxper/use-agent-reducer/blob/master/README_ch.md)
+
 # use-agent-reducer (stable)
 
 recommend [use-redux-agent](https://www.npmjs.com/package/use-redux-agent), another react hook for enhance react-redux.
