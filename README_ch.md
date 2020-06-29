@@ -8,6 +8,13 @@
 
 # use-agent-reducer (稳定版)
 
+### 新增变化
+1. 引入了Resolver接口，作为类似redux的middleWare的替代品
+2. 引入了branch分支系统，你可以使用useBranch来使用它，branch系统为一项特殊任务提供一个可销毁重建的分支，配合上branchApi，
+可以完成类似redux-saga中takeLatest等效果，而不需要非得使用generator函数。
+
+[查看更多关于 branch, Resolver, BranchResolvers, BranchApi 信息](https://www.npmjs.com/package/agent-reducer)
+
 推荐 [use-redux-agent](https://github.com/filefoxper/use-redux-agent)
 
 ### reducer
@@ -242,5 +249,76 @@ const MyComponent=()=>{
     );
 };
 ```
+###### useBranch(agent:Agent,resolver:BranchResolver)
+useBranch方法可以对当前agent代理建立一个分支（复制品），该分支上的所有对象不能修改，只能被调用。
+分支可以被抛弃，也可以被重建。通过分支组件<strong>BranchResolver</strong>，你可以调用分支api（<strong>BranchApi</strong>），
+这个Api简单提供了一个reject方法，和一个rebuild方法。我们可以通过调用reject方法废弃当前分支，
+被废弃分支的dispatch方法将处于失效状态，也就是说被废弃分支无法继续影响reducer的state数据。
+而rebuild方法在废弃当前分支的同时，会新建一个替代分支，继续新的任务。
+
+你可以使用`import {BranchResolvers,BranchApi} from 'agent-reducer'`获取BranchResolvers工具，
+`agent-reducer`包会自动安装到你的`node_modules`目录内。
+
+[了解 BranchResolvers](https://www.npmjs.com/package/agent-reducer)
+
+[更多例子](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
+
+```typescript jsx
+import React, {memo, useEffect} from 'react';
+import {Button, Input, Pagination, Select, Table} from "antd";
+import {useAgent,useBranch} from "use-agent-reducer";
+import {ClassifyQueryAgent} from "@/module";
+import {Position} from "./type";
+import Column from "antd/lib/table/Column";
+import {BranchResolvers} from "agent-reducer";
+
+const Option = Select.Option;
+
+export default memo(() => {
+
+    const agent = useAgent(ClassifyQueryAgent);
+
+    const {state, handleFormNameChange, handleFormPositionChange} = agent;
+
+    //在一个分页查询任务中，我们不能保证点击查询按钮，分页器查询，到底哪个异步数据先返回，可能产生第一页的数据比第二页后返回，而突然覆盖第二页数据的现象。
+    //这里我们使用useBranch，把查询任务当作一个分支，并让这个任务分支以获取最新触发产生数据的方式工作，这样就能保证数据的时序不被打乱了。
+    const {handleQueryClick, handlePageChange}=useBranch(agent,BranchResolvers.takeLatest());
+
+    useEffect(() => {
+        handleQueryClick();
+    }, []);
+
+    return (
+        <div style={{padding: 12}}>
+            <div style={{padding: '12px 0'}}>
+                <label>name：</label>
+                <Input style={{width: 160, marginRight: 8}} value={state.form.name}
+                       onChange={(e) => handleFormNameChange(e.target.value)}/>
+                <label>position：</label>
+                <Select style={{width: 160, marginRight: 8}} value={state.form.position}
+                        onChange={handleFormPositionChange}>
+                    <Option value={Position.USER}>user</Option>
+                    <Option value={Position.MASTER}>master</Option>
+                    <Option value={Position.ADMIN}>admin</Option>
+                </Select>
+                <Button type="primary" onClick={handleQueryClick}>search</Button>
+            </div>
+            <Table dataSource={state.list} loading={state.loading} pagination={false} rowKey="id">
+                <Column title="id" dataIndex="id"/>
+                <Column title="name" dataIndex="name"/>
+                <Column title="position" dataIndex="position"/>
+            </Table>
+            <Pagination current={state.page} total={state.total} pageSize={10} onChange={handlePageChange}/>
+        </div>
+    );
+});
+```
+
+### 关于branch的使用建议
+branch分支系统的设计初衷：使用一个分支来完成一项特殊任务，分支因任务而存在，
+为了这项特殊任务，分支随时可能被resolver抛弃或重建。所以使用一个分支去做多个任务，不但会引起代码维护的混乱，
+同时也可能产生许多跟分支重建有关的bug。因此我们希望使用者在明确一个分支唯一目标的基础上使用它。
+当然一个任务不一定非得是一个方法，比如：`翻页查询`和`点击查询按钮查询`就是一个任务，它们的目标是统一的。
+
 # 总结
 如果喜欢它请给个小星星呗，么么哒（[给星地址](https://github.com/filefoxper/use-agent-reducer)）

@@ -10,6 +10,12 @@
 
 # use-agent-reducer (stable)
 
+# new changes
+1. provide `Resolver` as the middleWare system in redux.
+2. provide `useBranch` hook to do a special work with special mode like `takeLatest` in `redux-saga`. 
+
+[See more about branch, Resolver, BranchResolvers, BranchApi](https://www.npmjs.com/package/agent-reducer)
+
 recommend [use-redux-agent](https://www.npmjs.com/package/use-redux-agent), another react hook for enhance react-redux.
 
 ### reducer
@@ -264,5 +270,72 @@ const MyComponent=()=>{
     );
 };
 ```
+###### useBranch(agent:Agent,resolver:BranchResolver)
+`useBranch` creates a copy object of your agent, every dispatch from branch will change the state of your agent too.
+ You can not modify props in this copy object. It is designed for doing something like 'simple effects in redux-saga'. 
+ When you created a branch with a <strong>BranchResolver</strong>, 
+you can use <strong>branchApi</strong> to reject or rebuild this branch as you wish. If you reject it, Your branch can not dispatch any state to reducer.
+If you rebuild it, The old branch will be rejected first, and then build a new branch instead. 
+
+You can `import {BranchResolvers,BranchApi} from 'agent-reducer'`, the `agent-reducer` package will be installed auto in your `node_modules`.
+
+[See more about BranchResolvers](https://www.npmjs.com/package/agent-reducer)
+
+[example](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
+```typescript jsx
+import React, {memo, useEffect} from 'react';
+import {Button, Input, Pagination, Select, Table} from "antd";
+import {useAgent,useBranch} from "use-agent-reducer";
+import {ClassifyQueryAgent} from "@/module";
+import {Position} from "./type";
+import Column from "antd/lib/table/Column";
+import {BranchResolvers} from "agent-reducer";
+
+const Option = Select.Option;
+
+export default memo(() => {
+
+    const agent = useAgent(ClassifyQueryAgent);
+
+    const {state, handleFormNameChange, handleFormPositionChange} = agent;
+
+    //if the fetch promise of page 1 coming back later then page 2, the page 2 data may be covered by page1 data,
+    //so we use useBranch make the search task working in takeLatest mode, then the page 1 data will not cover page 2.
+    const {handleQueryClick, handlePageChange}=useBranch(agent,BranchResolvers.takeLatest());
+
+    useEffect(() => {
+        handleQueryClick();
+    }, []);
+
+    return (
+        <div style={{padding: 12}}>
+            <div style={{padding: '12px 0'}}>
+                <label>name：</label>
+                <Input style={{width: 160, marginRight: 8}} value={state.form.name}
+                       onChange={(e) => handleFormNameChange(e.target.value)}/>
+                <label>position：</label>
+                <Select style={{width: 160, marginRight: 8}} value={state.form.position}
+                        onChange={handleFormPositionChange}>
+                    <Option value={Position.USER}>user</Option>
+                    <Option value={Position.MASTER}>master</Option>
+                    <Option value={Position.ADMIN}>admin</Option>
+                </Select>
+                <Button type="primary" onClick={handleQueryClick}>search</Button>
+            </div>
+            <Table dataSource={state.list} loading={state.loading} pagination={false} rowKey="id">
+                <Column title="id" dataIndex="id"/>
+                <Column title="name" dataIndex="name"/>
+                <Column title="position" dataIndex="position"/>
+            </Table>
+            <Pagination current={state.page} total={state.total} pageSize={10} onChange={handlePageChange}/>
+        </div>
+    );
+});
+```
+#### suggest to using branch
+A branch is considered to do just one special work with a resolver. It can be rejected or be rebuilt any time.
+So, you'd better make sure the functions you deployed from a branch are doing the same thing.
+For example: `change page and fetch data` and `click search button fetch data` are the same work.
+
 # summary
 This tool is designed for replacing <strong>useReducer in React Hook</strong>, so use it if you think a useReducer can be using.

@@ -1,15 +1,19 @@
 import {useEffect, useReducer, useRef} from "react";
-import {OriginAgent, createAgentReducer, Env} from "agent-reducer";
+import {branch, BranchResolver, createAgentReducer, OriginAgent, Resolver} from "agent-reducer";
 
 export type RunEnv = {
     strict?: boolean
 };
 
-export function useAgent<S, T extends OriginAgent<S>>(entry: T | { new(): T }, env?: RunEnv): T {
+export function useAgent<S, T extends OriginAgent<S>>(entry: T | { new(): T }, resolver?: Resolver | RunEnv, env?: RunEnv): T {
 
-    const runEnv = env && env.strict !== undefined ? {strict: env.strict} : undefined;
+    const envData = typeof resolver !== 'function' ? resolver : env;
 
-    let {current: reducer} = useRef(createAgentReducer(entry, {
+    const resolverFunc = typeof resolver === 'function' ? resolver : undefined;
+
+    const runEnv = envData && envData.strict !== undefined ? {strict: envData.strict} : undefined;
+
+    let {current: reducer} = useRef(createAgentReducer(entry, resolverFunc,{
         ...runEnv,
         expired: false,
         updateBy: 'manual'
@@ -26,4 +30,9 @@ export function useAgent<S, T extends OriginAgent<S>>(entry: T | { new(): T }, e
     }, []);
 
     return reducer.agent;
+}
+
+export function useBranch<S, T extends OriginAgent<S>>(agent: T, branchResolver: BranchResolver) {
+    const {current} = useRef(branch(agent, branchResolver));
+    return current;
 }

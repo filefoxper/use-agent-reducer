@@ -1,27 +1,34 @@
 import React, {memo, useEffect} from 'react';
 import {Button, Input, Pagination, Select, Table} from "antd";
-import {useAgent} from "use-agent-reducer";
+import {useAgent,useBranch} from "use-agent-reducer";
 import {ClassifyQueryAgent} from "@/module";
 import {Position} from "./type";
 import Column from "antd/lib/table/Column";
+import {BranchResolvers} from "agent-reducer";
 
 const Option = Select.Option;
 
 export default memo(() => {
 
-    const {state, handleFormNameChange, handleFormPositionChange,handleQueryClick,handlePageChange} = useAgent(ClassifyQueryAgent);
+    const agent = useAgent(ClassifyQueryAgent);
 
-    useEffect(()=>{
+    const {state, handleFormNameChange, handleFormPositionChange} = agent;
+
+    const {handleQueryClick, handlePageChange}=useBranch(agent,BranchResolvers.takeLatest());
+
+    useEffect(() => {
         handleQueryClick();
-    },[]);
+    }, []);
 
     return (
-        <div style={{padding:12}}>
-            <div style={{padding:'12px 0'}}>
+        <div style={{padding: 12}}>
+            <div style={{padding: '12px 0'}}>
                 <label>name：</label>
-                <Input style={{width:160,marginRight:8}} value={state.form.name} onChange={(e) => handleFormNameChange(e.target.value)}/>
+                <Input style={{width: 160, marginRight: 8}} value={state.form.name}
+                       onChange={(e) => handleFormNameChange(e.target.value)}/>
                 <label>position：</label>
-                <Select style={{width:160,marginRight:8}} value={state.form.position} onChange={handleFormPositionChange}>
+                <Select style={{width: 160, marginRight: 8}} value={state.form.position}
+                        onChange={handleFormPositionChange}>
                     <Option value={Position.USER}>user</Option>
                     <Option value={Position.MASTER}>master</Option>
                     <Option value={Position.ADMIN}>admin</Option>

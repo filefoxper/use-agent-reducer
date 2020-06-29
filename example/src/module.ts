@@ -52,10 +52,10 @@ export class ClassifyQueryAgent implements OriginAgent<ClassifyQueryState> {
         this.handleResultChange(list, p, total);
     }
 
-    //this function returns void, so it will not be a dispatch function, but it can deploy dispatch functions or other functions to change next state.
+    //takeLatest need a promise return function, so we should return result of handleQueryClick
     public handleQueryClick() {
         this.effectiveForm = this.state.form;
-        this.handlePageChange(1);
+        return this.handlePageChange(1);
     }
 
 }
