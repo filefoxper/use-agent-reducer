@@ -6,13 +6,25 @@ import {Position} from "./type";
 import Column from "antd/lib/table/Column";
 import {BranchResolvers} from "agent-reducer";
 
+const PositionSelect=memo(({value,onChange}:{value:Position,onChange:(v:Position)=>void})=>{
+    console.log('render...')
+    return (
+        <Select style={{width: 160, marginRight: 8}} value={value}
+                onChange={onChange}>
+            <Option value={Position.USER}>user</Option>
+            <Option value={Position.MASTER}>master</Option>
+            <Option value={Position.ADMIN}>admin</Option>
+        </Select>
+    );
+});
+
 const Option = Select.Option;
 
 export default memo(() => {
 
     const agent = useAgent(ClassifyQueryAgent);
 
-    const {state, handleFormNameChange, handleFormPositionChange} = agent;
+    const {state, handleFormNameChange} = agent;
 
     const {handleQueryClick, handlePageChange}=useBranch(agent,BranchResolvers.takeLatest());
 
@@ -27,12 +39,7 @@ export default memo(() => {
                 <Input style={{width: 160, marginRight: 8}} value={state.form.name}
                        onChange={(e) => handleFormNameChange(e.target.value)}/>
                 <label>position：</label>
-                <Select style={{width: 160, marginRight: 8}} value={state.form.position}
-                        onChange={handleFormPositionChange}>
-                    <Option value={Position.USER}>user</Option>
-                    <Option value={Position.MASTER}>master</Option>
-                    <Option value={Position.ADMIN}>admin</Option>
-                </Select>
+                <PositionSelect value={state.form.position} onChange={agent.handleFormPositionChange}/>
                 <Button type="primary" onClick={handleQueryClick}>search</Button>
             </div>
             <Table dataSource={state.list} loading={state.loading} pagination={false} rowKey="id">
