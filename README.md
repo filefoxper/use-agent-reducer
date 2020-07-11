@@ -14,6 +14,9 @@
 1. provide `Resolver` as the middleWare system in redux.
 2. provide `useBranch` hook to do a special work with special mode like `takeLatest` in `redux-saga`. 
 
+# bug fixes
+1. The arrow function can not work well, and now we have fixed it.
+
 [See more about branch, Resolver, BranchResolvers, BranchApi](https://www.npmjs.com/package/agent-reducer)
 
 recommend [use-redux-agent](https://www.npmjs.com/package/use-redux-agent), another react hook for enhance react-redux.

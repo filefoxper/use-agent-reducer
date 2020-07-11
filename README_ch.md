@@ -15,6 +15,9 @@
 
 [查看更多关于 branch, Resolver, BranchResolvers, BranchApi 信息](https://www.npmjs.com/package/agent-reducer)
 
+### bug 修复
+1. 箭头函数不能正常工作，该问题已经修复。
+
 推荐 [use-redux-agent](https://github.com/filefoxper/use-redux-agent)
 
 ### reducer
