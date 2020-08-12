@@ -1,6 +1,6 @@
 {
   "name": "use-agent-reducer",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
@@ -31,10 +31,11 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "agent-reducer": ">=1.0.8"
+    "agent-reducer": ">=1.1.0"
   },
   "dependencies": {
-    "agent-reducer": ">=1.0.8"
+    "babel-polyfill": "^6.26.0",
+    "agent-reducer": ">=1.1.0"
   },
   "devDependencies": {
     "@babel/core": "7.2.2",

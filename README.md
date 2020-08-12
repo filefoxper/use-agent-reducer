@@ -11,24 +11,18 @@
 # use-agent-reducer (stable)
 
 # new changes
-1. provide `Resolver` as the middleWare system in redux.
-2. provide `useBranch` hook to do a special work with special mode like `takeLatest` in `redux-saga`. 
-
-# bug fixes
-1. The arrow function can not work well, and now we have fixed it.
+1. The arrow function in origin agent will not be supported as an dispatch function from this version. (For this feature has to built by changing property define about the origin agent)
+2. We have made it support IE browsers from version 9. 
 
 [See more about branch, Resolver, BranchResolvers, BranchApi](https://www.npmjs.com/package/agent-reducer)
 
 recommend [use-redux-agent](https://www.npmjs.com/package/use-redux-agent), another react hook for enhance react-redux.
 
-### reducer
-reducer brings us a lot of benefits when we organize states. 
-It provides a pure functional writing mode to make our state predictable. 
-When we use keyword <strong>return</strong> to give out then next state, the rest logic can be negligible.
-
-But it has some problems too. When we dispatch an action, we have to use `dispatch({type:'...',payload:{...}})` to tell 
-reducer driver, we have put an action, please handle it, and give out the next state. 
-We can not use it easily as deploy a function. 
+### reducer & prototype
+A reducer always returns a new state object as the next state, this feature can make a function
+keep simple and predictable. And functions from prototype can be used more naturally 
+than dispatch function for reducer. So, <strong>agent-reducer</strong> combines the two advantages
+together. Now you can use a reducer as an simple object or class. 
 
 So, we use [agent-reducer](https://www.npmjs.com/package/agent-reducer) to enhancer <strong>react hook useReducer</strong>.
 ### make useReducer a little better
@@ -138,6 +132,8 @@ like agent.addOneAfterOneSecond
 4 . <strong>Do not use namespace property</strong> in your agent. 
 The property '<strong>namespace</strong>' will be used by `useAgent` inside.
 ( We will try to remove this rule by next big version. )
+
+5 . <strong>Do not use arrow function in originAgent</strong>.
 
 ### features
 1. Do not worry about using <strong>this.xxx</strong>, when you use <strong>agent</strong> created by <strong>useAgent(originAgent)</strong>.

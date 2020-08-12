@@ -9,14 +9,10 @@
 # use-agent-reducer (稳定版)
 
 ### 新增变化
-1. 引入了Resolver接口，作为类似redux的middleWare的替代品
-2. 引入了branch分支系统，你可以使用useBranch来使用它，branch系统为一项特殊任务提供一个可销毁重建的分支，配合上branchApi，
-可以完成类似redux-saga中takeLatest等效果，而不需要非得使用generator函数。
+1. 不再支持在agent内使用箭头函数。（因为这需要去修改出入的originAgent，并改变箭头函数的原意）
+2. 支持IE9以上浏览器。（Proxy问题已经被修复）
 
 [查看更多关于 branch, Resolver, BranchResolvers, BranchApi 信息](https://www.npmjs.com/package/agent-reducer)
-
-### bug 修复
-1. 箭头函数不能正常工作，该问题已经修复。
 
 推荐 [use-redux-agent](https://github.com/filefoxper/use-redux-agent)
 
@@ -122,7 +118,7 @@ function CounterComponent({initialCount}:{initialCount:number}) {
 
 ### 使用须知
 1 . 我们把useAgent(originAgent)的入参class或object称为<strong>originAgent</strong>（原代理）。而一个合法原代理需要一个可读写访问的state属性。
-并且注意，不要人工修改state属性（这与reducer的state不期望被修改是同样的道理）。
+注意，不要人为修改state属性（这与reducer的state不期望被修改是同样的道理）。
 ```
 如上例中：agent.state
 ```
@@ -138,6 +134,8 @@ function CounterComponent({initialCount}:{initialCount:number}) {
 ```
 4 . <strong>不要使用namespace属性</strong>，这个属性暂时会作为一个特殊关键字被useAgent捕获，做全局数据管理器区分数据块的标准。
 比如redux。
+
+5 . <strong>不要使用箭头函数作为agent对象的属性值。</strong>
 
 ### 特性
 1. 不要担心this问题，当你使用useAgent(originAgent)获取代理时，你的agent代理方法已经通过fn.apply(proxy,...)以及闭包的形式强行锁定了this。
