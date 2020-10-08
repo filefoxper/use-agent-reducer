@@ -83,14 +83,17 @@ function entry() {
                                     [
                                         '@babel/preset-env',
                                         {
-                                            modules: false
+                                            modules: false,
+                                            targets: {
+                                                "browsers": ["last 2 versions", "ie >=9"]
+                                            }
                                         }
                                     ],
-                                    '@babel/preset-react',
-                                    '@babel/preset-typescript'
+                                    '@babel/preset-react'
                                 ]
                             }
-                        }
+                        },
+                        "ts-loader"
                     ]
                 }
             ]

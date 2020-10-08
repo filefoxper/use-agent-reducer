@@ -250,6 +250,10 @@ const MyComponent=()=>{
     );
 };
 ```
+#### AgentProvider & useParent()
+###### AgentProvider
+AgentProvider作为agent的React Context承载组件，可以把指定value属性对应的agent对象分发
+
 ###### useBranch(agent:Agent,resolver:BranchResolver)
 useBranch方法可以对当前agent代理建立一个分支（复制品），该分支上的所有对象不能修改，只能被调用。
 分支可以被抛弃，也可以被重建。通过分支组件<strong>BranchResolver</strong>，你可以调用分支api（<strong>BranchApi</strong>），
