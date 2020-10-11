@@ -11,8 +11,7 @@
 # use-agent-reducer (stable)
 
 # new changes
-1. The arrow function in origin agent will not be supported as an dispatch function from this version. (For this feature has to built by changing property define about the origin agent)
-2. We have made it support IE browsers from version 9. 
+1. add AgentProvider and useParent which provide a react-context env for using agent in deep child. 
 
 [See more about branch, Resolver, BranchResolvers, BranchApi](https://www.npmjs.com/package/agent-reducer)
 
@@ -331,6 +330,47 @@ export default memo(() => {
     );
 });
 ```
+
+###### AgentProvider & usParent
+
+Provide a react-context env for using agent in deep child. 
+
+```typescript jsx
+import React from 'react';
+import {OriginAgent} from 'agent-reducer';
+import {useAgent,AgentProvider,useParent} from 'use-agent-reducer';
+
+class Agent implements OriginAgent<number>{
+    
+    state=0;
+    
+    handleAddition(){
+        return this.state+1;
+    }
+    
+}
+
+const Child=()=>{
+    const {state:count,handleAddition}=useParent<Agent>();
+    return (
+        <div>
+            <button onClick={handleAddition}>add 1</button>
+            <span>{count}</span>
+        </div>
+    )
+};
+
+const Parent=()=>{
+    const agent=useAgent(Agent);
+    return (
+        <AgentProvider value={agent}>
+           <Child/>
+        </AgentProvider>
+    );
+}
+
+```
+
 #### suggest to using branch
 A branch is considered to do just one special work with a resolver. It can be rejected or be rebuilt any time.
 So, you'd better make sure the functions you deployed from a branch are doing the same thing.
