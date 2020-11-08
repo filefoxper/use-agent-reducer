@@ -11,7 +11,7 @@
 # use-agent-reducer (stable)
 
 # new changes
-1. add AgentProvider and useParent which provide a react-context env for using agent in deep child. 
+1. update with [agent-reducer](https://www.npmjs.com/package/agent-reducer)
 
 [See more about branch, Resolver, BranchResolvers, BranchApi](https://www.npmjs.com/package/agent-reducer)
 
