@@ -9,8 +9,7 @@
 # use-agent-reducer (稳定版)
 
 ### 新增变化
-1. 不再支持在agent内使用箭头函数。（因为这需要去修改出入的originAgent，并改变箭头函数的原意）
-2. 支持IE9以上浏览器。（Proxy问题已经被修复）
+1. 跟随agent-reducer发布
 
 [查看更多关于 branch, Resolver, BranchResolvers, BranchApi 信息](https://www.npmjs.com/package/agent-reducer)
 
