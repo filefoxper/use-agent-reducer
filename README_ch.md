@@ -6,323 +6,310 @@
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
 
-# use-agent-reducer (稳定版)
+# use-agent-reducer
 
-### 新增变化
-1. 跟随agent-reducer发布
+reducer可以持续有效的管理数据变更，让数据处理模式变的井井有条，所以react开发了userReducer hook工具，但reducer也有自己的一些麻烦事。
+为了让reducer变得更容易使用，这里引入了 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 工具，
+以便使用者可以利用class方法调用的形式来完成一个reducer的工作，该工具结合了reducer的return即修改的特性，
+同时又使用更自然的方法调用代替了reducer复杂的dispatch系统，算的上是函数式编程和面向对象编程模式的完美结合了。
 
-[查看更多关于 branch, Resolver, BranchResolvers, BranchApi 信息](https://www.npmjs.com/package/agent-reducer)
-
-推荐 [use-redux-agent](https://github.com/filefoxper/use-redux-agent)
-
-### reducer
-为什么要reducer?reducer与其说是一个简单的数据处理器，更像是一个数据迭代描述器。它指明了下一步的数据该是什么样子的，
-下一个数据和当前数据的区别是什么。而数据是怎么加工的，这是核心，并非重点。换句话说，reducer可以被看作是一个黑盒处理器，
-处理逻辑可以写在reducer方法里也可以通过引用其他方法获取。reducer以return的方式指明下一个数据该是什么样的，这是个非常优秀的设计。
-在一段复杂逻辑中，return可以大大减小我们的思维逻辑压力。（我们只要注意return出现在哪里，走到当前return需要经过哪些逻辑分支就行了，而不必关注return之后的逻辑代码）
-另外reducer通常被写成幂等函数，入参不变结果不变，这大大提高了结果的可预测性。
-
-纵然reducer有上述大量优点，但依然不能唤起更多人的喜爱，就因为dispatch模式。当我们需要通过reducer的下一个数据的时候，
-我们通常要通过dispatch，事件分发的行为让它动起来。因为reducer需要于被维护的state联系起来，故选择了dispatch作为事件分发器。
-但dispatch却限制了使用者的行为。比如：dispatch必须以action object作为参数，而大部分reducer只能通过接收state和action的方式来工作。
-因为dispatch和reducer之间缺乏必然的联系，这让很多typescript类型系统使用者很心累。
-
-为了解决上述问题，让reducer更贴近使用者，我们引入了 <strong>agent-reducer</strong>，reducer代理器。它让我们可以以近似class或object的写法来书写reducer。
+该工具可以用来作为react中类似 MVVM 设计的框架使用，当然因为它的侵入性小，所以把它定义成一个 MVVM 工具更加合理。
 
 ### 换种写法
-让我们这样使用useReducer：
+```typescript
+import {OriginAgent} from "agent-reducer";
 
-可工作的 [例子](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
-```typescript jsx
-import {useAgent, OriginAgent} from "use-agent-reducer";
+    interface Action {
+        type?: 'stepUp' | 'stepDown' | 'step' | 'sum',
+        payload?: number[] | boolean
+    }
 
-class Counter implements OriginAgent<number> {
+    /**
+     * 经典reducer
+     * @param state
+     * @param action
+     */
+    const countReducer = (state: number = 0, action: Action = {}): number => {
+        switch (action.type) {
+            case "stepDown":
+                return state - 1;
+            case "stepUp":
+                return state + 1;
+            case "step":
+                return state + (action.payload ? 1 : -1);
+            case "sum":
+                return state + (Array.isArray(action.payload) ?
+                    action.payload : []).reduce((r, c): number => r + c, 0);
+            default:
+                return state;
+        }
+    }
+
+    /**
+     * class写法
+     */
+    class CountAgent implements OriginAgent<number> {
+
+        state = 0;
+        
+        stepUp = (): number => this.state + 1;
+
+        stepDown = (): number => this.state - 1;
+
+        step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
+
+        sum = (...counts: number[]): number => {
+            return this.state + counts.reduce((r, c): number => r + c, 0);
+        };
+
+    }
+```
+以上代码是一段简单的计数器，`CountAgent`通过调用对象属性方法的形式来完成一个`reducer action`分支，
+`return`值作为计算完后的`this.state`数据（这里并未涉及state维护器，所以先当作有这么一个黑盒工具）。
+有点像reducer，但省去了action的复杂结构（action为了兼容多个分支的不同需求所以很难以普通传参方式来工作）。
+
+用`useAgent`来代替`useReducer`
+
+```tsx
+import React,{memo} from 'react';
+import {OriginAgent} from "agent-reducer";
+import {useAgent} from 'use-agent-reducer';
+
+/**
+ * class写法
+ */
+class CountAgent implements OriginAgent<number> {
 
     state = 0;
+        
+    //每次调用都让state+1
+    stepUp = (): number => this.state + 1;
 
-    constructor(state: number) {
-        this.state = state;
-    }
+    //每次调用都让state-1
+    stepDown = (): number => this.state - 1;
 
-    public addOne() {
-        return this.state + 1;
-    }
-    
-    public add(addition:number) {
-        return this.state + addition;
-    }
+    step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
 
-    public addOneAfterOneSecond() {
-        setTimeout(()=>this.addOne(),1000);
-    }
+    sum = (...counts: number[]): number => {
+        return this.state + counts.reduce((r, c): number => r + c, 0);
+    };
 
 }
 
-function CounterComponent({initialCount}:{initialCount:number}) {
-    
-  const {state:count,addOne,add,addOneAfterOneSecond} = useAgent(new Counter(initialCount));
-  
-  return (
-      <div>
-        <button onClick={addOne}>count:{count}</button>
-        <button onClick={()=>add(1)}>add</button>
-        <button onClick={addOneAfterOneSecond}>addOneAfterOneSecond</button>
-      </div>
-  );
-}
-```
-以上代码是一段简单的计数器，我们依然通过 return 的形式来决定下一个state数据该是什么样子的。比如`addOne`、`add`方法。
-我们通过直接调用方法的方式来dispatch一个参数松散的action，这些参数将被转成action的payload数据。而方法运行内容就是原来reducer的部分运行内容。
-除了这种直接return普通object作为下一个state的方法外，这里还提供了return undefined|promise的方法来做dispatch方法集成。
-比如`addOneAfterOneSecond`方法，它返回了一个void或者说是undefined对象，该方法不能直接决定下一个state的数据（简单说，它并没有直接dispatch），
-但却可以通过调用`addOne`方法去影响下一个state数据（去dispatch action）。
-
-让我们把它翻译成原始reducer的写法。
-```typescript jsx
-import {useReducer} from 'react';
-
-const countReducer=(state:number,action)=>{
-    if(action.type === 'ADD_ONE'){
-        return state + 1;
-    }
-    if(action.type === 'ADD'){
-        const {payload}=action;
-        return state + payload;
-    }
-    return state;
-};
-
-function CounterComponent({initialCount}:{initialCount:number}) {
-    
-  const [count,dispatch] = useReducer(countReducer,initialCount);
-  
-  function addOneAfterOneSecond(){
-      setTimeout(()=>dispatch({type:'ADD_ONE'}),1000);
-  }
-  
-  return (
-      <div>
-        <button onClick={()=>dispatch({type:'ADD_ONE'})}>count:{count}</button>
-        <button onClick={()=>dispatch({type:'ADD',payload:1})}>add</button>
-        <button onClick={addOneAfterOneSecond}>addOneAfterOneSecond</button>
-      </div>
-  );
-}
-```
-通过两种reducer在写法上的对比，我们可以发现useAgent写法更加自然，它保留了reducer关于return的优势及特性，同时又兼顾了自然方法传参。
-但该写法并非一个纯粹的函数，需要依赖`createAgentReducer`方法进行代理测试。另外this.state扮演着reducer入参state，也就是当前state，
-所以在需要依赖当前state进行reduce处理时，需要使用this.state。很多人都非常害怕js中的this，而在useAgent中可能会大量使用this关键字。
-
-综合上述特性，如果觉得该工具将为你带来的优势大于原生reducer，那么请继续深入了解它。
-
-### 使用须知
-1 . 我们把useAgent(originAgent)的入参class或object称为<strong>originAgent</strong>（原代理）。而一个合法原代理需要一个可读写访问的state属性。
-注意，不要人为修改state属性（这与reducer的state不期望被修改是同样的道理）。
-```
-如上例中：agent.state
-```
-2 . 我们把useAgent(originAgent)产生的对象称为<strong>agent</strong>代理，agent代理中的function如果返回的是一个非promise或undefined的对象，该对象将被作为下一个state更新到reducer维护器（如store）里去，
-我们称这种function为（<strong>dispatch function</strong>），即能发起dispatch的function。
-```
-如上例中：agent.addOne,agent.sum
-```
-3 . agent代理中的function如果返回的是一个promise或undefined，那这个function不会自主发起dispatch，不会产生下一个state。
-但它可以通过调用一个<strong>dispatch function</strong>来影响下一个state。
-```
-如上例中：agent.addOneAfterOneSecond，返回undefined但在setTimeout中调用了agent.addOne
-```
-4 . <strong>不要使用namespace属性</strong>，这个属性暂时会作为一个特殊关键字被useAgent捕获，做全局数据管理器区分数据块的标准。
-比如redux。
-
-5 . <strong>不要使用箭头函数作为agent对象的属性值。</strong>
-
-### 特性
-1. 不要担心this问题，当你使用useAgent(originAgent)获取代理时，你的agent代理方法已经通过fn.apply(proxy,...)以及闭包的形式强行锁定了this。
-所以无论你是把agent的方法赋值给其他对象属性，还是通过call,apply重新绑定，该方法运行时的this始终都是agent。
-为什么这么设计？因为我们不认为直接拿一个object的方法绑定到其他object上是一个好的设计，其中的隐晦太多了。
-2. 不用担心在component unmount之后调用dispatch方法修改state的问题，因为useAgent会在unmount时让之后的dispatch方法全部失效。
-
-### api
-useAgent(originAgent,e?:Env)
-
-通过class或object创建一个链接reducer的originAgent的代理对象。
-
-参数：
-1. originAgent：代理class或object
-2. e:代理运行环境
-
-agent代理原型环境e:Env解析:
-
-1. strict：true|false   （agent是否严格与reducer维护器同步）
-
-默认true，当这个参数为true时，agent.state将严格由reducer维护器或reducer.update进行更新，如果为false，
-则每次agent dispatch function运行完成就立即更新agent.state数据。（注意：这里只是个选项，我们并不推荐你使用strict:false）
-
-返回：
-
-代理对象，拥有和原生被代理对象originAgent近乎一摸一样的属性，通过agent.state获取最新state数据，通过agent.xxx(function)
-调用方法（dispatch function或非dispatch function）。
-
-### 可工作的 [例子](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
-```typescript jsx
-import {useAgent,OriginAgent} from 'use-agent-reducer';
-
-const getDefaultClassifyQueryState = (): ClassifyQueryState => ({
-    form: {
-        name: '',
-        position: Position.USER
-    },
-    loading: false,
-    list: null,
-    page: 1,
-    size: 3
-});
-
-class ClassifyQueryAgent implements OriginAgent<ClassifyQueryState> {
-
-    effectiveForm: Form = getDefaultClassifyQueryState().form;
-
-    state: ClassifyQueryState = getDefaultClassifyQueryState();
-
-    private handleFormChange(formLike: { name?: string, position?: Position }) {
-        const {form} = this.state;
-        const newForm = {...form, ...formLike};
-        return {...this.state, form: newForm};
-    }
-
-    private loadingBeforeQuery() {
-        return {...this.state, loading: true};
-    }
-
-    //this function return a state, and it will dispatch a next state to change the state in store or something remains reducer state.
-    public handleFormNameChange(name: string) {
-        //before this.handleFormChange running, the agent has hold a parent dispatch function for it,
-        // so this.handleFormChange here will not run dispatch. it just compute the next state for it's parent 'handleFormNameChange'
-        this.handleFormChange({name});
-    }
-
-    public handleFormPositionChange(position: Position) {
-        this.handleFormChange({position});
-    }
-
-    private handleResultChange(list: Array<Record>, page: number, size: number) {
-        return {...this.state, loading: false, list, page, size};
-    }
-
-    //this function returns a promise, so it will not be a dispatch function, but it can deploy dispatch functions to change next state.
-    public async handlePageChange(page: number, size: number) {
-        this.loadingBeforeQuery();
-        const requestParams: RequestParams = {...this.effectiveForm, page, size};
-        const {list, page: p, size: s} = await fetchData(requestParams);
-        this.handleResultChange(list, p, s);
-    }
-
-    //this function returns void, so it will not be a dispatch function, but it can deploy dispatch functions or other functions to change next state.
-    public handleQueryClick() {
-        this.effectiveForm = this.state.form;
-        this.handlePageChange(1, 10);
-    }
-
-}
-
-const MyComponent=()=>{
-    const {
-        state,
-        handleFormNameChange,
-        handleFormPositionChange,
-        handleQueryClick,
-        handlePageChange
-    }=useAgent(ClassifyQueryAgent);
+export const Counter = memo(() => {
+    const {state,stepUp,stepDown}=useAgent(CountAgent);
     return (
         <div>
-            <div>
-                <input value={state.form.name} onChange={(e)=>handleFormNameChange(e.target.value)}/>
-                <select value={state.form.position} onChange={handleFormPositionChange}>
-                    <option>...</option>
-                    ...
-                </select>
-                <button onClick={handleQueryClick}>search</button>
-            </div>
-            <Table loading={state.loading} datasource={state.list}>...</Table>
-            <Pager page={state.page} pageSize={state.size} onChange={handlePageChange}/>
-        </div>
-    );
-};
-```
-#### AgentProvider & useParent()
-###### AgentProvider
-AgentProvider作为agent的React Context承载组件，可以把指定value属性对应的agent对象分发
-
-###### useBranch(agent:Agent,resolver:BranchResolver)
-useBranch方法可以对当前agent代理建立一个分支（复制品），该分支上的所有对象不能修改，只能被调用。
-分支可以被抛弃，也可以被重建。通过分支组件<strong>BranchResolver</strong>，你可以调用分支api（<strong>BranchApi</strong>），
-这个Api简单提供了一个reject方法，和一个rebuild方法。我们可以通过调用reject方法废弃当前分支，
-被废弃分支的dispatch方法将处于失效状态，也就是说被废弃分支无法继续影响reducer的state数据。
-而rebuild方法在废弃当前分支的同时，会新建一个替代分支，继续新的任务。
-
-你可以使用`import {BranchResolvers,BranchApi} from 'agent-reducer'`获取BranchResolvers工具，
-`agent-reducer`包会自动安装到你的`node_modules`目录内。
-
-[了解 BranchResolvers](https://www.npmjs.com/package/agent-reducer)
-
-[更多例子](https://github.com/filefoxper/use-agent-reducer/tree/master/example)
-
-```typescript jsx
-import React, {memo, useEffect} from 'react';
-import {Button, Input, Pagination, Select, Table} from "antd";
-import {useAgent,useBranch} from "use-agent-reducer";
-import {ClassifyQueryAgent} from "@/module";
-import {Position} from "./type";
-import Column from "antd/lib/table/Column";
-import {BranchResolvers} from "agent-reducer";
-
-const Option = Select.Option;
-
-export default memo(() => {
-
-    const agent = useAgent(ClassifyQueryAgent);
-
-    const {state, handleFormNameChange, handleFormPositionChange} = agent;
-
-    //在一个分页查询任务中，我们不能保证点击查询按钮，分页器查询，到底哪个异步数据先返回，可能产生第一页的数据比第二页后返回，而突然覆盖第二页数据的现象。
-    //这里我们使用useBranch，把查询任务当作一个分支，并让这个任务分支以获取最新触发产生数据的方式工作，这样就能保证数据的时序不被打乱了。
-    const {handleQueryClick, handlePageChange}=useBranch(agent,BranchResolvers.takeLatest());
-
-    useEffect(() => {
-        handleQueryClick();
-    }, []);
-
-    return (
-        <div style={{padding: 12}}>
-            <div style={{padding: '12px 0'}}>
-                <label>name：</label>
-                <Input style={{width: 160, marginRight: 8}} value={state.form.name}
-                       onChange={(e) => handleFormNameChange(e.target.value)}/>
-                <label>position：</label>
-                <Select style={{width: 160, marginRight: 8}} value={state.form.position}
-                        onChange={handleFormPositionChange}>
-                    <Option value={Position.USER}>user</Option>
-                    <Option value={Position.MASTER}>master</Option>
-                    <Option value={Position.ADMIN}>admin</Option>
-                </Select>
-                <Button type="primary" onClick={handleQueryClick}>search</Button>
-            </div>
-            <Table dataSource={state.list} loading={state.loading} pagination={false} rowKey="id">
-                <Column title="id" dataIndex="id"/>
-                <Column title="name" dataIndex="name"/>
-                <Column title="position" dataIndex="position"/>
-            </Table>
-            <Pagination current={state.page} total={state.total} pageSize={10} onChange={handlePageChange}/>
+            <button onClick={stepUp}>stepUp</button>
+            <span>{state}</span>
+            <button onClick={stepDown}>stepDown</button>
         </div>
     );
 });
 ```
+以上代码是一个简单的例子，`useAgent`返回的是一个`CountAgent`实例代理对象。
+通过调用这个实例代理对象的属性方法就可以`dispatch`一个`action`了，
+当`dispatch`完成后，`this.state`就变成调用方法`return`的数据（但并非所有`return`数据都会成为下一个`this.state`）。
 
-### 关于branch的使用建议
-branch分支系统的设计初衷：使用一个分支来完成一项特殊任务，分支因任务而存在，
-为了这项特殊任务，分支随时可能被resolver抛弃或重建。所以使用一个分支去做多个任务，不但会引起代码维护的混乱，
-同时也可能产生许多跟分支重建有关的bug。因此我们希望使用者在明确一个分支唯一目标的基础上使用它。
-当然一个任务不一定非得是一个方法，比如：`翻页查询`和`点击查询按钮查询`就是一个任务，它们的目标是统一的。
+关于`reduce-action`和`middle-action`的定义，使用者可以查看 [agent-reducer](https://www.npmjs.com/package/agent-reducer)
+
+这里做个简单说明，受`agent-reducer`使用的默认`MiddleWare`影响，
+agent属性方法的返回值如果是`undefined`或`promise`，该方法自身就不会`dispatch`任何`action`。
+这些方法通常需要调用能够`dispatch action`的其他属性方法来修改`this.state`。如下：
+```tsx
+import React,{memo,useEffect} from 'react';
+import {OriginAgent} from "agent-reducer";
+import {useAgent} from 'use-agent-reducer';
+
+/**
+ * class写法
+ */
+class CountAgent implements OriginAgent<number> {
+
+    state = 0;
+        
+    stepUp = (): number => this.state + 1;
+
+    stepDown = (): number => this.state - 1;
+
+    step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
+
+    sum = (...counts: number[]): number => {
+        return this.state + counts.reduce((r, c): number => r + c, 0);
+    };
+
+    //return promise，所以是 middle-action
+    //middle-action 本身调用不会触发dispatch，需要调用其他 reduce-action 来修改this.state
+    async requestAdditions(){
+        const args = await Promise.resolve([1,2,3]);
+        this.sum(...args);
+    }
+
+}
+
+export const Counter = memo(() => {
+    const {state,stepUp,stepDown,requestActions}=useAgent(CountAgent);
+
+    useEffect(()=>{
+        requestActions();
+    },[]);
+
+    return (
+        <div>
+            <button onClick={stepUp}>stepUp</button>
+            <span>{state}</span>
+            <button onClick={stepDown}>stepDown</button>
+        </div>
+    );
+});
+```
+关于其他 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 知识，可以进入 `agent-reducer`的readme文件查看获知。
+这是一个比较有意思的工具。
+
+### API
+
+1 . useAgent
+
+用来创建一个稳定的agent对象，可用于代替`useState`、`useReducer`等工具获取更好的MVVM设计体验。
+
+```
+OriginAgent : class | new class();
+
+MiddleWare : 见 agent-reducer
+
+env : {reduceOnly?:boolean,strict?:boolean}
+
+const agent = useAgent(OriginAgent, MiddleWare? | env?, env?);
+```
+关于参数含义可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
+
+2 . useReduceAgent ( >=2.0.0 )
+
+用来创建一个稳定的agent对象，可用于代替`useState`、`useReducer`等工具获取更好的MVVM设计体验。
+与 `useAgent` 不同的是，`useReduceAgent`的`env.reduceOnly`必然为`true`，
+这意味这`agent`模型`class`只做`reducer`使用，`defaultMiddleWare`不再判断返回值是否为`undefined`或`promise`，
+所有返回数据都将成为`this.state`，而且层层代理dispatch也将失效。
+
+```
+OriginAgent : class | new class();
+
+MiddleWare : 见 agent-reducer
+
+env : {strict?:boolean}
+
+const agent = useReduceAgent(OriginAgent, MiddleWare? | env?, env?);
+```
+
+关于参数含义可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
+
+如果需要`middle-actions`，可以与`useMiddleActions`联合使用。如：
+```tsx
+import React,{memo,useEffect} from 'react';
+import {MiddleActions, OriginAgent} from "agent-reducer";
+import {useReduceAgent,useMiddleActions} from 'use-agent-reducer';
+
+/**
+ * class写法
+ */
+class CountAgent implements OriginAgent<number> {
+
+    state = 0;
+        
+    //每次调用都让state+1
+    stepUp = (): number => this.state + 1;
+
+    //每次调用都让state-1
+    stepDown = (): number => this.state - 1;
+
+    step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
+
+    sum = (...counts: number[]): number => {
+        return this.state + counts.reduce((r, c): number => r + c, 0);
+    };
+
+}
+
+//'middle-actions' 可以统一写在一个继承MiddleActions的类里
+class CountMiddles extends MiddleActions<CountAgent>{
+
+    async requestAdditions(){
+        const args = await Promise.resolve([1,2,3]);
+        //该类默认的constructor会把useMiddleActions入参中的agent集成到当前类的agent属性上，以供使用。
+        this.agent.sum(...args);
+    }
+
+}
+
+export const Counter = memo(() => {
+
+    const agent=useReduceAgent(CountAgent);
+
+    const {state,stepUp,stepDown}=agent;
+    //使用useMiddleActions调用'middle-action'
+    const {requestAdditions}=useMiddleActions(agent,CountMiddles);
+
+    useEffect(()=>{
+        requestAdditions();
+    },[]);
+
+    return (
+        <div>
+            <button onClick={stepUp}>stepUp</button>
+            <span>{state}</span>
+            <button onClick={stepDown}>stepDown</button>
+        </div>
+    );
+});
+```
+3 . useMiddleActions ( >=2.0.0 )
+
+配合`useAgent`或`useReduceAgent`使用，可以自定义`middle-action`集合，用于异步请求后`dispatch`或做其他任何事情。
+
+```
+class Middles extends MiddleActions<OriginAgent>{
+    ......middle-actions
+}
+
+MiddleWare 见 agent-reducer
+LifecycleMiddleWare 见 agent-reducer
+
+const agent=useReduceAgent(OriginAgent);
+const middles = useMiddleActions(agent,Middles,MiddleWare?|LifecycleMiddleWare);
+```
+关于参数含义可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
+
+4 . useMiddleWare ( >=2.0.0 ) ~~useBranch ( <2.0.0 )~~
+
+复制一个`agent`成拥有可控生命周期的`agent`，有点类似git的分支概念。可通过附加`MiddleWare`或`LifecycleMiddleWare`控制复制版`agent`的特性。
+可使用`agent-reducer`提供的`LifecycleMiddleWares`做到类似`redux-saga`的`takeLatest`这样的功能。
+
+```
+const agent=useAgent(OriginAgent);
+const branch=useMiddleWare(agent, MiddleWare | LifecycleMiddleWare);
+```
+关于参数含义和`LifecycleMiddleWares`可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
+
+5 . AgentProvider
+
+`use-agent-reducer`提供的一个`react` Context.Provider组件，可为当前范围内所有需要使用已有`agent`的子组件提供Context便利。
+
+```
+const agent=useAgent(OriginAgent);
+
+return (
+    <AgentProvider value={agent}>
+        {children}
+   </AgentProvider>
+)
+```
+
+6 . useAgentContext ( >=2.0.0 ) ~~useParent ( <2.0.0 )~~
+
+配合`AgentProvider`使用，直接读取最近一层AgentProvider传入的agent对象。
+
+```
+const agent=useAgentContext();
+```
 
 # 总结
 如果喜欢它请给个小星星呗，么么哒（[给星地址](https://github.com/filefoxper/use-agent-reducer)）
