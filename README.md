@@ -163,6 +163,8 @@ export const Counter = memo(() => {
     );
 });
 ```
+[更多例子](https://github.com/filefoxper/use-agent-reducer/blob/master/test/spec/basic.spec.tsx) 
+
 关于其他 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 知识，可以进入 `agent-reducer`的readme文件查看获知。
 这是一个比较有意思的工具。
 
@@ -310,6 +312,7 @@ return (
 ```
 const agent=useAgentContext();
 ```
+[更多例子](https://github.com/filefoxper/use-agent-reducer/blob/master/test/spec/basic.spec.tsx) 
 
 # 总结
 如果喜欢它请给个小星星呗，么么哒（[给星地址](https://github.com/filefoxper/use-agent-reducer)）
