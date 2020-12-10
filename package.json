@@ -1,6 +1,6 @@
 {
   "name": "use-agent-reducer",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
@@ -31,7 +31,7 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "agent-reducer": "^2.0.0"
+    "agent-reducer": "^2.0.1"
   },
   "dependencies": {
     "agent-reducer": "^2.0.1"
