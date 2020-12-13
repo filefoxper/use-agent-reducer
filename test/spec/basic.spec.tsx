@@ -1,6 +1,9 @@
+import React, {useEffect} from "react";
 import {renderHook, act} from "@testing-library/react-hooks";
-import {useAgent, useMiddleActions, useMiddleWare, useReduceAgent} from "../../src";
-import {LifecycleMiddleWares, MiddleActions, middleWare, OriginAgent} from "agent-reducer";
+import {render} from "@testing-library/react";
+import {AgentProvider, useAgent, useAgentContext, useMiddleActions, useMiddleWare} from "../../src";
+import { MiddleActions, middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {ReactNodeLike} from "prop-types";
 
 describe('使用基本的useAgent', () => {
 
@@ -8,8 +11,7 @@ describe('使用基本的useAgent', () => {
 
         state = 0;
 
-        // 返回值不为 "promise" ，也非 "undefined"，定义成 reduce-action，一个 reduce-action 在被调用后会 dispatch 一个 action，
-        // 并修改this.state
+        // 返回值即下个 this.state，每个方法相当于一次 reducer 的 dispatch action
         stepUp = (): number => this.state + 1;
 
         stepDown = (): number => this.state - 1;
@@ -18,24 +20,25 @@ describe('使用基本的useAgent', () => {
 
         step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
 
-        // 这是一个 reduce-action ，但同时它也是个 method ，我们把非箭头函数的其他属性函数统一称为 method ，一个 method 会对this进行层层代理，
-        // 这使得 method 里的 reduce-action 能够正常的 dispatch action，在 middle-action 中是很有用的，
-        // 但如果一个 method reduce-action 调用了其他 reduce-action，就会导致多次你期望之外的 dispatch action 行为发生，虽然结果应该是正确的，但这明显不是我们希望发生的，
-        // 而 arrow-function 箭头函数能够很好的断开 this 的层层代理行为，所以，箭头函数比 method更适合作为 reduce-action。
-        // 当然我们也可以通过 env.reduceOnly 或 直接使用 useReduceAgent 把 agent 当作一个纯粹的 reducer 来处理，这时，defaultMiddleWare就不再会采取this层层代理模式了。
         doubleDispatchStep(isUp: boolean) {
             return isUp ? this.stepUp() : this.stepDown();
         }
 
-        // 返回值为 "promise" 或 "undefined"，定义成 middle-action，一个 middle-action 在被调用后，不会 dispatch 任何 action。
-        // 但可以通过调用一个 reduce-action 来进行 dispatch 并修改 this.state 的工作。
+        async returnPromise(){
+            await Promise.resolve();
+            return 1;
+        }
+
+        // 返回值为 "promise"，如果不加任何修饰，那下个 state 就会是个 "promise" 对象，
+        // 如果我们想要将 "promise" resolve 的数据作为下一个 state 需要使用middleWare，这里使用的是 "agent-reducer" 的 MiddleWarePresets.takePromiseResolve()。
+        @middleWare(MiddleWarePresets.takePromiseResolve())
         async callingStepUpAfterRequest() {
             await Promise.resolve();
             return this.stepUp(); // 调用一个 reduce-action。
         }
     }
 
-    it('在agent触发 reduce-action 后，this.state应该变成 reduce-action return 值', () => {
+    it('在agent调用一个方法后，this.state应该变成这个方法的返回值', () => {
         const {result, rerender} = renderHook(() => useAgent(CountAgent));
         const agent = result.current;
         act(() => {
@@ -44,7 +47,7 @@ describe('使用基本的useAgent', () => {
         expect(agent.state).toBe(1);
     });
 
-    it('在agent触发一个调用了其他 reduce-action 的 method reduce-action，会导致不期望的dispatch行为，但结果依然是期望结果', () => {
+    it('在agent中，一个方法调用另一个方法也是没问题的，不会出现不必要的dispatch，内部被调用方法没有改变 state 的能力', () => {
         const {result, rerender} = renderHook(() => useAgent(CountAgent));
         const agent = result.current;
         act(() => {
@@ -53,7 +56,16 @@ describe('使用基本的useAgent', () => {
         expect(agent.state).toBe(1);
     });
 
-    it('在agent触发 middle-action 后，this.state应该变成 middle-action resolve 值', async () => {
+    it('在agent调用一个返回promise的方法时，如果没有MiddleWare修饰，state 将变成promise对象', async () => {
+        const {result, rerender} = renderHook(() => useAgent(CountAgent));
+        const agent = result.current;
+        await act(async () => {
+            await agent.returnPromise();
+        });
+        expect(typeof (agent.state as any).then).toBe('function');
+    });
+
+    it('在agent调用一个返回promise的方法时，如果使用MiddleWare修饰，state将变成MiddleWare加工后的对象', async () => {
         const {result, rerender} = renderHook(() => useAgent(CountAgent));
         const agent = result.current;
         await act(async () => {
@@ -64,7 +76,7 @@ describe('使用基本的useAgent', () => {
 
 });
 
-describe('使用基本的useReduceAgent配合一个useMiddleActions', () => {
+describe('使用基本的useAgent配合一个useMiddleActions', () => {
 
     class CountAgent implements OriginAgent<number> {
 
@@ -91,10 +103,10 @@ describe('使用基本的useReduceAgent配合一个useMiddleActions', () => {
 
     }
 
-    it('useReduceAgent和useMiddleActions可以很好的隔离 reduce-actions 和 middle-actions', async () => {
-        const {result: ar} = renderHook(() => useReduceAgent(CountAgent));
+    it('useMiddleActions可以很好的管理调用一个agent方法', async () => {
+        const {result: ar} = renderHook(() => useAgent(CountAgent));
         const agent = ar.current;
-        const {result: mr} = renderHook(() => useMiddleActions(agent, CountBeside));
+        const {result: mr} = renderHook(() => useMiddleActions(CountBeside,agent));
         await act(async () => {
             await mr.current.callingStepUpAfterRequest();
         });
@@ -109,8 +121,6 @@ describe('使用useMiddleWare复制一个专注一种任务模式的agent', () =
 
         state = 0;
 
-        // 返回值不为 "promise" ，也非 "undefined"，定义成 reduce-action，一个 reduce-action 在被调用后会 dispatch 一个 action，
-        // 并修改this.state
         stepUp = (): number => this.state + 1;
 
         stepDown = (): number => this.state - 1;
@@ -119,23 +129,18 @@ describe('使用useMiddleWare复制一个专注一种任务模式的agent', () =
 
         step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
 
-        // 这是一个 reduce-action ，但同时它也是个 method ，我们把非箭头函数的其他属性函数统一称为 method ，一个 method 会对this进行层层代理，
-        // 这使得 method 里的 reduce-action 能够正常的 dispatch action，在 middle-action 中是很有用的，
-        // 但如果一个 method reduce-action 调用了其他 reduce-action，就会导致多次你期望之外的 dispatch action 行为发生，虽然结果应该是正确的，但这明显不是我们希望发生的，
-        // 而 arrow-function 箭头函数能够很好的断开 this 的层层代理行为，所以，箭头函数比 method更适合作为 reduce-action。
-        // 当然我们也可以通过 env.reduceOnly 或 直接使用 useReduceAgent 把 agent 当作一个纯粹的 reducer 来处理，这时，defaultMiddleWare就不再会采取this层层代理模式了。
         doubleDispatchStep(isUp: boolean) {
             return isUp ? this.stepUp() : this.stepDown();
         }
 
-        // 返回值为 "promise" 或 "undefined"，定义成 middle-action，一个 middle-action 在被调用后，不会 dispatch 任何 action。
-        // 但可以通过调用一个 reduce-action 来进行 dispatch 并修改 this.state 的工作。
+        // middleWare修饰可以使用useMiddleWare的形式，复制一个agent版本，并添加在复制版的所有方法中
         async callingStepUpAfterRequest(tms: number) {
             await new Promise((r) => setTimeout(r, tms * 100));
             return this.sum(tms);
         }
 
-        @middleWare(LifecycleMiddleWares.takeLatest())
+        // 其实middleWare修饰器也是复制出一个agent版本，放在内存中，在获取该方法时，给出内存复制版对应的方法
+        @middleWare(MiddleWarePresets.takeLatest())
         async callingStepUpAfterRequestWithTakeLatest(tms: number){
             await new Promise((r) => setTimeout(r, tms * 100));
             return this.sum(tms);
@@ -143,9 +148,9 @@ describe('使用useMiddleWare复制一个专注一种任务模式的agent', () =
 
     }
 
-    it('使用useMiddleWare，可以让agent复制版使用各种MiddleWare特性', async () => {
+    it('使用useMiddleWare，可以让agent复制版使用各种MiddleWare特性，复制版的所有方法都具备统一的MiddleWare特性', async () => {
         const {result: ar} = renderHook(() => useAgent(CountAgent));
-        const {result: mr} = renderHook(() => useMiddleWare(ar.current, LifecycleMiddleWares.takeLatest()));
+        const {result: mr} = renderHook(() => useMiddleWare(ar.current, MiddleWarePresets.takeLatest()));
         await act(async () => {
             const first = mr.current.callingStepUpAfterRequest(5);
             const second = mr.current.callingStepUpAfterRequest(2);
@@ -162,6 +167,29 @@ describe('使用useMiddleWare复制一个专注一种任务模式的agent', () =
             await Promise.all([first, second]);
         });
         expect(ar.current.state).toBe(2);
+    });
+
+    it('使用AgentProvider和useAgentContext可以在深层组件内使用外部agent', function () {
+        const AgentProv=({children}:{children?:ReactNodeLike})=>{
+            const agent=useAgent(CountAgent);
+            return (
+                <AgentProvider value={agent}>
+                    {children}
+                </AgentProvider>
+            );
+        };
+        const Deep=()=>{
+            const agent=useAgentContext<CountAgent>();
+            useEffect(()=>{
+                agent.stepUp();
+            },[]);
+            return (
+                <div className="agent">{agent.state}</div>
+            )
+        }
+        const {container}=render(<Deep/>,{wrapper:AgentProv});
+        const div=container.getElementsByClassName('agent')[0];
+        expect(div.innerHTML).toBe('1');
     });
 
 });
