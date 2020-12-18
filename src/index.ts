@@ -49,10 +49,38 @@ class AgentShipping {
 const AgentContext = React.createContext<AgentShipping | null>(null);
 
 export type RunEnv = {
-    strict?: boolean
+    strict?: boolean,
+    legacy?:boolean
 };
 
-export function useAgent<T extends OriginAgent<S>,S>(entry: T | { new(): T }, middleWareOrEnv?: MiddleWare | RunEnv, env?: RunEnv): T {
+export function useAgentReducer<T extends OriginAgent<S>, S>(entry: T | { new(): T }, middleWareOrEnv?: MiddleWare | RunEnv, env?: Omit<RunEnv,'legacy'>): T {
+
+    const runEnv = typeof middleWareOrEnv !== 'function' ? middleWareOrEnv : env;
+
+    const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
+
+    let {current: reducer} = useRef(createAgentReducer(entry, middleWare, {
+        ...runEnv,
+        ...env,
+        legacy: false,
+        expired: false,
+        updateBy: 'manual'
+    }));
+
+    const [state, dispatch] = useReducer(reducer, reducer.initialState);
+
+    reducer.update(state, dispatch);
+
+    useEffect(() => {
+        return () => {
+            reducer.env.expired = true;
+        }
+    }, []);
+
+    return reducer.agent;
+}
+
+export function useAgent<T extends OriginAgent<S>, S>(entry: T | { new(): T }, middleWareOrEnv?: MiddleWare | RunEnv, env?: RunEnv): T {
 
     const runEnv = typeof middleWareOrEnv !== 'function' ? middleWareOrEnv : env;
 
@@ -76,6 +104,7 @@ export function useAgent<T extends OriginAgent<S>,S>(entry: T | { new(): T }, mi
     }, []);
 
     return reducer.agent;
+
 }
 
 export function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActions<T, S>, S = any>(
@@ -83,16 +112,25 @@ export function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActio
     agent?: T,
     ...middleWare: (MiddleWare | LifecycleMiddleWare)[]
 ): P {
-    const ref= useRef(useAgentMiddleActions(middleActions,agent,...middleWare) as P);
+    const ref = useRef(useAgentMiddleActions(middleActions, agent, ...middleWare) as P);
     return ref.current;
 }
 
-export function useMiddleWare<T extends OriginAgent<S>,S>(agent: T, middleWare: MiddleWare | LifecycleMiddleWare) {
-    const {current} = useRef(useAgentMiddleWare(agent, middleWare));
+export function useMiddleWare<T extends OriginAgent<S>, S>(agent: T, ...middleWare: (MiddleWare | LifecycleMiddleWare)[]) {
+    const {current} = useRef(useAgentMiddleWare(agent, ...middleWare));
     return current;
 }
 
-export function AgentProvider<T extends OriginAgent<S>,S>({value, children}: { readonly value: T, readonly children?: ReactNodeLike }) {
+/**
+ * @deprecated
+ * @param agent
+ * @param middleWare
+ */
+export function useBranch<T extends OriginAgent<S>, S>(agent: T, middleWare: MiddleWare | LifecycleMiddleWare) {
+    return useMiddleWare(agent, middleWare);
+}
+
+export function AgentProvider<T extends OriginAgent<S>, S>({value, children}: { readonly value: T, readonly children?: ReactNodeLike }) {
     let ref = useRef(new AgentShipping(value));
     useEffect(() => {
         ref.current.update(value);
@@ -100,7 +138,7 @@ export function AgentProvider<T extends OriginAgent<S>,S>({value, children}: { r
     return React.createElement(AgentContext.Provider, {value: ref.current}, children);
 }
 
-export function useAgentContext<T extends OriginAgent>() {
+export function useAgentContext<T extends OriginAgent>():T {
 
     const shipping = useContext(AgentContext);
 
@@ -119,4 +157,11 @@ export function useAgentContext<T extends OriginAgent>() {
     }, [shipping]);
 
     return ref.current as T;
+}
+
+/**
+ * @deprecated
+ */
+export function useParent<T extends OriginAgent>():T {
+    return useAgentContext<T>();
 }
