@@ -183,15 +183,32 @@ OriginAgent : class | new class();
 
 MiddleWare : 见 agent-reducer
 
-env : {strict?:boolean}
+env : {strict?:boolean,legacy?:boolean}
 
 const agent = useAgent(OriginAgent, MiddleWare? | env?, env?);
 ```
-`env`参数，我们只开放了strict，如果希望在处理之后，渲染之前立即改变`this.state`可以把它设置为`false`。
+`env`参数，如果希望在处理之后，渲染之前立即改变`this.state`可以把`env.strict`设置为`false`;
+如果希望使用 1.* 版本的`agent-reducer`，可以将`env.legacy`设置为`true`，
+也可以使用`agent-reducer`的`globalConfig`进行全局设置。
 
 关于其他参数含义可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
 
-2 . useMiddleActions ( >=2.0.0 3.0.0:接口更改 )
+2 . useAgentReducer ( >=3.1.0 )
+
+用来创建一个稳定的agent对象，可用于代替`useState`、`useReducer`，用法与`useAgent`一样，
+但使用的`agent-reducer`版本锁死在 3.* 版本，不受全局环境影响，`env.legacy`对该方法不生效。
+
+```
+OriginAgent : class | new class();
+
+MiddleWare : 见 agent-reducer
+
+env : {strict?:boolean}
+
+const agent = useAgentReducer(OriginAgent, MiddleWare? | env?, env?);
+```
+
+3 . useMiddleActions ( >=2.0.0 3.0.0:接口更改 )
 
 配合`useAgent`使用，用于管理调用`agent`，用于异步请求后`dispatch`或做其他任何事情。
 
@@ -208,7 +225,7 @@ const middles = useMiddleActions(Middles,agent?,...MiddleWare|LifecycleMiddleWar
 ```
 关于参数含义可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
 
-3 . useMiddleWare ( >=2.0.0 )
+4 . useMiddleWare ( >=2.0.0 ) ~~useBranch ( <2.0.0 )~~
 
 复制`agent`，获得一个拥有可控生命周期的`agent`，有点类似git的分支概念，复制版与原版`agent`的非方法属性完全同步。
 可通过附加`MiddleWare`或`LifecycleMiddleWare`控制复制版`agent`的特性。
@@ -220,7 +237,7 @@ const branch=useMiddleWare(agent, MiddleWare | LifecycleMiddleWare);
 ```
 关于参数含义和`LifecycleMiddleWares`可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
 
-4 . AgentProvider
+5 . AgentProvider
 
 `use-agent-reducer`提供的一个`react` Context.Provider组件，可为当前范围内所有需要使用已有`agent`的子组件提供Context便利。
 
@@ -235,7 +252,7 @@ return (
 ```
 `useMiddleActions`和对应的模型可以在任何地方直接引用 ( import )，所以就不为其设定provider了。
 
-5 . useAgentContext ( >=2.0.0 ) ~~useParent ( <2.0.0 )~~
+6 . useAgentContext ( >=2.0.0 ) ~~useParent ( <2.0.0 )~~
 
 配合`AgentProvider`使用，直接读取最近一层AgentProvider传入的agent对象。
 

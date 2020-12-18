@@ -1,8 +1,24 @@
 import React, {useEffect} from "react";
 import {renderHook, act} from "@testing-library/react-hooks";
 import {render} from "@testing-library/react";
-import {AgentProvider, useAgent, useAgentContext, useMiddleActions, useMiddleWare} from "../../src";
-import { MiddleActions, middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {
+    AgentProvider,
+    useAgent,
+    useAgentContext,
+    useAgentReducer,
+    useBranch,
+    useMiddleActions,
+    useMiddleWare
+} from "../../src";
+import {
+    BranchResolvers,
+    clearGlobalConfig,
+    globalConfig,
+    MiddleActions,
+    middleWare,
+    MiddleWarePresets,
+    OriginAgent
+} from "agent-reducer";
 import {ReactNodeLike} from "prop-types";
 
 describe('使用基本的useAgent', () => {
@@ -190,6 +206,86 @@ describe('使用useMiddleWare复制一个专注一种任务模式的agent', () =
         const {container}=render(<Deep/>,{wrapper:AgentProv});
         const div=container.getElementsByClassName('agent')[0];
         expect(div.innerHTML).toBe('1');
+    });
+
+});
+
+describe('使用 3.1.0+ 对 1.* 版的兼容功能',()=>{
+
+    beforeAll(()=>{
+        //在顶级将环境设置为 1.* 模式。
+        globalConfig({env:{legacy:true}});
+    });
+
+    afterAll(()=>{
+        //注意：正式使用时，不要调用该方法
+        clearGlobalConfig();
+    })
+
+    class CountAgent implements OriginAgent<number> {
+
+        state = 0;
+
+        stepUp = (): number => this.state + 1;
+
+        stepDown = (): number => this.state - 1;
+
+        sum = (...counts: number[]): number => this.state + counts.reduce((r, c): number => r + c, 0);
+
+        step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
+
+        doubleDispatchStep(isUp: boolean) {
+            return isUp ? this.stepUp() : this.stepDown();
+        }
+
+        // 在 1.* 中起作用，在 3.1.0+ 中需要使用 MiddleWare 的方法
+        async callingSum(tms: number) {
+            await new Promise((r) => setTimeout(r, tms * 100));
+            return this.sum(tms); // 注意：3.1.0+ 中 this.sum 是个纯粹的方法调用，本身并不会修改 this.state，所以需要 return，否则this.state将变成undefined
+        }
+
+        async callingSumByLegacy(tms: number) {
+            await new Promise((r) => setTimeout(r, tms * 100));
+            this.sum(tms); // 注意：1.* 中因为 this 的层层代理作用，加上 middle-action 作用， this.sum 会修改 this.state，所以不需要 return
+        }
+
+    }
+
+    test('1.* 用法',async ()=>{
+        // useAgent 会收到全局 env.legacy 影响，变成 1.* 支持版本
+        const {result: ar} = renderHook(() => useAgent(CountAgent));
+        const {result: mr} = renderHook(() => useBranch(ar.current, BranchResolvers.takeLatest()));
+        await act(async () => {
+            const first = mr.current.callingSumByLegacy(5);
+            const second = mr.current.callingSumByLegacy(2);
+            await Promise.all([first, second]);
+        });
+        expect(ar.current.state).toBe(2);
+    });
+
+    test('3.* 用法',async ()=>{
+        // useAgentReducer 只支持 3.0.0 以上写法，并忽略全局 env.legacy 设置
+        const {result: ar} = renderHook(() => useAgentReducer(CountAgent));
+        const {result: mr} = renderHook(() => useMiddleWare(ar.current, MiddleWarePresets.takeLatest()));
+        await act(async () => {
+            const first = mr.current.callingSum(5);
+            const second = mr.current.callingSum(2);
+            await Promise.all([first, second]);
+        });
+        expect(ar.current.state).toBe(2);
+    });
+
+    test('3.* 使用 1.* 的写法',async ()=>{
+        // useAgentReducer 只支持 3.0.0 以上写法，并忽略全局 env.legacy 设置
+        const {result: ar} = renderHook(() => useAgentReducer(CountAgent));
+        const {result: mr} = renderHook(() => useMiddleWare(ar.current, MiddleWarePresets.takeLatest()));
+        await act(async () => {
+            const first = mr.current.callingSumByLegacy(5);
+            // 注意：3.1.0+ 中 this.sum 是个纯粹的方法调用，本身并不会修改 this.state，所以需要 return，否则this.state将变成undefined
+            const second = mr.current.callingSumByLegacy(2);
+            await Promise.all([first, second]);
+        });
+        expect(ar.current.state).toBe(undefined);
     });
 
 });
