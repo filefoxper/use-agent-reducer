@@ -6,6 +6,11 @@
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
 
+### 注意
+
+当前版本响应`agent-reducer@3.1.0+`版本的号召，支持`agent-reducer@1.*`特性及写法，
+可使用 [useAgentReducer](#use-agent-reducer) 配合`agent-reducer`的`globalConfig`做两个版本兼容。
+
 # use-agent-reducer
 
 reducer可以持续有效的管理数据变更，让数据处理模式变的井井有条，所以react开发了userReducer hook工具，但reducer也有自己的一些麻烦事。
@@ -193,7 +198,7 @@ const agent = useAgent(OriginAgent, MiddleWare? | env?, env?);
 
 关于其他参数含义可参考：[agent-reducer](https://www.npmjs.com/package/agent-reducer)
 
-2 . useAgentReducer ( >=3.1.0 )
+2 . <span id="use-agent-reducer">useAgentReducer ( >=3.1.0 )</span>
 
 用来创建一个稳定的agent对象，可用于代替`useState`、`useReducer`，用法与`useAgent`一样，
 但使用的`agent-reducer`版本锁死在 3.* 版本，不受全局环境影响，`env.legacy`对该方法不生效。
@@ -206,6 +211,31 @@ MiddleWare : 见 agent-reducer
 env : {strict?:boolean}
 
 const agent = useAgentReducer(OriginAgent, MiddleWare? | env?, env?);
+```
+
+`agent-reducer@1.*`兼容做法
+
+```typescript
+import {useAgent,useAgentReducer} from 'use-agent-reducer';
+import {OriginAgent,globalConfig} from "agent-reducer";
+
+globalConfig({env:{legacy:true}}); // 全局使用 1.* 特性
+
+class Example1 implements OriginAgent<any>{
+
+    state={};
+
+}
+class Example3 implements OriginAgent<any>{
+
+    state={};
+
+}
+
+
+const agentV1=useAgent(Example1); // 使用 1.* 特性
+
+const agentV3=useAgentReducer(Example3); // useAgentReducer 忽略全局特性，强制使用 3.* 特性
 ```
 
 3 . useMiddleActions ( >=2.0.0 3.0.0:接口更改 )
@@ -260,6 +290,8 @@ return (
 const agent=useAgentContext();
 ```
 [更多例子](https://github.com/filefoxper/use-agent-reducer/blob/master/test/spec/basic.spec.tsx) 
+
+[change logs](https://github.com/filefoxper/use-agent-reducer/blob/master/CHANGE_LOG.md)
 
 # 总结
 如果喜欢它请给个小星星呗，么么哒（[给星地址](https://github.com/filefoxper/use-agent-reducer)）
