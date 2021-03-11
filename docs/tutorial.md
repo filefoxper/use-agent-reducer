@@ -4,7 +4,7 @@
 
 In this tutorial, we will build a searching page model, and show how this model works in react.
 
-You can [download] our example, and run it as a local website app.
+You can [download](https://github.com/filefoxper/use-agent-reducer/tree/master/example) our example, and run it as a local website app.
 
 * [Search page model](/tutorial?id=search-page-model)
 * [Use MiddleWare](/tutorial?id=use-middleware)

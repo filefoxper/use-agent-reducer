@@ -85,10 +85,10 @@ export function useAgentReducer<T extends OriginAgent<S>, S>(entry: T | { new():
                 return;
             }
             red.env.expired = true;
-            if (!red.unsubscribe) {
+            if (!red.destroy) {
                 return;
             }
-            red.unsubscribe();
+            red.destroy();
         }
     }, []);
 
@@ -125,10 +125,10 @@ export function useAgent<T extends OriginAgent<S>, S>(entry: T | { new(): T }, m
                 return;
             }
             red.env.expired = true;
-            if (!red.unsubscribe) {
+            if (!red.destroy) {
                 return;
             }
-            red.unsubscribe();
+            red.destroy();
         }
     }, []);
 
