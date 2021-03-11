@@ -166,4 +166,4 @@ export const Counter = memo(() => {
     );
 });
 ```
-If you want to know more about `useAgentReducer`, check [document]() here.
+If you want to know more about `useAgentReducer`, check [document](https://filefoxper.github.io/use-agent-reducer/#/) here.

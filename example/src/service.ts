@@ -30,7 +30,8 @@ export const fetchTodoList = (params: FetchParams, total: number = 100): Promise
     });
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
-    return Promise.resolve({content: matches.slice(start, end), total: matches.length});
+    // return Promise.resolve({content: matches.slice(start, end), total: matches.length});
+    return new Promise((r)=>setTimeout(()=>r({content: matches.slice(start, end), total: matches.length}),0));
 }
 
 export const fetchTodoListWithDelay = async (params: FetchParams, delay: number, total: number = 100): Promise<FetchResult> => {
