@@ -1,34 +1,39 @@
-import {Position, RequestParams, RequestResult} from "./type";
+import {FetchParams, FetchResult, PriorLevel, Todo} from "./type";
 
-export const fetchData=(request:RequestParams):Promise<RequestResult>=>{
-    const {name,position,page,size}=request;
-    if(page===1){
-        return new Promise((resolve)=>{
-            setTimeout(()=>{
-                resolve({
-                    list:[
-                        {id:0,name:'Jimmy',position:Position.MASTER},
-                        {id:1,name:'Master',position:Position.MASTER},
-                        {id:2,name:'Admin',position:Position.ADMIN},
-                        {id:3,name:'Daisy',position:Position.USER},
-                        {id:4,name:'Tester',position:Position.USER},
-                        {id:5,name:'Lily',position:Position.USER},
-                        {id:6,name:'Peter',position:Position.USER},
-                        {id:7,name:'Sunny',position:Position.USER},
-                        {id:8,name:'Kasim',position:Position.USER},
-                        {id:9,name:'Water',position:Position.USER},
-                    ],
-                    page,
-                    total:11
-                });
-            },5000);
-        });
-    }
-    return Promise.resolve({
-        list:[
-            {id:10,name:'Willy',position:Position.USER}
-        ],
-        page,
-        total:11
+const simulator = (total: number): Array<Todo> => {
+
+    const simulateByMax = (i: number, max: number) => {
+        const s = (i + 1) % max;
+        const d = s || max;
+        return d.toString().padStart(2, '0');
+    };
+
+    return Array.from({length: total}).map((d, i) => {
+        return {
+            id: i,
+            content: `todo ${i}`,
+            remindTime: `2021-${simulateByMax(i, 12)}-${simulateByMax(i, 28)} 12:00:00`,
+            createTime: '2020-12-12 12:00:00',
+            priorLevel: i % 2 ? PriorLevel.NORMAL : PriorLevel.EMERGENCY
+        }
     });
-};
+}
+
+export const fetchTodoList = (params: FetchParams, total: number = 100): Promise<FetchResult> => {
+    const dataSource = simulator(total);
+    const {pageSize, currentPage, content, priorLevel: pl} = params;
+    const contentStarts = (content || '').trim();
+    const matches = dataSource.filter(({content, priorLevel}) => {
+        const contentMatched = contentStarts ? content.startsWith(contentStarts) : true;
+        const priorLevelMatched = pl !== undefined ? priorLevel === pl : true;
+        return contentMatched && priorLevelMatched;
+    });
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return Promise.resolve({content: matches.slice(start, end), total: matches.length});
+}
+
+export const fetchTodoListWithDelay = async (params: FetchParams, delay: number, total: number = 100): Promise<FetchResult> => {
+    await new Promise((r) => setTimeout(r, delay));
+    return fetchTodoList(params, total);
+}
