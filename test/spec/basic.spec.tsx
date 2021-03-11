@@ -122,7 +122,7 @@ describe('使用基本的useAgent配合一个useMiddleActions', () => {
     it('useMiddleActions可以很好的管理调用一个agent方法', async () => {
         const {result: ar} = renderHook(() => useAgent(CountAgent));
         const agent = ar.current;
-        const {result: mr} = renderHook(() => useMiddleActions(CountBeside,agent));
+        const {result: mr} = renderHook(() => useMiddleActions(new CountBeside(agent)));
         await act(async () => {
             await mr.current.callingStepUpAfterRequest();
         });

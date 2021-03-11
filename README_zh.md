@@ -8,12 +8,9 @@
 
 # use-agent-reducer
 
-[agent-reducer](https://www.npmjs.com/package/agent-reducer) is a very powerful tool, it converts a model object (`OriginAgent`) to be a state changeable object (`Agent`). It is designed on the reducer running base. Every thing returned from an `Agent` method will be a next state.
+[agent-reducer](https://www.npmjs.com/package/agent-reducer) 是一款非常不错的 reducer 模型化工具，它没有过于复杂的结构，且并不直接依赖于 react、 redux 等外部运行环境。为了可以在 react 环境中使用它，我们开发了 `use-agent-reducer` 。这是一个 react hook ，因此，你需要准备一套版本大于 `16.8.0` 的 react 开发环境来使用它。 
 
-`use-agent-reducer` is designed for using `agent-reducer` in react hooks environment。
-
-We can compare a classify reducer with `agent-reducer` model.
-
+通过以下代码中，经典 reducer 和 agent-reducer 的对比，你可以更好的理解 agent-reducer 的设计初衷。
 ```typescript
 import {OriginAgent} from "agent-reducer";
 
@@ -23,7 +20,7 @@ import {OriginAgent} from "agent-reducer";
     }
 
     /**
-     * classify reducer
+     * 经典reducer
      * @param state
      * @param action
      */
@@ -44,15 +41,15 @@ import {OriginAgent} from "agent-reducer";
     }
 
     /**
-     * agent-reducer model
+     * class写法
      */
     class CountAgent implements OriginAgent<number> {
 
         state = 0;
         
-        stepUp(): number { 
+        stepUp(): number {
             return this.state + 1;
-        }
+        } 
 
         stepDown = (): number => this.state - 1;
 
@@ -64,30 +61,27 @@ import {OriginAgent} from "agent-reducer";
 
     }
 ```
+以上代码是一段简单的计数器，我们可以通过调用`CountAgent`实例方法来生成新的 state 数据。这种工作方式与经典 reducer 很像，都是通过返回值来确定下一个 state 数据。但通过方法调用的形式显然更方便。
 
-The code below is designed for a count change model, we can call method from `CountAgent` instance, and make every return to be a next state, this running mode is similar with reducer working mode, but more simple.
-
-
-use `useAgentReducer` to replace `useReducer`.
-
+使用`useAgentReducer`来代替`useReducer`。
 ```tsx
 import React,{memo} from 'react';
 import {OriginAgent} from "agent-reducer";
 import {useAgentReducer} from 'use-agent-reducer';
 
 /**
- * model class
+ * class写法
  */
 class CountAgent implements OriginAgent<number> {
 
     state = 0;
         
-    // increase state by 1
-    stepUp(): number{ 
+    //每次调用都让state+1
+    stepUp(): number {
         return this.state + 1;
-    }
+    } 
 
-    // decrease state by 1
+    //每次调用都让state-1
     stepDown = (): number => this.state - 1;
 
     step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
@@ -99,10 +93,10 @@ class CountAgent implements OriginAgent<number> {
 }
 
 export const Counter = memo(() => {
-    // useAgentReducer returns an `Agent` object,
-    // which is the agent of model CountAgent.
-    // we can get state and other property values from it.
+    // 使用 useAgentReducer 可以把 CountAgent 模型
+    // 转换成一个通过调用方法来修改 state 数据的实例对象
     const {state,stepUp,stepDown} = useAgentReducer(CountAgent);
+
     return (
         <div>
             <button onClick={stepUp}>stepUp</button>
@@ -112,36 +106,38 @@ export const Counter = memo(() => {
     );
 });
 ```
+以上代码是一个简单的例子，通过点击 stepUp 按钮可以让当前 state 自动加 1，点击 stepDown 按钮则减 1。useAgentReducer 方法返回的对象是当前模型的代理对象，通过调用代理对象方法可以修改当前 state 数据，而最新的 state 数据可直接取出使用。
 
-The code below shows how to use API `useAgentReducer` with `OriginAgent` model, there are some concepts and designs about `agent-reducer` you should know first, you can learn these from [agent-reducer](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/index.md), then you will know what can be a model and why after reassign `Agent` method (`stepUp`) into another object, keyword `this` still represent `Agent` when the method is running.
+这里涉及到一些 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 的基本概念，比如OriginAgent模型、Agent代理等，以及Agent代理方法中 this 的安全性等（比如：stepUp方法中的 this，在赋值给 onClick 后依然安全指向 Agent 代理对象）
 
-As `agent-reducer` is designed by taking a next state from an `Agent` method return, we can not take a promise resolve data to be next state, but we can use `MiddleWare` in `agent-reducer` to reproduce a promise object, and take its resolve data as next state.
-
+关于 Promise 等特殊返回数据，可通过 `MiddleWare` 进行 state 再加工。如下：
 ```tsx
 import React,{memo,useEffect} from 'react';
 import {middleWare,MiddleWarePresets, OriginAgent} from "agent-reducer";
-import {useAgent} from 'use-agent-reducer';
+import {useAgentReducer} from 'use-agent-reducer';
 
 /**
- * model
+ * class写法
  */
 class CountAgent implements OriginAgent<number> {
 
     state = 0;
         
-    stepUp = (): number => this.state + 1;
+    stepUp(): number {
+        this.state + 1;
+    }
 
     stepDown = (): number => this.state - 1;
 
     step = (isUp: boolean) => isUp ? this.stepUp() : this.stepDown();
 
-    sum = (...counts: number[]): number => {
+    sum(...counts: number[]): number {
         return this.state + counts.reduce((r, c): number => r + c, 0);
     };
 
-    // return promise will change the state to be a promise object,
-    // use MiddleWarePresets.takePromiseResolve(),
-    // can take the promise resolve value to be next state
+    // return promise，如果不加任何MiddleWare再处理，
+    // 那 state 将会变成一个 promise 对象
+    // 使用 MiddleWare 后，promise resolve 值将变成下一个 state
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async requestAdditions(){
         const args = await Promise.resolve([1,2,3]);
@@ -151,7 +147,8 @@ class CountAgent implements OriginAgent<number> {
 }
 
 export const Counter = memo(() => {
-    const {state,stepUp,stepDown,requestActions}=useAgent(CountAgent);
+
+    const {state,stepUp,stepDown,requestActions} = useAgentReducer(CountAgent);
 
     useEffect(()=>{
         requestActions();
@@ -166,4 +163,6 @@ export const Counter = memo(() => {
     );
 });
 ```
-If you want to know more about `useAgentReducer`, check [document]() here.
+[更多例子](https://github.com/filefoxper/use-agent-reducer/blob/master/test/spec/basic.spec.tsx) 
+
+关于 `MiddleWare` ，可以参考 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 文档中的相关解释。
