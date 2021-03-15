@@ -1,22 +1,28 @@
 # Guides
 
+## what is model sharing
+
+Model sharing is a new feature from `agent-reducer@3.2.0`. It declares every `Agent` bases on a same model object shares state updating with each other. 
+
+That means we can create `Agents` base on a same model object in different react components, and they can update state synchronously. It is similar with the subscribe system in redux.
+
+You can go to our [tutorial](/tutorial?id=use-model-sharing) for a check about how to use this feature.
+
 ## about keyword this
 
 Keyword `this` is instable in class method, when we are calling a method directly from class instance, `this` is equivalent to the instance, but if we reassign this method to another object, `this` will point to the object where you are calling from.
 
-But, if you are using a method from an `Agent` object created by `use-agent-reducer`, you can pay less attention to keyword `this`. For `use-agent-reducer` always bind `this` to `Agent` object, you can assign your method from `Agent` object to any other object, even pick it out, and call it just like calling a simple function, keyword `this` is still equivalent to `Agent` object.
-
-You can check detail from [agent-reducer guide about keyword this](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/guides/about_this.md).
+But, if you are using a method function from `Agent` object, you can pay less attention to keyword `this`, it has been bind to the model instance of `Agent`, when you get the method from `Agent` object. You can assign your method from `Agent` object to any other object, even pick it out, and call it just like calling a simple function, keyword `this` is still represent the model instance. (Before `agent-reducer@3.0.0`, keyword this in `Agent` method always represent itself.) 
 
 ## about MiddleWare override
 
 There are three api functions for you to set MiddleWares.
 
 1. `useAgentReducer`, it is a basic api in `use-agent-reducer`, you can set MiddleWares like: `useAgentReducer( OriginAgent, MiddleWare )`.
-2. `middleWare` is from [agent-reducer](https://www.npmjs.com/package/agent-reducer), it can add MiddleWare directly on an `OriginAgent` method, and when the `Agent` method is called, it can uses this MiddleWare on its origin one. These MiddleWares will override MiddleWares which are added by `useAgentReducer`.
-3. `useMiddleWare`, this api will copy an `Agent` object, and override MiddleWares of `Agent` object on the copy one. It is used like: `useMiddleWare( Agent, MiddleWare )`. The MiddleWare additions from this api has a highest running prior level in this version. So, in the copied `Agent` object, its MiddleWare can override MiddleWares which are added by `useAgentReducer` and `middleWare`.
+2. `middleWare` is from [agent-reducer](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware.md), it can add MiddleWare directly on a model method, and wake them up when the model's `Agent` method is called. These MiddleWares will override MiddleWares which are added by `useAgentReducer`.
+3. `useMiddleWare`, this api will copy an `Agent` object, and override MiddleWares of `Agent` object on the copy one. It is used like: `useMiddleWare( Agent, MiddleWare )`. The MiddleWares added by this api have a highest running prior level in the copied `Agent` object.
 
-You can check unit test in [middleWare.override.spec.ts](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/middleWare.override.spec.tsx).
+You can check unit test in [middleWare.override.spec.ts](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/middleWare.override.spec.tsx). 
 
 ```typescript
 import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
@@ -90,7 +96,7 @@ describe('MiddleWare override', () => {
 
 ## about run env
 
-RunEnv is a running environment config of `Agent` object. You can use it to experience a next version feature, or tell `use-agent-reducer` updating state with other reducer tools, even stop updating state, and so on.
+RunEnv is a running environment config of `Agent` object. You can use it to experience a next version feature, or tell `use-agent-reducer` updating state immediately.
 
 An env object looks like:
 ```typescript
@@ -110,7 +116,63 @@ export interface RunEnv {
   nextExperience?:boolean;
 }
 ```
-You can check out the code about how to set env, [here](https://github.com/filefoxper/agent-reducer/blob/master/test/en/guides/tryEnv.spec.ts).
+You can check out the code about how to set env, [here](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/setEnv.spec.tsx).
+
+```typescript
+import {OriginAgent} from "agent-reducer";
+import {act, renderHook} from "@testing-library/react-hooks";
+import {useAgentReducer} from "use-agent-reducer";
+
+type Role = 'GUEST' | 'USER' | 'MASTER';
+
+type User = {
+    id: number | null,
+    name: string | null,
+    role: Role
+}
+
+describe("set run env",()=>{
+
+    // model for managing user data
+    class UserModel implements OriginAgent<User> {
+
+        // default state
+        state: User = {id: null, name: null, role: 'GUEST'};
+
+        // call method to change state by taking what it returns
+        changeUserName(name: string): User {
+            return {...this.state, name};
+        }
+
+        changeUserRole(role: Role): User {
+            return {...this.state, role};
+        }
+    }
+
+    it("do not set strict false, when we change state twice in a react event callback directly, " +
+        "the first change should be override by the second one",()=>{
+        const {result, rerender} = renderHook(() => useAgentReducer(UserModel));
+        const agent = result.current;
+        act(() => {
+            agent.changeUserRole('MASTER');
+            agent.changeUserName('Jimmy');
+        });
+        expect(agent.state.role).toBe('GUEST');
+    });
+
+    it("set strict false, when we change state twice in a react event callback directly, " +
+        "the first change should not be override by the second one",()=>{
+        const {result, rerender} = renderHook(() => useAgentReducer(UserModel,{strict:false}));
+        const agent = result.current;
+        act(() => {
+            agent.changeUserRole('MASTER');
+            agent.changeUserName('Jimmy');
+        });
+        expect(agent.state.role).toBe('MASTER');
+    });
+
+});
+```
 
 Be careful in `env.strict`, you'd better not set it to be `false`. For it will make the state difference between `Agent` and your reducer tool.
 

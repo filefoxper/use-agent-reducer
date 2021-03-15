@@ -8,28 +8,25 @@ import {fetchTodoList} from "@/service";
 import {PriorLevel, SearchParams} from "@/type";
 import {MiddleWarePresets} from "agent-reducer";
 
-type SearchParamsProps = {
-    // submit current searchParams,
-    // and make it valid for searching.
-    readonly onSubmit: (data: SearchParams) => any
-}
-
-// We can use new feature of 'agent-reducer@3.2.0' to update state synchronously.
-// `Agents` based on a same model object can updating state synchronously.
+// every `Agent` bases on a same model object,
+// shares state updating with each other.
 const searchParamsModel = new SearchParamsModel();
 
 const simpleTodoList = new SimpleTodoList();
 
-const SearchParamComponent = memo((props: SearchParamsProps) => {
+const SearchParamComponent = memo(() => {
 
-    const {state, changeSearchContent, changeSearchPriorLevel} = useAgentReducer(searchParamsModel);
+    const {state, changeSearchContent, changeSearchPriorLevel,feedback} = useAgentReducer(searchParamsModel);
 
-    // `Agents` based on a same model object can updating state synchronously.
-    const {search}=useAgentReducer(simpleTodoList);
+    // `Agent` bases on object simpleTodoList,
+    // If we use class `SimpleTodoList` as a model,
+    // `useAgentReducer` should create a private model object inside,
+    // and then, no state updating can be shared now.
+    // So, model sharing only works on 'Agents' base on a same model object.
+    const {search} = useAgentReducer(simpleTodoList);
 
-    const handleSubmit = useCallback(() => {
-        // submit current searchParams,
-        // and make it valid for searching.
+    const handleSubmit = useCallback(async () => {
+        // submit current searchParams with model object `simpleTodoList`
         search(state);
     }, [state]);
 
@@ -46,8 +43,9 @@ const SearchParamComponent = memo((props: SearchParamsProps) => {
 
 export default function NewFeatures() {
 
-    const searchParamAgent = useAgentReducer(searchParamsModel);
+    const {feedback} = useAgentReducer(searchParamsModel);
 
+    // `Agent` bases on model `simpleTodoList`
     const agent = useAgentReducer(simpleTodoList);
 
     const {
@@ -57,25 +55,14 @@ export default function NewFeatures() {
 
     const {changePage: changePageLatest} = useMiddleWare(agent, MiddleWarePresets.takeLatest());
 
-    // submit
-    const submit = useCallback(async (params: SearchParams) => {
-        // `Agents` based on a same model object can updating state synchronously.
-        searchParamAgent.feedback(params);
-        try {
-            await search(params);
-        } catch (e) {
-            alert(e.toString());
-        }
-    }, []);
-
     useEffect(() => {
         search();
     }, []);
 
     // handle page change
     const handleChangePage = useCallback(async (currentPage: number, pageSize: number = 10) => {
-        // `Agents` based on a same model object can updating state synchronously.
-        searchParamAgent.feedback(state.searchParams);
+        // feedback searchParams with model object `searchParamsModel`.
+        feedback(state.searchParams);
         await changePageLatest(currentPage, pageSize);
     }, [state]);
 
@@ -85,7 +72,7 @@ export default function NewFeatures() {
 
     return (
         <PageContent>
-            <SearchParamComponent onSubmit={submit}/>
+            <SearchParamComponent/>
             <Table dataSource={state.dataSource || []} pagination={false} rowKey="id">
                 <Column title="id" dataIndex="id" width={'20%'}/>
                 <Column title="content" dataIndex="content" width={'60%'}/>

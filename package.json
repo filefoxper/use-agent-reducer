@@ -6,7 +6,8 @@
   "description": "the purpose of this project is make useReducer classify",
   "scripts": {
     "build": "webpack --config ./webpack.config.js --env.mode=production",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "docs": "docsify serve ./docs"
   },
   "repository": {
     "type": "git",

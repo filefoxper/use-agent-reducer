@@ -70,7 +70,7 @@ The code below is designed for a count change model, we can call method from `Co
 
 use `useAgentReducer` to replace `useReducer`.
 
-```tsx
+```typescript
 import React,{memo} from 'react';
 import {OriginAgent} from "agent-reducer";
 import {useAgentReducer} from 'use-agent-reducer';
@@ -117,7 +117,7 @@ The code below shows how to use API `useAgentReducer` with `OriginAgent` model, 
 
 As `agent-reducer` is designed by taking a next state from an `Agent` method return, we can not take a promise resolve data to be next state, but we can use `MiddleWare` in `agent-reducer` to reproduce a promise object, and take its resolve data as next state.
 
-```tsx
+```typescript
 import React,{memo,useEffect} from 'react';
 import {middleWare,MiddleWarePresets, OriginAgent} from "agent-reducer";
 import {useAgent} from 'use-agent-reducer';

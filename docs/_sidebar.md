@@ -1,4 +1,4 @@
-* [use-agent-reducer](/)
+* [Document](/)
 * [Introduction](introduction.md)
 * [Tutorial](/tutorial.md)
 * [Guides](/guides.md)

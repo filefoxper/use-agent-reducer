@@ -1,47 +1,49 @@
 # Introduction
 
+The primary work of this tool is using a `state producible model` to generate a `state changeable agent`. The agent changes state according to what the model produces out. So, [Model](/introduction?id=model) and [Agent](/introduction?id=agent) are very important in this document.
+
 ## motivation
 
-`use-agent-reducer` is designed for using [agent-reducer](https://www.npmjs.com/package/agent-reducer) in react hooks environment。
+The core library [agent-reducer](https://www.npmjs.com/package/agent-reducer) is a powerful independent tool for managing state changes. But it can not work in `react` directly, so we designed this library to connect `agent-reducer` with `react hooks`. 
 
 ## Concept
 
-#### OriginAgent
+There are two concepts we have mentioned above, `Model` and `Agent`. And we will explain the details about these concepts in this section.
 
-`OriginAgent` is an object or a class which has a `state` property for storing the data you want to persist. And you can maintian `methods` in it, for producing a `next state`. So, consider it as a data-flow model.
+#### Model
 
-1. Property `state` stores the data you want to persist, it can be any type. When you want to use it, please ensure it is immutable.
-2. `method` is a function for producing a `next state`.
+`Model` is a class or an object which describes what kind of data you want to maintian and how to produce new one. We can describe the maintainable data with a property name `state`, and prepare some state producing methods in `Model`. In `agent-reducer`, concept `Model` has another name `OriginAgent`, but here, we call it `Model`.
+
+1. Property `state` stores the data you want to maintian, it can be any type. Do not modify `state` manual, it is very important.
+2. `method` is a function for producing a new `state`. You can consider what returns from a `method` as a new state.
    
-for example:
+This is a `Model` example:
 
 ```typescript
 import {OriginAgent} from 'agent-reducer';
 
-// OriginAgent
+// model
 class CountAgent implements OriginAgent<number> {
-    // OriginAgent should has a state for storing what you want persist
+    // with a initial state
     state = 0;
 
-    // you can use arrow function to generate the next state candidate
+    // use arrow function to produce a new state
     stepUp = (): number => this.state + 1;
 
-    // you can use a method function to generate the next state candidate
+    // use a method function to produce a new state
     stepDown(): number {
-      // use this.state to generate next state
+      // use this.state to produce a new state
       return this.state - 1;
     }
 
     step(isUp: boolean): number {
-      // use other functions here to generate a next state candidate,
-      // when the method in 'agent' is called,
-      // only the final result will be dispatched into 'reducer',
-      // the inside methods 'stepUp' ,'stepDown' only provides data.
+      // use other model functions to produce a new state.
       return isUp ? this.stepUp() : this.stepDown();
     }
 
-    // you can write a function with any params as you whish
-    sum = (...counts: number[]): number => {
+    // you can pass any params as you whish,
+    // it is better than reducer action param.
+    sum(...counts: number[]): number{
       return this.state + counts.reduce((r, c): number => r + c, 0);
     };
 }
@@ -49,29 +51,36 @@ class CountAgent implements OriginAgent<number> {
 
 #### Agent
 
-`Agent` is a `Proxy` object for your `OriginAgent` instance. It provides a latest state and some methods for changing state. You can create a `Agent` object by using api `useAgentReducer`.
+`Agent` is a Proxy object, it provides a latest state and methods for changing state. You can create an `Agent` object by using api useAgentReducer. A class model is always transformed into a instance object first by this api, then to be proxied as an `Agent` object. 
+
+The state of `Agent` object always keeps equal with its model state.
 
 ```typescript
 import {OriginAgent} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-class CountAgent implements OriginAgent<number | undefined> {
+class CountAgent implements OriginAgent<number> {
 
-  state = 0;
+    state = 0;
 
-  stepUp = (): number => this.state + 1;
+    stepUp = (): number => this.state + 1;
 
-  stepDown = (): number => this.state - 1;
+    stepDown(): number {
+      return this.state - 1;
+    }
 
-  step = (isUp: boolean) => (isUp ? this.stepUp() : this.stepDown());
+    step(isUp: boolean): number {
+      return isUp ? this.stepUp() : this.stepDown();
+    }
 
-  sum = (...counts: number[]): number => {
+    sum(...counts: number[]): number{
       return this.state + counts.reduce((r, c): number => r + c, 0);
-  };
-
+    };
 }
 
-// get `Agent` object directly
+......
+
+// api useAgentReducer returns `Agent` object directly
 const agent = useAgentReducer(CountAgent);
 ```
 
@@ -81,85 +90,110 @@ The `use-agent-reducer` package lives in [npm](https://www.npmjs.com/get-npm). T
 ```
 npm i use-agent-reducer
 ```
-You'd better add `agent-reducer` to your package.json dependencies. 
+You'd better add `agent-reducer` into your package.json dependencies too. When  you are installing package `use-agent-reducer`, a `agent-reducer` package is always brought into your dependencies, but this can not resolve the problem: when you are developing with `use-agent-reducer`, you can not find `agent-reducer` helper easily. 
 
 ## Getting started
 
-#### OriginAgent
+This section describes how to create a model, and how to call `agent-reducer` for help. After reading this section, you can master the basic usage of `use-agent-reducer`. 
 
-`OriginAgent` is a basic model for generating an proxy instance (`Agent`). It can be an object or a class.
+#### create model
 
-object model:
+`Model` can be a ES6 class, or an object with state property. Follow code below, you can learn how to create a model.
+
+with object pattern:
 
 ```typescript
+import React from 'react';
 import {OriginAgent} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-interface State{
-    name?:string,
+interface Model extends OriginAgent<number>{
+    state: number
 }
 
-interface Model extends OriginAgent<State>{
-    state:State
-}
+const model: Model={
 
-const model:Model={
+    state: 0, // initial state
 
-    state:{}, // the data you want to persist
-
-    // the method to generate a next state
-    setName( primaryName:string, secondaryName:string ):State {
-        const name = `${primaryName}.${secondaryName}`;
-        return { ...this.state, name };
+    // method for producing a new state
+    increase():number {
+        return this.state + 1;
     }
 
 }
 
-const agent = useAgentReducer(model);
-const {state,setName} = agent;
+const MyComponent = () =>{
+    // api useAgentReducer is a react hook
+    const agent = useAgentReducer(model);
+    // you can reassign agent method into another object,
+    // keyword `this` in method always represent the model.
+    const {state,increase} = agent;
+
+    return (
+        <div>
+            <span>count: {state}</span>
+            <button onClick={increase}>setName</button>
+        </div>
+    );
+
+};
+
 ```
 
-class model:
+with class pattern:
 
 ```typescript
+import React from 'react';
 import {OriginAgent} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-interface State{
-    name?:string,
-}
+class Model implements OriginAgent<number>{
 
-class Model implements OriginAgent<State>{
-
-    state:State; // the data you want to persist
+    state: number;
 
     constructor(){
-        this.state = {};
+        // initial state
+        this.state = 0;
     }
 
-    // the method to generate a next state
-    setName( primaryName:string, secondaryName:string ):State {
-        const name = `${primaryName}.${secondaryName}`;
-        return { ...this.state, name };
+    // method for producing a new state
+    increase():number {
+        return this.state + 1;
     }
 
 }
 
-const agent = useAgentReducer(new Model());
-const {state,setName} = agent;
+const MyComponent = () =>{
+    // api useAgentReducer is a react hook
+    const agent = useAgentReducer(model);
+    // you can reassign agent method into another object,
+    // keyword `this` in method always represent the model.
+    const {state,increase} = agent;
+
+    return (
+        <div>
+            <span>count: {state}</span>
+            <button onClick={increase}>setName</button>
+        </div>
+    );
+
+};
 ```
-We recommend using class model.
 
-#### MiddleWare
+We recommend to create a model with class pattern. In ES6 class, we can use  `decorators` to simplify the usage of `agent-reducer` helpers.
 
-MiddleWare system makes `agent` more flexible. You can use MiddleWare to reproduce the `next state` when it is returned by a agent method, or control `agent` lifecycle (disable an `agent` changing state action).
+#### calling help from agent-reducer
 
-promise MiddleWare:
+The core library `agent-reducer` also can be used in our code. It provides some useful api like `middleWare` and `MiddleWarePresets`.
+
+MiddleWare system makes `Agent` methods more flexible. You can use MiddleWare to reproduce a new state which is returned from a method, or control the method calling feature ( like adding method debounce, and so on ).
+
+The code below shows how to use MiddleWare, and we use `MiddleWarePresets.takePromiseResolve` for example.
 
 ``` typescript
 import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
-import {useAgentReducer} from "use-agent-reducer";
+import {useAgentReducer, useMiddleWare} from "use-agent-reducer";
 
 type Role = 'GUEST' | 'USER' | 'MASTER';
 
@@ -169,21 +203,28 @@ type User = {
     role: Role
 }
 
-describe('take a promise resolve data as part of state', () => {
+describe('use MiddleWare with APIs', () => {
 
     // model for managing user data
     class UserModel implements OriginAgent<User> {
 
-        // default state
-        state: User = {id: null, name: null, role: 'GUEST'};
+        state: User;
+
+        constructor() {
+            // initial default state
+            this.state = {id: null, name: null, role: 'GUEST'};
+            // use API `middleWare` from `agent-reducer` to
+            // add MiddleWare directly to a method in constructor
+            middleWare(this.changeUserRole, MiddleWarePresets.takeAssignable());
+        }
 
         // call method to change state by taking what it returns
         changeUserName(name: string): User {
             return {...this.state, name};
         }
 
-        changeUserRole(role: Role): User {
-            return {...this.state, role};
+        changeUserRole(role: Role): Partial<User> {
+            return {role};
         }
 
         // if we do nothing about the return promise,
@@ -200,12 +241,15 @@ describe('take a promise resolve data as part of state', () => {
         await act(async () => {
             await agent.fetchUser();
         });
-        const state:User&{then?:()=>any}=agent.state;
+        const state: User & { then?: () => any } = agent.state;
         expect(typeof state.then).toBe('function');
     });
 
     it('use MiddleWare with `useAgentReducer` to take promise resolve value as next state', async () => {
-        const {result} = renderHook(() => useAgentReducer(UserModel,MiddleWarePresets.takePromiseResolve()));
+        // we can add MiddleWare as a param for useAgentReducer
+        // `MiddleWarePresets.takePromiseResolve` can take the resolve data from promise,
+        // and put it as a new state.
+        const {result} = renderHook(() => useAgentReducer(UserModel, MiddleWarePresets.takePromiseResolve()));
         const agent = result.current;
         await act(async () => {
             await agent.fetchUser();
@@ -213,9 +257,36 @@ describe('take a promise resolve data as part of state', () => {
         expect(agent.state).toEqual({id: 1, name: 'Jimmy', role: 'USER'});
     });
 
+    it('use API `middleWare` from `agent-reducer` to add MiddleWare directly to a method in constructor', () => {
+        const {result} = renderHook(() => useAgentReducer(UserModel, MiddleWarePresets.takePromiseResolve()));
+        const agent = result.current;
+        act(() => {
+            agent.changeUserRole('MASTER');
+        });
+        expect(agent.state).toEqual({id: null, name: null, role: 'MASTER'});
+    });
+
+    it('use API `useMiddleWare` to take promise resolve value as next state', async () => {
+
+        const {result} = renderHook(() => useAgentReducer(UserModel, MiddleWarePresets.takePromiseResolve()));
+        // we can add MiddleWare as a param for useAgentReducer
+        // `MiddleWarePresets.takePromiseResolve` can take the resolve data from promise,
+        // and put it as a new state.
+        const {result: resultCopy} = renderHook(() => useMiddleWare(result.current, MiddleWarePresets.takePromiseResolve()))
+        const agent = result.current;
+        const agentCopy = resultCopy.current;
+        await act(async () => {
+            await agentCopy.fetchUser();
+        });
+        expect(agent.state).toEqual({id: 1, name: 'Jimmy', role: 'USER'});
+    });
+
 });
 ```
-If you are using `Babel decorator plugin`, you can use `MiddleWarePresets.takePromiseResolve()` more simple.
+
+The code above shows 3 ways to use MiddleWares to `Agent` method.
+
+If you are using `Babel decorator plugin`, you can use MiddleWares more simple.
 
 ``` typescript
 import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
@@ -243,20 +314,37 @@ describe('use decorator MiddleWare', () => {
             return {...this.state, name};
         }
 
-        changeUserRole(role: Role): User {
-            return {...this.state, role};
+        // if we do nothing about the return data,
+        // the new state will become a partial state.
+        // we can add 'MiddleWarePresets.takeAssignable()'
+        // by using api `middleWare` decorator,
+        // this MiddleWare can merge your return data with current state.
+        @middleWare(MiddleWarePresets.takeAssignable())
+        changeUserRole(role: Role): Partial<User> {
+            return {role};
         }
 
         // if we do nothing about the return promise,
         // next state will be a promise object.
-        // we can add MiddleWare by using api `middleWare` decorator
+        // we can add 'MiddleWarePresets.takePromiseResolve()'
+        // by using api `middleWare` decorator,
+        // this MiddleWare can take a resolve data from promise as a new state.
         @middleWare(MiddleWarePresets.takePromiseResolve())
         async fetchUser(): Promise<User> {
             return {id: 1, name: 'Jimmy', role: 'USER'};
         }
     }
 
-    it('use decorator api middleWare from `agent-reducer`', async () => {
+    it('use decorator api middleWare from `agent-reducer` to add MiddleWarePresets.takeAssignable()', () => {
+        const {result} = renderHook(() => useAgentReducer(UserModel));
+        const agent = result.current;
+        act( () => {
+            agent.changeUserRole('MASTER');
+        });
+        expect(agent.state).toEqual({id: null, name: null, role: 'MASTER'});
+    });
+
+    it('use decorator api middleWare from `agent-reducer` to add MiddleWarePresets.takePromise()', async () => {
         const {result} = renderHook(() => useAgentReducer(UserModel));
         const agent = result.current;
         await act(async () => {
@@ -268,4 +356,4 @@ describe('use decorator MiddleWare', () => {
 });
 ```
 
-You can check [simple unit test here](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/basic.spec.tsx), and learn more MiddleWare in [agent-reducer guides about middleWare](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/guides/about_middle_ware.md).
+You can check [simple unit test here](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/basic.spec.tsx), and learn more about MiddleWare in [agent-reducer guides about middleWare](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/guides/about_middle_ware.md). You can check a MiddleWare list from `agent-reducer` api [MiddleWares](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_wares.md) and [MiddleWarePresets](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware_presets.md).

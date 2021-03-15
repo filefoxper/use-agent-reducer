@@ -77,7 +77,7 @@ function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActions<T, S
 
 This is a React `Context.Provider` component, it is used to help passing an `Agent` object to a child component deep site in its children tree. 
 
-`agent-reducer@3.2.0` has add a new feature for updating state synchronously by using, it allows you not use `react Context`, so this api is not recommend now. You can see how to use it [here](/tutorial?id=new-features).
+`agent-reducer@3.2.0` has add a new feature for updating state synchronously by using a same model, and this feature is not dependent on `react Context`, so this api is not recommend now. You can see how to use it [here](/tutorial?id=new-features).
 
 ```typescript
 interface Props{
@@ -94,7 +94,7 @@ interface Props{
 
 This is a react hook function, it picks `Agent` from a nearest [AgentProvider](/api?id=agentprovider) parent component, and update by `Agent` state change.
 
-`agent-reducer@3.2.0` has add a new feature for updating state synchronously by using, it allows you not use `react Context`, so this api is not recommend now. You can see how to use it [here](/tutorial?id=new-features).
+`agent-reducer@3.2.0` has add a new feature for updating state synchronously by using a same model, and this feature is not dependent on `react Context`, so this api is not recommend now. You can see how to use it [here](/tutorial?id=new-features).
 
 ```typescript
 function useAgentContext<T extends OriginAgent>(): T
