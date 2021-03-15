@@ -6,6 +6,13 @@
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
 
-# use-agent-reducer <!-- {docsify-ignore-all} -->
+# use-agent-reducer
 
-[agent-reducer](https://www.npmjs.com/package/agent-reducer) is a very powerful tool, it converts a model object (`OriginAgent`) to be an [Agent](/?id=agent) object. It is designed on the reducer running base. Every thing returned from an [Agent](/?id=agent) method will be a next state.
+This is a powerful `react hook` library for managing component state changes. It is designed for replacing reducer tools in `react hook` ecosystem. You can manage the major component state change logistic with it by a class or object model pattern.
+
+The core dependency of this library is [agent-reducer](https://www.npmjs.com/package/agent-reducer), you can read its [document](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/index.md) for a preview about what `use-agent-reducer` can do. But, we suggest you follow our [document](/introduction) and learn how to use it first.
+
+* [Introduction](introduction.md)
+* [Tutorial](/tutorial.md)
+* [Guides](/guides.md)
+* [API Reference](/api.md)

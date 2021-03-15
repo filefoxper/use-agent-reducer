@@ -1,69 +1,69 @@
-# Tutorial
+# 教程
 
-## Intro
+## 说明
 
-In this tutorial, we will build a searching page model, and show how this model works in react.
+本教程将通过构建一个简单查询页面来模拟如何使用 `use-agent-reducer` 来解决开发中所遇到的问题。
 
-You can [download](https://github.com/filefoxper/use-agent-reducer/tree/master/example) our example, and run it as a local website app.
+你可以[下载](https://github.com/filefoxper/use-agent-reducer/tree/master/example)我们的例子在本地进行相关试验。
 
-* [Search page model](/tutorial?id=search-page-model)
-* [Use MiddleWare](/tutorial?id=use-middleware)
-* [Split model](/tutorial?id=split-model)
-* [Use take latest MiddleWare](/tutorial?id=use-take-latest-middleware)
-* [Use model sharing](/tutorial?id=use-model-sharing)
+* [构建简单查询页面](/zh/tutorial?id=构建简单查询页面)
+* [使用 MiddleWare](/zh/tutorial?id=使用-middleWare)
+* [拆分模型](/zh/tutorial?id=拆分模型)
+* [使用 take latest MiddleWare](/zh/tutorial?id=使用-take-latest-middleware)
+* [使用模型共享](/zh/tutorial?id=使用模型共享)
 
-## Search page model
+## 构建简单查询页面
 
-We are going to build a todo list searching page model. Before start, let us list the model state:
+我们将创建一个 todo list 查询页面。但在开始前，我们应该先列出 todo list 查询页所需要的数据模型，作为页面模型 Model 的 state 。
 
-1. search params
-2. data source for a table
-3. page infos
+1. 查询条件
+2. 列表数据
+3. 分页信息
 
-So, the model state should look like:
+数据模型设计如下:
 
 ```typescript
-// prior : normal, emergency
+// TODO优先级
 export enum PriorLevel {
-    NORMAL,
-    EMERGENCY
+    NORMAL,     // 普通
+    EMERGENCY   // 紧急
 }
 
-// data source model
+// 列表单行数据模型
 export interface Todo {
-    // what todo
+    // TODO内容
     readonly content:string,
     readonly createTime:string,
-    // prior
+    // 优先级
     readonly priorLevel:PriorLevel
 }
 
-// search params
+// 查询条件
 export interface SearchParams {
-    // for matching property 'content' 
+    // 用于匹配单条内容 'content' 
     readonly content?:string,
-    // for matching property 'priorLevel' 
+    // 用于匹配单条优先级 'priorLevel' 
     readonly priorLevel?:PriorLevel
 }
 
-// state should looks like
+// 页面数据模型
 export interface State {
-    // search params
+    // 查询条件
     readonly searchParams: SearchParams,
-    // data source
+    // 列表数据
     readonly dataSource:Array<Todo>|null,
-    // page infos
-    readonly currentPage:number,
-    readonly pageSize:number,
-    readonly total:number,
+    // 分页信息
+    readonly currentPage:number, // 当前页码
+    readonly pageSize:number,    // 每页条数
+    readonly total:number,       // 总数据量
 }
 ```
 
-Now, we can build a `SimpleTodoList` model, see code below. It can change search params, data source, page infos. When the request of todo list responds, we can use method `changeDataSource` to change `state.dataSource`, and we also need method `changePageInfo` to change the page infos in state.
+现在我们可以开始创建我们的查询页模型 `SimpleTodoList` 了。这个页面模型需要拥有修改查询条件、列表数据、分页信息的功能。当列表数据请求返回数据时，我们可以通过调用方法 `changeDataSource` 来修改 `state.dataSource` 数据，通过调用 `changePageInfo` 来修改 state 中的分页信息。
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/simpleSearch)
+[源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/simpleSearch)
 
-model:
+模型：
 
 ```typescript
 import {OriginAgent} from "agent-reducer";
@@ -78,30 +78,30 @@ const defaultState: State = {
 };
 
 /**
- * this is a simple todo list model
+ * 这是一个简单 TodoList 页面模型
  */
 export default class SimpleTodoList implements OriginAgent<State> {
-    // set default state
+    // 设置 state 初始值
     state = defaultState;
 
-    // method for changing param 'searchParams.content'
+    // 修改查询条件中用于内容匹配的数据
     changeSearchContent(content?: string): State {
         const {searchParams} = this.state;
         return {...this.state, searchParams: {...searchParams, content}};
     };
 
-    // method for changing param 'searchParams.priorLevel'
+    // 修改查询条件中用于优先级匹配的数据
     changeSearchPriorLevel(priorLevel?: PriorLevel): State {
         const {searchParams} = this.state;
         return {...this.state, searchParams: {...searchParams, priorLevel}};
     }
 
-    // method for changing page infos
+    // 修改分页信息
     changePageInfo(currentPage: number, pageSize: number, total: number): State {
         return {...this.state, currentPage, pageSize, total};
     }
 
-    // method for changing data source
+    // 修改列表数据
     changeDataSource(dataSource: Array<Todo>): State {
         return {...this.state, dataSource};
     }
@@ -109,7 +109,7 @@ export default class SimpleTodoList implements OriginAgent<State> {
 }
 ```
 
-page:
+页面:
 
 ```typescript
 import React, {useCallback, useEffect, useState} from 'react';
@@ -131,19 +131,18 @@ export default function SimpleSearch() {
         changePageInfo
     } = useAgentReducer(SimpleTodoList);
 
-    // TODO problem 1: searchParams is part of model state,
-    // when Pagination call it, state submit will be ignore,
-    // every change about search params will participate in the page change searching.
+    // 查询方法
+    // TODO 问题 1: 在改变当前页码的时候，查询条件的实时修改数据会参与查询
     const search = useCallback(async (currentPage: number = 1, pageSize: number = 10) => {
         const {searchParams} = state;
-        // TODO problem 2: fetchTodoList should be a part of model
+        // TODO 问题 2: fetchTodoList 应该在模型方法中调用，是模型的一部分
         const {content, total} = await fetchTodoList({...searchParams, currentPage, pageSize});
-        // TODO problem 3: change state twice is not good,
-        // if we change state twice in a pure react event callback,
-        // state may be override by the last change time.
-        // Besides, it is not good for data change consistency.
-        changeDataSource(content); // every change will cause a render...
-        changePageInfo(currentPage, pageSize, total); // every change will cause a render...
+        // TODO 问题 3: 在一个事件中多次修改 state 并不好，
+        // 如果在 react 原派生事件中，多次修改将产生合并现象，导致覆盖效应。
+        // 另外即便在非 react 原派生事件中，多次修改也不利于保持数据的一致性，
+        // 这与 agent-reducer 以及 reducer 的设计初衷不符。
+        changeDataSource(content); // 每次修改导致组件 render...
+        changePageInfo(currentPage, pageSize, total); // 每次修改导致组件 render...
     }, [state]);
 
     useEffect(() => {
@@ -154,8 +153,7 @@ export default function SimpleSearch() {
         return value === PriorLevel.NORMAL ? 'normal' : 'emergency';
     }, []);
 
-    // there are two state change happens in search callback,
-    // so, the console.log print twice after we call the search function
+    // 每次查询修改两次数据，造成两次渲染。
     console.log('render...');
     return (
         <PageContent>
@@ -178,23 +176,24 @@ export default function SimpleSearch() {
 }
 ```
 
-It can work, but still has problems:
+目前这个页面已经可以工作起来了，但依然有些问题：
 
-1. The request function is called out of a model, it makes model reusing difficult. 
-2. change state twice is not good. If we change state twice in a pure react event callback, state may be override by the last change time. Besides, it is not good for data change consistency.
-3. The search params is a part of model, it makes state path too deep, when we want to change search params, we need to process state merge twice. And another problem is it skip the submit action which is very popular in a classify searching page design. 
+1. 请求方法在模型外部调用不利于模型的完整性，同时导致模型复用性差。
+2. 多次连续修改 state 并不理想，不利于保持数据的一致性，同时导致组件性能变差。
+3. 查询条件路径过深，因此设置需时要两次 assign 操作，而且每次修改查询条件即刻生效，不利于用户理解翻页查询功能。
 
-We will recode this model to resolve these problems.
+让我们重构以上代码，解决这些问题。
 
-## Use MiddleWare
+## 使用 MiddleWare
 
-Now, let us resolve problem 1 and 2 first. We can use `MiddleWarePresets.takePromiseResolve` to make request function be called inside model.
+首先让我们来解决问题 1 和 问题 2。`MiddleWarePresets.takePromiseResolve` 可以将一个异步方法返回 promise 的 resolve 值转换成新的 state ，我们可以利用它来把请求方法集成到模型方法中。
 
-Check MiddleWare list from `agent-reducer` api [MiddleWares](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_wares.md) and [MiddleWarePresets](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware_presets.md).
+查看[MiddleWare 资源列表](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/api/middle_ware_presets.md)
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/useMiddleWare)
 
-model:
+[源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/useMiddleWare)
+
+模型:
 
 ```typescript
 import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
@@ -209,42 +208,37 @@ const defaultState: State = {
     total: 0
 };
 
-/**
- * this is a simple todo list model
- */
 export default class SimpleTodoList implements OriginAgent<State> {
-    // set default state
+
     state = defaultState;
 
-    // method for changing param 'searchParams.content'
     changeSearchContent(content?: string): State {
         const {searchParams} = this.state;
         return {...this.state, searchParams: {...searchParams, content}};
     };
 
-    // method for changing param 'searchParams.priorLevel'
     changeSearchPriorLevel(priorLevel?: PriorLevel): State {
         const {searchParams} = this.state;
         return {...this.state, searchParams: {...searchParams, priorLevel}};
     }
 
-    // method for changing dataSource and page infos once
-    // we can use 'MiddleWarePresets.takePromiseResolve' to reproduce a promise resolve data be next state,
-    // so we can keep request function calling inside model
+    // 我们把修改列表数据和修改分页信息的方法合成到一个异步方法中，
+    // 并通过'MiddleWarePresets.takePromiseResolve' 对 promise 的再加工特性
+    // 将 promise 的 resolve 值变成最新的 state
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async fetchDataSource(currentPage: number, pageSize: number) {
         const {searchParams} = this.state;
-        // change searchParams to fetch params
+        // 把查询条件转换成请求参数
         const fetchParams: FetchParams = {...searchParams, currentPage, pageSize};
         const {content, total} = await fetchTodoList(fetchParams);
-        // change page infos, dataSource and searchParams once
+        // 同时改变分页信息和列表数据
         return {...this.state, dataSource: content, total, currentPage, pageSize};
     }
 
 }
 ```
 
-page:
+页面:
 
 ```typescript
 import React, {useCallback, useEffect, useState} from 'react';
@@ -265,9 +259,9 @@ export default function UseMiddleWare() {
         fetchDataSource,
     } = useAgentReducer(SimpleTodoList);
 
-    // use MiddleWarePresets.takePromiseResolve,
-    // we put fetching request inside the model,and make state change once,
-    // it is good for keeping data consistency
+    // 通过使用 MiddleWarePresets.takePromiseResolve,
+    // 我们让分页信息和列表数据同时被修改，并将请求放入了模型方法内，
+    // 这对保证数据的一致性和模型的完整性是非常有利的
     const search = useCallback(async (currentPage: number = 1, pageSize: number = 10) => {
         try {
             await fetchDataSource(currentPage, pageSize);
@@ -284,8 +278,7 @@ export default function UseMiddleWare() {
         return value === PriorLevel.NORMAL ? 'normal' : 'emergency';
     }, []);
 
-    // there are one state change happens in search callback,
-    // so, the console.log print once after we call the search function
+    // 每次查询值有一次数据改变，所以只会引起一次 render.
     console.log('render...');
     return (
         <PageContent>
@@ -308,39 +301,40 @@ export default function UseMiddleWare() {
 }
 ```
 
-In the code above, we used `MiddleWarePresets.takePromiseResolve()` for taking a promise resolve data as a new state of `Agent`. 
+上述代码中，我们使用了 `MiddleWarePresets.takePromiseResolve()` 将方法返回的 promise 对象的 resolve 值转换成了新的 state 数据。
 
-It is better than the basic example, let us resolve another problem。
+现在我们的页面已经比之前有了很大的进步，接下我们可以通过拆分模型的方式来解决另一个问题。
 
-## Split model
+## 拆分模型
 
-Before click the submit button, search params for sending request should not be changed. So we need to split model `SimpleTodoList` into two parts, one for keeping search params from a newest submit action, and another for managing search params real time changes. 
+在点击 search 按钮之前发起查询之前，当前显示查询条件不应参与分页查询，否则会对用户造成困扰。根据这条设计准则，我们需要把原页面模型拆分成连个模型。一个用于基本页面，它使用最后一次有效提交的条件进行查询；另一个用于实时修改查询条件数据，作为查询条件的显式处理模型。
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/splitModel)
+[查看源码](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/splitModel)
 
-model:
+模型:
 
 ```typescript
 import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList} from "@/service";
 
-// split search params change out
+// 拆分出的查询条件显式模型
 export class SearchParamsModel implements OriginAgent<SearchParams> {
 
     state: SearchParams = {};
 
-    // method for changing param 'content'
+    // 修改查询条件 'content'
     changeSearchContent(content?: string): SearchParams {
         return {...this.state, content};
     };
 
-    // method for changing param priorLevel
+    // 修改查询条件 priorLevel
     changeSearchPriorLevel(priorLevel?: PriorLevel): SearchParams {
         return {...this.state, priorLevel};
     }
 
-    // method for accept search params from 'SimpleTodoList' model
+    // 接收来自 'SimpleTodoList' 模型的生效查询条件，回滚显示条件为生效条件，
+    // 这可以让页面中显示的查询条件和列表数据保持正确性。
     feedback(searchParams: SearchParams): SearchParams {
         return searchParams;
     }
@@ -355,36 +349,34 @@ const defaultState: State = {
     total: 0
 };
 
-/**
- * this is a simple todo list model
- */
 export default class SimpleTodoList implements OriginAgent<State> {
-    // set default state
+
     state = defaultState;
 
-    // the method fetchDataSource is a common method
-    // middleWare only works with method which is called from 'Agent',
-    // so, you should add middleWare directly on those methods,
-    // which will be called directly from 'Agent'.
+    // 我们将原来的共用查询方法拆分成两个调用当前方法的接口，
+    // 这有利于保证事件处理接口的明确性，同时兼顾代码共享。
+    // 因此这个非直接调用的方法被设定为 private 私有方法。
+    // 注意： MiddleWare 只对 Agent 外部直接调用方法生效，
+    // 因此，我们没必要继续在当前方法上添加 MiddleWare 了。
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
-        // change searchParams to fetch params
         const fetchParams = {...searchParams, currentPage, pageSize};
         const {content: dataSource, total} = await fetchTodoList(fetchParams);
-        // change page infos, dataSource and searchParams once.
-        // copy searchParams can make state.searchParams change,
-        // and the 'SearchParamComponent' can listen it for a feedback.
+        // 复制查询条件可以让生效查询条件必然发生改变，
+        // 而查询条件显示组件 'SearchParamComponent' ，
+        // 可以通过监听生效查询条件的变化来回滚显示条件。
         return {searchParams:{...searchParams}, dataSource, currentPage, pageSize, total};
     }
 
-    // split method fetchDataSource as a common method for changePageInfo and submit.
-    // this method should works with a page navigation
+    // 在直接使用方法上使用 MiddleWare
+    // 分页查询接口
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async changePage(currentPage: number, pageSize: number=10): Promise<State> {
         const {searchParams} = this.state;
         return this.fetchDataSource(searchParams, currentPage, pageSize);
     }
 
-    // this method should works with a search button
+    // 在直接使用方法上使用 MiddleWare
+    // 点击查询接口
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async search(searchParams?: SearchParams): Promise<State> {
         const param = searchParams || this.state.searchParams;
@@ -394,7 +386,7 @@ export default class SimpleTodoList implements OriginAgent<State> {
 }
 ```
 
-page:
+页面:
 
 ```typescript
 import React, {memo, useCallback, useEffect, useState} from 'react';
@@ -407,29 +399,25 @@ import {fetchTodoList} from "@/service";
 import {PriorLevel, SearchParams} from "@/type";
 
 type SearchParamsProps = {
-    // valid searchParams for searching from SimpleTodoList
+    // 来自 SimpleTodoList 模型的生效查询条件
     readonly searchParams: SearchParams,
-    // submit current searchParams,
-    // and make it valid for searching.
+    // 提交当前查询条件接口
     readonly onSubmit: (data: SearchParams) => any
 }
 
-// we have split model SearchParamsModel out,
-// so we can split the components about it out too.
+// 我们已经拆分了模型，那么同样我们也可以根据模型来拆分组件，
+// 当前组件为查询条件显示修改组件。
 const SearchParamComponent = memo((props: SearchParamsProps) => {
 
     const {state, changeSearchContent, changeSearchPriorLevel, feedback} = useAgentReducer(SearchParamsModel);
 
     useEffect(() => {
-        // after the dataSource updates by fetching request,
-        // the valid searchParams in TodoList state,
-        // should feedback, and clear the dirty changes.
+        // 每次生效查询条件改变后，都会替换显示条件。
         feedback(props.searchParams);
     }, [props.searchParams]);
 
     const handleSubmit = useCallback(() => {
-        // submit current searchParams,
-        // and make it valid for searching.
+        // 提交当前显示条件，用于查询生效。
         props.onSubmit(state);
     }, [state]);
 
@@ -452,9 +440,6 @@ export default function SplitModel() {
         changePage
     } = useAgentReducer(SimpleTodoList);
 
-    // use MiddleWarePresets.takePromiseResolve,
-    // we put fetching request inside the model,and make state change once,
-    // it is good for keeping data consistency
     const submit = useCallback(async (searchParams: SearchParams) => {
         try {
             await search(searchParams);
@@ -491,19 +476,18 @@ export default function SplitModel() {
 }
 ```
 
-Now, this searching page can work well, let us add more things to make the models much better.
+我们的查询页面目前已经能很好得工作起来了，当依然有优化空间。
 
-## Use take latest MiddleWare
+## 使用 take latest MiddleWare
 
-Sometimes, http request may be delayed, this may cause the newest dataSource be override by an early request response. We can use `MiddleWarePresets.takeLatest` to resolve this problem.
+数据请求伴随着许多不确定性，比如网络延时等特殊情况，这导致请求响应并非一定按请求发送前后顺序返回。那可能会导致最新数据被早期触发请求响应覆盖的问题。这时，我们需要使用 `MiddleWarePresets.takeLatest` 来保证返回数据的正确性。
 
-Check MiddleWare list from `agent-reducer` api [MiddleWares](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_wares.md) and [MiddleWarePresets](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware_presets.md).
+[查看 MiddleWare 资源列表](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/api/middle_ware_presets.md)
+
+[源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/takeLatest)
 
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/takeLatest)
-
-
-model:
+模型:
 
 ```typescript
 import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
@@ -536,30 +520,24 @@ const defaultState: State = {
     total: 0
 };
 
-/**
- * this is a simple todo list model
- */
 export default class SimpleTodoList implements OriginAgent<State> {
-    // set default state
+
     state = defaultState;
     
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
         const fetchParams = {...searchParams, currentPage, pageSize};
-        // make a 3000 ms delay when currentPage is 2,
-        // so if you change page again during 3000 ms immediately,
-        // dataSource of page 3 may be override by dataSource of page 2
+        // 当请求页码为第 2 页时，我们制造一个 3000 毫秒 的人为延时，
+        // 在这段时间内，继续翻页，最新页的数据可能会被后响应的第 2 页数据覆盖。
         const {content: dataSource, total} = await fetchTodoListWithDelay(fetchParams, currentPage === 2 ? 3000 : 0);
         return {searchParams: {...searchParams}, dataSource, currentPage, pageSize, total};
     }
 
-    // this method should works with a page navigation
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async changePage(currentPage: number, pageSize: number = 10): Promise<State> {
         const {searchParams} = this.state;
         return this.fetchDataSource(searchParams, currentPage, pageSize);
     }
 
-    // this method should works with a search button
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async search(searchParams?: SearchParams): Promise<State> {
         const param = searchParams || this.state.searchParams;
@@ -569,7 +547,7 @@ export default class SimpleTodoList implements OriginAgent<State> {
 }
 ```
 
-page:
+页面:
 
 ```typescript
 import React, {memo, useCallback, useEffect, useState} from 'react';
@@ -617,19 +595,14 @@ export default function TakeLatest() {
     const {
         state,
         search,
-        // when currentPage is 2, we make a delay 3000 ms,
-        // so if you quickly change page to 3 during 3000 ms,
-        // the newest dataSource of page 3 should be covered by dataSource of page 2
+        // 直接调用翻页，可能出现最新数据被早期触发页面覆盖的现象
         changePage
     } = agent;
 
-    // MiddleWarePresets.takeLatest() has chained with a MiddleWares.takePromiseResolve()
-    // useMiddleWare create a copy version from 'agent',
-    // and its MiddleWare will cover MiddleWare from decorators in 'OriginAgent'.
-    // when currentPage is 2, we make a delay 3000 ms,
-    // so if you quickly change page to 3 during 3000 ms,
-    // the newest dataSource of page 3 should be covered by dataSource of page 2,
-    // but MiddleWarePresets.takeLatest can keep the newest dataSource of page 3.
+    // 通过使用 useMiddleWare 可在一个`Agent`复制版上添加 MiddleWarePresets.takeLatest()，
+    // 这个 MiddleWare 集成了 MiddleWares.takePromiseResolve()，
+    // 并可以保证最后一次触发产生的修改，不被早期触发产生的延迟修改覆盖掉。
+    // 所以在使用当前 MiddleWare 后，第 2 页的延迟响应将不再能影响当前 state 数据。
     const {changePage:changePageLatest} = useMiddleWare(agent,MiddleWarePresets.takeLatest());
 
     // submit for searching
@@ -669,17 +642,17 @@ export default function TakeLatest() {
 }
 ```
 
-## Use model sharing 
+## 使用模型共享 
 
-Model sharing is a new feature from `agent-reducer@3.2.0`. It declares every `Agent` bases on a same model object shares state updating with each other. 
+模型共享特性是 `agent-reducer@3.2.0` 新加入的特性。该特性声明为所有建立在同一`对象模型`上的 `Agent` 代理共享 state 数据更新。
 
-That means we can create `Agents` base on a same model object in different react components, and they can update state synchronously. It is similar with the subscribe system in redux.
+也就是说，不同组件中的`Agent`只要使用了同一个`对象化的模型`，那么它们的数据更改与相关的组件渲染就是同步的。这与 redux 的 subscribe 行为非常类似。
 
-With this feature we can rebuild `SearchParamComponent` without props for model communication. 
+通过利用这条特性，我们可以让组件更干净，更简单。我们将通过模型共享原则去除 `SearchParamComponent` 中用于数据传递的 props 属性。
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/newFeatures)
+[源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/newFeatures)
 
-model:
+模型:
 
 ```typescript
 import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
@@ -689,20 +662,17 @@ import {fetchTodoList, fetchTodoListWithDelay} from "@/service";
 const defaultSearchParams={};
 
 export class SearchParamsModel implements OriginAgent<SearchParams> {
-    // set default state
+
     state: SearchParams = defaultSearchParams;
 
-    // method for changing param 'content'
     changeSearchContent(content?: string): SearchParams {
         return {...this.state, content};
     };
 
-    // method for changing param priorLevel
     changeSearchPriorLevel(priorLevel?: PriorLevel): SearchParams {
         return {...this.state, priorLevel};
     }
 
-    // method for accept search params from 'TodoList' model
     feedback(searchParams: SearchParams): SearchParams {
         return searchParams;
     }
@@ -717,29 +687,24 @@ const defaultState: State = {
     total: 0
 };
 
-/**
- * this is a simple todo list model
- */
 export default class SimpleTodoList implements OriginAgent<State> {
-    // set default state
+
     state = defaultState;
 
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
         const fetchParams = {...searchParams, currentPage, pageSize};
         const {content: dataSource, total} = await fetchTodoList(fetchParams);
-        // we do not copy searchParams here,
-        // we can use new feature of 'agent-reducer@3.2.0' to update state synchronously in component.
+        // 我们不再使用监听生效查询条件改变的方式来回滚显示查询条件，
+        // 利用模型共享也可以获取更好的开发体验。
         return {searchParams, dataSource, currentPage, pageSize, total};
     }
 
-    // this method should works with a page navigation
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async changePage(currentPage: number, pageSize: number = 10): Promise<State> {
         const {searchParams} = this.state;
         return this.fetchDataSource(searchParams, currentPage, pageSize);
     }
 
-    // this method should works with a search button
     @middleWare(MiddleWarePresets.takePromiseResolve())
     async search(searchParams?: SearchParams): Promise<State> {
         const param = searchParams || this.state.searchParams;
@@ -749,7 +714,7 @@ export default class SimpleTodoList implements OriginAgent<State> {
 }
 ```
 
-page:
+页面:
 
 ```typescript
 import React, {memo, useCallback, useEffect, useState} from 'react';
@@ -762,25 +727,23 @@ import {fetchTodoList} from "@/service";
 import {PriorLevel, SearchParams} from "@/type";
 import {MiddleWarePresets} from "agent-reducer";
 
-// every `Agent` bases on a same model object,
-// shares state updating with each other.
+// 查询条件共享模型，必须是 object
 const searchParamsModel = new SearchParamsModel();
 
+// 页面共享模型，必须是 object
 const simpleTodoList = new SimpleTodoList();
 
 const SearchParamComponent = memo(() => {
 
     const {state, changeSearchContent, changeSearchPriorLevel,feedback} = useAgentReducer(searchParamsModel);
 
-    // `Agent` bases on object simpleTodoList,
-    // If we use class `SimpleTodoList` as a model,
-    // `useAgentReducer` should create a private model object inside,
-    // and then, no state updating can be shared.
-    // So, model sharing only works on 'Agents' base on a same object.
+    // 通过模型共享我们可以直接在查询条件显示组件中创建一个页面模型代理
     const {search} = useAgentReducer(simpleTodoList);
 
     const handleSubmit = useCallback(async () => {
-        // submit current searchParams with model object `simpleTodoList`
+        // 通过模型共享，
+        // 我们可以在查询条件组件中调用 search 方法更新页面 `Agent` 的 state 数据，
+        // 这样，我们就不必再使用 props 传入一个 onSubmit 方法了
         search(state);
     }, [state]);
 
@@ -797,9 +760,10 @@ const SearchParamComponent = memo(() => {
 
 export default function NewFeatures() {
 
+    // 模型共享
     const {feedback} = useAgentReducer(searchParamsModel);
 
-    // `Agent` bases on model `simpleTodoList`
+    // 模型共享
     const agent = useAgentReducer(simpleTodoList);
 
     const {
@@ -813,9 +777,10 @@ export default function NewFeatures() {
         search();
     }, []);
 
-    // handle page change
+    // 翻页处理
     const handleChangePage = useCallback(async (currentPage: number, pageSize: number = 10) => {
-        // feedback searchParams with model object `searchParamsModel`.
+        // 当前生效查询条件对显示查询条件的回滚通常发生在翻页等，非点击查询按钮的查询行为中，
+        // 通过模型共享，直接调用共享 `Agent` 代理的方法就可以了
         feedback(state.searchParams);
         await changePageLatest(currentPage, pageSize);
     }, [state]);
@@ -844,6 +809,4 @@ export default function NewFeatures() {
 }
 ```
 
-`Agents` base on a same model object can update state synchronously. Using this feature of `agent-reducer` can make your code more simple.
-
-You can do more things to make a search page model better.
+利用好`模型共享`特性可以让我们的代码更简单更清晰。

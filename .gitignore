@@ -4,3 +4,4 @@
 /coverage/
 /dist/
 /index.d.ts
+package-lock.json
