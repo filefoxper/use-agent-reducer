@@ -725,25 +725,28 @@ import {Button, Pagination, Table} from "antd";
 import Column from "antd/lib/table/Column";
 import {fetchTodoList} from "@/service";
 import {PriorLevel, SearchParams} from "@/type";
-import {MiddleWarePresets} from "agent-reducer";
+import {MiddleWarePresets, weakSharing} from "agent-reducer";
 
-// 查询条件共享模型，必须是 object
-const searchParamsModel = new SearchParamsModel();
+// 来自相同模型的`Agent`代理， state 更新同步。
+// 通过`agent-reducer` API `weakSharing`创建的模型，
+// 在其所有代理都被销毁时，会重置模型。
+// 查询条件共享模型
+const searchParamsModel = weakSharing(SearchParamsModel);
 
 // 页面共享模型，必须是 object
-const simpleTodoList = new SimpleTodoList();
+const simpleTodoList = weakSharing(SimpleTodoList);
 
 const SearchParamComponent = memo(() => {
 
-    const {state, changeSearchContent, changeSearchPriorLevel,feedback} = useAgentReducer(searchParamsModel);
+    const {state, changeSearchContent, changeSearchPriorLevel} = useAgentReducer(searchParamsModel.current);
 
     // 通过模型共享我们可以直接在查询条件显示组件中创建一个页面模型代理
-    const {search} = useAgentReducer(simpleTodoList);
+    const {search} = useAgentReducer(simpleTodoList.current);
 
     const handleSubmit = useCallback(async () => {
         // 通过模型共享，
-        // 我们可以在查询条件组件中调用 search 方法更新页面 `Agent` 的 state 数据，
-        // 这样，我们就不必再使用 props 传入一个 onSubmit 方法了
+                // 我们可以在查询条件组件中调用 search 方法更新页面 `Agent` 的 state 数据，
+                // 这样，我们就不必再使用 props 传入一个 onSubmit 方法了
         search(state);
     }, [state]);
 
@@ -760,11 +763,11 @@ const SearchParamComponent = memo(() => {
 
 export default function NewFeatures() {
 
-    // 模型共享
-    const {feedback} = useAgentReducer(searchParamsModel);
+    // 模型共享    
+    const {feedback} = useAgentReducer(searchParamsModel.current);
 
-    // 模型共享
-    const agent = useAgentReducer(simpleTodoList);
+    // 模型共享`
+    const agent = useAgentReducer(simpleTodoList.current);
 
     const {
         state,

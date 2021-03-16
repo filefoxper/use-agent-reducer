@@ -6,6 +6,37 @@ Model sharing is a new feature from `agent-reducer@3.2.0`. It declares every `Ag
 
 That means we can create `Agents` base on a same model object in different react components, and they can update state synchronously. It is similar with the subscribe system in redux.
 
+This feature is similar with redux, and you should know if you are using a normal object model, or using one generated from `agent-reducer` API `sharing` , the model is persistent。If you need a weak persistent model, try another `agent-reducer` API `weakSharing`. A weak persistent model is often reset when its `Agents` are all destroyed.
+
+#### sharing
+```typescript
+function sharing<
+    S,
+    T extends OriginAgent<S> = OriginAgent<S>
+    >(
+  factory:()=>T|{new ():T},
+):{current:T}
+```
+
+* factory - a factory function for generating a model（class 或 object）
+  
+It returns a wrap object which contains a persistent model at property `current`.
+
+#### weakSharing
+
+```typescript
+function weakSharing<
+    S,
+    T extends OriginAgent<S> = OriginAgent<S>
+    >(
+  factory:()=>T|{new ():T},
+):{current:T}
+```
+
+* factory - a factory function for generating a model（class 或 object）
+  
+It returns a wrap object which contains a weak persistent model at property `current`. When `Agents` from this model are all destroyed, the factory callback generates a new one.
+
 You can go to our [tutorial](/tutorial?id=use-model-sharing) for a check about how to use this feature.
 
 ## about keyword this
