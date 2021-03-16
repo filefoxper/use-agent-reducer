@@ -95,6 +95,13 @@ export function useAgentReducer<T extends OriginAgent<S>, S>(entry: T | { new():
     return reducer.agent;
 }
 
+export function useMiddleWare<T extends OriginAgent<S>, S>(agent: T, ...middleWare: (MiddleWare | LifecycleMiddleWare)[]): T {
+    const {current} = useRef(useAgentMiddleWare(agent, ...middleWare));
+    return current;
+}
+
+/****** deprecated *****/
+
 export function useAgent<T extends OriginAgent<S>, S>(entry: T | { new(): T }, middleWareOrEnv?: MiddleWare | RunEnv, env?: RunEnv): T {
 
     const runEnv = typeof middleWareOrEnv !== 'function' ? middleWareOrEnv : env;
@@ -142,11 +149,6 @@ export function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActio
 ): P {
     const ref = useRef(useAgentMiddleActions(middleActions, ...middleWare) as P);
     return ref.current;
-}
-
-export function useMiddleWare<T extends OriginAgent<S>, S>(agent: T, ...middleWare: (MiddleWare | LifecycleMiddleWare)[]): T {
-    const {current} = useRef(useAgentMiddleWare(agent, ...middleWare));
-    return current;
 }
 
 /**

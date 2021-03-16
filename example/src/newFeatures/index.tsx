@@ -6,24 +6,26 @@ import {Button, Pagination, Table} from "antd";
 import Column from "antd/lib/table/Column";
 import {fetchTodoList} from "@/service";
 import {PriorLevel, SearchParams} from "@/type";
-import {MiddleWarePresets} from "agent-reducer";
+import {MiddleWarePresets, weakSharing} from "agent-reducer";
 
 // every `Agent` bases on a same model object,
 // shares state updating with each other.
-const searchParamsModel = new SearchParamsModel();
+// the model created by `agent-reducer` API `weakSharing`,
+// often be reset back, if there is no living `Agent` built on it.
+const searchParamsModel = weakSharing(()=>SearchParamsModel);
 
-const simpleTodoList = new SimpleTodoList();
+const simpleTodoList = weakSharing(()=>SimpleTodoList);
 
 const SearchParamComponent = memo(() => {
 
-    const {state, changeSearchContent, changeSearchPriorLevel,feedback} = useAgentReducer(searchParamsModel);
+    const {state, changeSearchContent, changeSearchPriorLevel} = useAgentReducer(searchParamsModel.current);
 
     // `Agent` bases on object simpleTodoList,
     // If we use class `SimpleTodoList` as a model,
     // `useAgentReducer` should create a private model object inside,
     // and then, no state updating can be shared now.
     // So, model sharing only works on 'Agents' base on a same model object.
-    const {search} = useAgentReducer(simpleTodoList);
+    const {search} = useAgentReducer(simpleTodoList.current);
 
     const handleSubmit = useCallback(async () => {
         // submit current searchParams with model object `simpleTodoList`
@@ -43,10 +45,10 @@ const SearchParamComponent = memo(() => {
 
 export default function NewFeatures() {
 
-    const {feedback} = useAgentReducer(searchParamsModel);
+    const {feedback} = useAgentReducer(searchParamsModel.current);
 
     // `Agent` bases on model `simpleTodoList`
-    const agent = useAgentReducer(simpleTodoList);
+    const agent = useAgentReducer(simpleTodoList.current);
 
     const {
         state,

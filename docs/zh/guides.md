@@ -6,6 +6,37 @@
 
 也就是说，不同组件中的`Agent`只要使用了同一个`对象化的模型`，那么它们的数据更改与相关的组件渲染就是同步的。这与 redux 的 subscribe 行为非常类似。
 
+该特性与 redux 表现得非常类似，需要注意的是，如果使用的是普通对象模型，或者通过 `agent-reducer` API `sharing` 产生的模型，那模型将是持久存在的，它并不会随着 `Agent` 代理被一并销毁；如果你需要的是一份弱持久化的模型，可通过 `agent-reducer` 另一个 API `weakSharing` 来生成，当弱持久化模型的所有 `Agent` 代理全被销毁时，整个模型将被重置。
+
+#### sharing
+```typescript
+function sharing<
+    S,
+    T extends OriginAgent<S> = OriginAgent<S>
+    >(
+  factory:()=>T|{new ():T},
+):{current:T}
+```
+
+* factory - 生成共享模型的工厂方法，通过该方法返回一个被共享的模型（class 或 object）
+  
+该方法返回一个持久化共享模型包装，从返回值的 `current` 属性中可取出模型。
+
+#### weakSharing
+
+```typescript
+function weakSharing<
+    S,
+    T extends OriginAgent<S> = OriginAgent<S>
+    >(
+  factory:()=>T|{new ():T},
+):{current:T}
+```
+
+* factory - 生成共享模型的工厂方法，通过该方法返回一个被共享的模型（class 或 object）
+  
+该方法返回一个弱持久化共享模型包装，从返回值的 `current` 属性中可取出模型，当模型生成的 `Agent` 代理全被销毁时，模型会通过传入的  factory 工厂方法进行模型重置。
+
 您可以查看教程中关于模型共享的[例子](/zh/tutorial?id=使用模型共享)，进一步理解如何使用这一特性。
 
 ## 关键词 this

@@ -8,6 +8,8 @@
 
 # use-agent-reducer
 
+ other language: [中文](https://github.com/filefoxper/use-agent-reducer/blob/master/README_zh.md)
+
 [agent-reducer](https://www.npmjs.com/package/agent-reducer) is a very powerful tool, it converts a model object (`OriginAgent`) to be a state changeable object (`Agent`). It is designed on the reducer running base. Every thing returned from an `Agent` method will be a next state.
 
 `use-agent-reducer` is designed for using `agent-reducer` in react hooks environment。
