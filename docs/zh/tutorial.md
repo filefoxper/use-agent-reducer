@@ -731,10 +731,10 @@ import {MiddleWarePresets, weakSharing} from "agent-reducer";
 // 通过`agent-reducer` API `weakSharing`创建的模型，
 // 在其所有代理都被销毁时，会重置模型。
 // 查询条件共享模型
-const searchParamsModel = weakSharing(SearchParamsModel);
+const searchParamsModel = weakSharing(()=>SearchParamsModel);
 
 // 页面共享模型，必须是 object
-const simpleTodoList = weakSharing(SimpleTodoList);
+const simpleTodoList = weakSharing(()=>SimpleTodoList);
 
 const SearchParamComponent = memo(() => {
 

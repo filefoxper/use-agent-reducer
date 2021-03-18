@@ -766,9 +766,9 @@ import {MiddleWarePresets, weakSharing} from "agent-reducer";
 // shares state updating with each other.
 // the model created by `agent-reducer` API `weakSharing`,
 // often be reset back, if there is no living `Agent` built on it.
-const searchParamsModel = weakSharing(SearchParamsModel);
+const searchParamsModel = weakSharing(()=>SearchParamsModel);
 
-const simpleTodoList = weakSharing(SimpleTodoList);
+const simpleTodoList = weakSharing(()=>SimpleTodoList);
 
 const SearchParamComponent = memo(() => {
 

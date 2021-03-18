@@ -18,7 +18,7 @@ function sharing<
 ):{current:T}
 ```
 
-* factory - a factory function for generating a model（class 或 object）
+* factory - a factory function for generating a model（class or object）
   
 It returns a wrap object which contains a persistent model at property `current`.
 
@@ -33,7 +33,7 @@ function weakSharing<
 ):{current:T}
 ```
 
-* factory - a factory function for generating a model（class 或 object）
+* factory - a factory function for generating a model（class or object）
   
 It returns a wrap object which contains a weak persistent model at property `current`. When `Agents` from this model are all destroyed, the factory callback generates a new one.
 
