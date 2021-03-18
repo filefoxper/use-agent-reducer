@@ -2,9 +2,9 @@
 
 ## 什么是模型共享
 
-模型共享是 `agent-reducer@3.2.0` 新加入的特性。该特性声明为所有建立在同一`对象模型`上的 `Agent` 代理共享 state 数据更新。
+模型共享特性是 `agent-reducer@3.2.0` 新加入的特性。该特性声明：所有建立在同一`对象模型`基础上的 `Agent` 代理共享 state 数据更新（state数据同步）。
 
-也就是说，不同组件中的`Agent`只要使用了同一个`对象化的模型`，那么它们的数据更改与相关的组件渲染就是同步的。这与 redux 的 subscribe 行为非常类似。
+也就是说，不同组件中的`Agent`只要使用了同一个`对象化模型`，那么它们的数据更新就是同步的。这与 redux 的 subscribe 行为非常类似。
 
 该特性与 redux 表现得非常类似，需要注意的是，如果使用的是普通对象模型，或者通过 `agent-reducer` API `sharing` 产生的模型，那模型将是持久存在的，它并不会随着 `Agent` 代理被一并销毁；如果你需要的是一份弱持久化的模型，可通过 `agent-reducer` 另一个 API `weakSharing` 来生成，当弱持久化模型的所有 `Agent` 代理全被销毁时，整个模型将被重置。
 
@@ -49,7 +49,7 @@ function weakSharing<
 
 目前为止，我们有三种添加 `MiddleWare` 的方式。
 
-1. `useAgentReducer`，这是当前库中的一个基础接口，通过它，我们就可以添加基本的 `MiddleWare` 了。使用如 `useAgentReducer( OriginAgent, MiddleWare )`。
+1. `useAgentReducer`，这是当前库的基础接口，通过它，我们可以添加基本的 `MiddleWare` 。使用如 `useAgentReducer( OriginAgent, MiddleWare )`。
 2. `middleWare`，这是来自核心库[agent-reducer api](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware.md)的接口，通过它我们可以直接在模型方法上添加不同的 MiddleWare ，这些 MiddleWare 会在 `Agent` 代理调用相关方法时被唤醒。通过该接口添加的 MiddleWare 会覆盖通过 `useAgentReducer` 统一添加的 MiddleWare 。
 3. `useMiddleWare`，这是当前库的一个 react hook 接口，通过这个接口可以复制一个 `Agent` 代理，并添加只作用与该复制代理方法的 MiddleWare ，而这些 MiddleWare 在 `Agent` 复制品中拥有最高执行级别，会屏蔽掉通过前两个接口添加的所有 MiddleWare 。
 

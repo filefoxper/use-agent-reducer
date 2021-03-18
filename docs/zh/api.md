@@ -2,7 +2,7 @@
 
 ## useAgentReducer
 
-这是一个 react hook 方法，可用于创建一个模型（`OriginAgent`）的 [Agent](/zh/introduction?id=模型代理-agent) 代理对象。通过使用该代理对象的方法，可以修改 state 数据，也可以从代理对象中获取最新的 state 数据。
+这是一个 react hook 方法，可用于创建一个模型（`OriginAgent`）的 [Agent](/zh/introduction?id=模型代理-agent) 代理对象。通过使用该代理对象的方法，可以修改 state 数据。
 
 ```typescript
 function useAgentReducer<T extends OriginAgent<S>, S>(
@@ -75,7 +75,7 @@ function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActions<T, S
 
 这是一个 React `Context.Provider` 组件，用于跨组件共享一个 `Agent` 代理。
 
-`agent-reducer@3.2.0` 添加的[模型共享](/zh/guides?id=什么是模型共享)特性可以完美代替它及相关衍生工具。
+`agent-reducer@3.2.0` 添加的[模型共享](/zh/guides?id=什么是模型共享)可以完美代替它及相关衍生工具。
 
 ```typescript
 interface Props{
@@ -92,7 +92,7 @@ interface Props{
 
 这是个 react hook ，类似于 `useContext` ，可用来获取最近父组件中通过 `AgentProvider` 传入的 `Agent` 代理，并同步 state 更新。
 
-`agent-reducer@3.2.0` 添加的[模型共享](/zh/guides?id=什么是模型共享)特性可以完美代替它及相关衍生工具。
+`agent-reducer@3.2.0` 添加的[模型共享](/zh/guides?id=什么是模型共享)可以完美代替它及相关衍生工具。
 
 ```typescript
 function useAgentContext<T extends OriginAgent>(): T

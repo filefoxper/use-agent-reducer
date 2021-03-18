@@ -131,8 +131,8 @@ describe('使用 decorator 来添加 MiddleWare', () => {
             return {...this.state, name};
         }
 
-        // 如果我们不对返回的 promise 值使用 MiddleWare,
-        // 最新 state 将变成一个 promise 对象.
+        // 如果我们返回一份不完整数据,
+        // 最新 state 将变的个不完整, 这并不符合我们的预期效果.
         // 我们可以使用 `agent-reducer` api `middleWare` 的 decorator 形式
         // 对方法添加 `MiddleWarePresets.takeAssignable()` 来解决问题，
         // 这个 MiddleWare 可以将返回值与当前 state 数据合成最新的 state.
@@ -141,8 +141,8 @@ describe('使用 decorator 来添加 MiddleWare', () => {
             return {role};
         }
 
-        // 如果我们不对返回的 promise 值使用 MiddleWare,
-        // 最新 state 将变成一个 promise 对象.
+        // 如果我们返回一个 promise 值,
+        // 最新 state 将变成一个 promise 对象, 这并不符合我们的预期效果.
         // 我们可以使用 `agent-reducer` api `middleWare` 的 decorator 形式
         // 对方法添加 `MiddleWarePresets.takePromiseResolve()` 来解决问题，
         // 这个 MiddleWare 可以将 promise resolve 值转换成最新的 state.

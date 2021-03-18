@@ -2,9 +2,9 @@
 
 ## 说明
 
-本教程将通过构建一个简单查询页面来模拟如何使用 `use-agent-reducer` 来解决开发中所遇到的问题。
+本教程将通过构建一个简单查询页面来模拟如何使用 `use-agent-reducer` 解决开发中所遇到的问题。
 
-你可以[下载](https://github.com/filefoxper/use-agent-reducer/tree/master/example)我们的例子在本地进行相关试验。
+你可以[下载](https://github.com/filefoxper/use-agent-reducer/tree/master/example)我们的例子，并在本地进行相关学习和试验。
 
 * [构建简单查询页面](/zh/tutorial?id=构建简单查询页面)
 * [使用 MiddleWare](/zh/tutorial?id=使用-middleWare)
@@ -59,7 +59,7 @@ export interface State {
 }
 ```
 
-现在我们可以开始创建我们的查询页模型 `SimpleTodoList` 了。这个页面模型需要拥有修改查询条件、列表数据、分页信息的功能。当列表数据请求返回数据时，我们可以通过调用方法 `changeDataSource` 来修改 `state.dataSource` 数据，通过调用 `changePageInfo` 来修改 state 中的分页信息。
+现在我们可以开始创建查询页模型 `SimpleTodoList` 了。这个页面模型需要拥有修改查询条件、列表数据、分页信息等功能。当列表数据请求返回数据时，我们可以通过调用方法 `changeDataSource` 来修改 `state.dataSource` 数据，通过调用 `changePageInfo` 来修改 state 中的分页信息。
 
 [源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/simpleSearch)
 
@@ -180,13 +180,13 @@ export default function SimpleSearch() {
 
 1. 请求方法在模型外部调用不利于模型的完整性，同时导致模型复用性差。
 2. 多次连续修改 state 并不理想，不利于保持数据的一致性，同时导致组件性能变差。
-3. 查询条件路径过深，因此设置需时要两次 assign 操作，而且每次修改查询条件即刻生效，不利于用户理解翻页查询功能。
+3. 查询条件路径过深，因此每次修改都需要两次合并操作。另外每次修改后，最新查询条件不通过点击 submit 按钮就即刻生效，并在翻页过程中参与查询，这不利于用户理解翻页查询功能。
 
 让我们重构以上代码，解决这些问题。
 
 ## 使用 MiddleWare
 
-首先让我们来解决问题 1 和 问题 2。`MiddleWarePresets.takePromiseResolve` 可以将一个异步方法返回 promise 的 resolve 值转换成新的 state ，我们可以利用它来把请求方法集成到模型方法中。
+首先让我们来解决问题 1 和 问题 2。`MiddleWarePresets.takePromiseResolve` 可以将一个异步方法的返回值（promise.resolve出的对象）转换成新的 state ，我们可以利用它来把查询请求过程写到模型方法中去。
 
 查看[MiddleWare 资源列表](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/api/middle_ware_presets.md)
 
@@ -222,7 +222,7 @@ export default class SimpleTodoList implements OriginAgent<State> {
         return {...this.state, searchParams: {...searchParams, priorLevel}};
     }
 
-    // 我们把修改列表数据和修改分页信息的方法合成到一个异步方法中，
+    // 我们把修改列表数据和修改分页信息的方法合入一个异步方法，
     // 并通过'MiddleWarePresets.takePromiseResolve' 对 promise 的再加工特性
     // 将 promise 的 resolve 值变成最新的 state
     @middleWare(MiddleWarePresets.takePromiseResolve())
@@ -301,13 +301,13 @@ export default function UseMiddleWare() {
 }
 ```
 
-上述代码中，我们使用了 `MiddleWarePresets.takePromiseResolve()` 将方法返回的 promise 对象的 resolve 值转换成了新的 state 数据。
+上述代码中，我们使用了 `MiddleWarePresets.takePromiseResolve()` 将方法返回的 promise 对象 resolve 值转换成了新的 state 数据。
 
 现在我们的页面已经比之前有了很大的进步，接下我们可以通过拆分模型的方式来解决另一个问题。
 
 ## 拆分模型
 
-在点击 search 按钮之前发起查询之前，当前显示查询条件不应参与分页查询，否则会对用户造成困扰。根据这条设计准则，我们需要把原页面模型拆分成连个模型。一个用于基本页面，它使用最后一次有效提交的条件进行查询；另一个用于实时修改查询条件数据，作为查询条件的显式处理模型。
+在点击 submit 按钮查询之前，当前未生效的页面查询条件不应参与分页查询，否则会对用户造成困扰。根据这条设计准则，我们需要把原页面模型一分为二。一个页面基础模型，负责使用最后一次有效提交的条件进行查询；另一个实时可变条件模型，负责实时修改查询条件，并为下一次点击 submit 按钮查询提供条件来源。
 
 [查看源码](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/splitModel)
 
@@ -476,11 +476,11 @@ export default function SplitModel() {
 }
 ```
 
-我们的查询页面目前已经能很好得工作起来了，当依然有优化空间。
+我们的查询页面目前已经能很好得工作起来了，但依然存在优化空间。
 
 ## 使用 take latest MiddleWare
 
-数据请求伴随着许多不确定性，比如网络延时等特殊情况，这导致请求响应并非一定按请求发送前后顺序返回。那可能会导致最新数据被早期触发请求响应覆盖的问题。这时，我们需要使用 `MiddleWarePresets.takeLatest` 来保证返回数据的正确性。
+数据请求伴往往随着如网络延时这样的各种不确定因素，因此请求响应顺序并不会与请求发送顺序保持一致。这导致最新 state 数据可能被早期发送请求的响应数据覆盖。这时，我们需要使用 `MiddleWarePresets.takeLatest` 来保证返回数据版本的正确性，即只接收最新发送请求的响应数据。
 
 [查看 MiddleWare 资源列表](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/api/middle_ware_presets.md)
 
@@ -644,9 +644,9 @@ export default function TakeLatest() {
 
 ## 使用模型共享 
 
-模型共享特性是 `agent-reducer@3.2.0` 新加入的特性。该特性声明为所有建立在同一`对象模型`上的 `Agent` 代理共享 state 数据更新。
+模型共享特性是 `agent-reducer@3.2.0` 新加入的特性。该特性声明：所有建立在同一`对象模型`基础上的 `Agent` 代理共享 state 数据更新（state数据同步）。
 
-也就是说，不同组件中的`Agent`只要使用了同一个`对象化的模型`，那么它们的数据更改与相关的组件渲染就是同步的。这与 redux 的 subscribe 行为非常类似。
+也就是说，不同组件中的`Agent`只要使用了同一个`对象化模型`，那么它们的数据更新就是同步的。这与 redux 的 subscribe 行为非常类似。
 
 通过利用这条特性，我们可以让组件更干净，更简单。我们将通过模型共享原则去除 `SearchParamComponent` 中用于数据传递的 props 属性。
 

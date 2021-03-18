@@ -165,9 +165,10 @@ class Model implements OriginAgent<number>{
 
 const MyComponent = () =>{
     // api useAgentReducer is a react hook
-    const agent = useAgentReducer(model);
+    const agent = useAgentReducer(Model);
     // you can reassign agent method into another object,
-    // keyword `this` in method always represent the model.
+    // keyword `this` in method always represent 
+    // the instance of Model which is created inside api `useAgentReducer`.
     const {state,increase} = agent;
 
     return (

@@ -1,18 +1,18 @@
 # 介绍
 
-该工具的主要功能就是将一个可重制 state 的模型转换成一个可修改 state 的代理对象。代理对象将当前模型的 state 替换成模型最新产生的数据，并触发渲染。模型 [Model](/zh/introduction?id=model) 和代理 [Agent](/zh/introduction?id=agent) 是当前工具中最为重要的两个概念。 
+该工具的主要功能就是将一个可重制（重新生成） state 的模型对象（或类型）转换成一个可修改 state 的代理对象。代理对象将当前模型的 state 替换成模型最新产生的数据，并触发渲染。模型 [Model](/zh/introduction?id=model) 和代理 [Agent](/zh/introduction?id=agent) 是当前工具中最为重要的两个概念。 
 
 ## 动机
 
-核心库 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 是一款非常强大的模型状态管理工具，它并不依赖于其他第三方库的支持，相当独立的，因此我们采用 react hook 设计了 `use-agent-reducer`， 并把它和 react 联系起来。
+核心库 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 是一款非常强大的模型状态管理工具，它并不依赖于其他第三方库的支持，为了在 react 中获取更好的状态管理体验，我为 `agent-reducer` 设计了一套 react hook 接驳器 `use-agent-reducer`。
 
 ## 概念
 
-之前的文档中曾提及了两个非常重要的概念，模型 `Model` 和代理 `Agent` 。我们会在这节重点介绍它们。
+之前在介绍中曾提及了两个非常重要的概念，模型 `Model` 和代理 `Agent` 。我们会在这节重点介绍它们。
 
 #### 模型 Model
 
-模型 `Model` 是一个拥有 state 属性的 class 或普通 object 对象， state 属性用于存储需要持续维护的数据，而模型上的方法皆用于根据不同的业务场景重制 state 数据。
+模型 `Model` 是一个拥有 state 属性的 class 或普通 object 对象， state 属性用于存储需要持续维护的数据，而模型上的方法皆用于根据不同的业务场景重制（重新生成） state 数据。
 
 1. 属性 `state` 用于存储需要持续维护的数据，它的数据类型可以任意选择。
 2. 方法 `method` 用于提供生成 state 数据的方案，其返回值可被认为是最新的 state 数据。
@@ -85,7 +85,7 @@ const agent = useAgentReducer(CountAgent);
 
 ## 安装
 
-`use-agent-reducer`长期发布于[npm](https://www.npmjs.com/get-npm)。如果想要安装最新的稳定版本，可以使用一下命令：
+`use-agent-reducer`长期发布于[npm](https://www.npmjs.com/get-npm)。如果想要安装最新的稳定版本，可以使用命令：
 
 ```
 npm i use-agent-reducer
@@ -95,13 +95,13 @@ npm i use-agent-reducer
 
 ## 快速开始
 
-本节主要阐述如何创建一个模型，以及如何使用 `agent-reducer` 辅助功能。本节内容可以辅助您快速掌握 `use-agent-reducer` 工具库的基本用法。
+本节主要阐述如何创建一个模型，以及如何使用 `agent-reducer` 辅助功能。本节内容可以辅助您快速掌握 `use-agent-reducer` 的基本用法。
 
 #### 创建模型
 
-我们知道模型是一个 ES6 class 或普通 object，包含了一个 state 属性与若干 state 生产方法。根据这条规则，我们可以创建两种形式不同的模型，如下：
+模型通常是一个包含了 state 属性与若干 state 生产方法的 ES6 class 或普通对象。创建形式如下：
 
-普通 object 对象模型:
+普通对象模型:
 
 ```typescript
 import React from 'react';
@@ -128,7 +128,7 @@ const MyComponent = () =>{
     // 所以我们应该在 react 组件或自定义 hook 中使用它
     const agent = useAgentReducer(model);
     // agent 方法可以被赋予其他对象,
-    // 方法中的关键词 `this` 总是代表着模型 Model。
+    // 方法中的关键词 `this` 总是代表着模型对象 model。
     const {state,increase} = agent;
 
     return (
@@ -142,7 +142,7 @@ const MyComponent = () =>{
 
 ```
 
-with class pattern:
+ES6 class 模型:
 
 ```typescript
 import React from 'react';
@@ -168,9 +168,10 @@ class Model implements OriginAgent<number>{
 const MyComponent = () =>{
     // api useAgentReducer 是一个 react hook，
     // 所以我们应该在 react 组件或自定义 hook 中使用它
-    const agent = useAgentReducer(model);
+    const agent = useAgentReducer(Model);
     // agent 方法可以被赋予其他对象,
-    // 方法中的关键词 `this` 总是代表着模型 Model。
+    // 方法中的关键词 `this` 总是代表着模型 Model 的实例对象，
+    // 该实例对象被隐藏在了API `useAgentReducer` 中。
     const {state,increase} = agent;
 
     return (
@@ -183,15 +184,15 @@ const MyComponent = () =>{
 };
 ```
 
-我们推荐使用 ES6 class 模型，这样我们可以使用 `ES6 decorator` 来简化 `agent-reducer` 提供的各种辅助功能。
+我们推荐使用 ES6 class 模型，并辅以 `ES6 decorator` 来简化 `agent-reducer` 辅助API 在模型上的使用方式。
 
 #### 使用 agent-reducer 辅助功能
 
-核心库 `agent-reducer` 提供来一些非常有用的 API ，比如 `middleWare` 、 `MiddleWarePresets` 。熟练使用这两个 API 可以让你事半功倍。 
+核心库 `agent-reducer` 提供了一些非常有用的 API ，比如 `middleWare` 、 `MiddleWarePresets` 。熟练使用这两个 API 可以让你事半功倍。
 
-MiddleWare system makes `Agent` methods more flexible. You can use MiddleWare to reproduce a new state which is returned from a method, or control the method calling feature ( like adding method debounce, and so on ).
+MiddleWare 系统可以让 `Agent` 代理方法更加灵活。你可以通过 MiddleWare 对方法返回值进行再加工，也可以用它们来添加方法特征，比如给方法加个防抖（`MiddleWarePresets.takeDebounce`）什么的。
 
-The code below shows how to use MiddleWare, and we use `MiddleWarePresets.takePromiseResolve` for example.
+在以下代码中，我们通过使用 `MiddleWarePresets.takePromiseResolve` 为大家展示如何使用 MiddleWare。
 
 ``` typescript
 import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
@@ -286,7 +287,7 @@ describe('通过 API 来使用 MiddleWare ', () => {
 });
 ```
 
-如果您的项目中使用了 `Babel decorator plugin` ，你可以更容易，更显式得区分每个方法需要的 `MiddleWare` ，让代码功能更清晰更简单。
+如果您在项目中使用了 `Babel decorator plugin` ，那么使用 `decorator` 为每个方法添加各自需要的 `MiddleWare` ，将会是更好的选择。
 
 ``` typescript
 import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
@@ -314,8 +315,8 @@ describe('使用 decorator 来添加 MiddleWare', () => {
             return {...this.state, name};
         }
 
-        // 如果我们不对返回的 promise 值使用 MiddleWare,
-        // 最新 state 将变成一个 promise 对象.
+        // 如果我们返回一份不完整数据,
+        // 最新 state 将变的个不完整, 这并不符合我们的预期效果.
         // 我们可以使用 `agent-reducer` api `middleWare` 的 decorator 形式
         // 对方法添加 `MiddleWarePresets.takeAssignable()` 来解决问题，
         // 这个 MiddleWare 可以将返回值与当前 state 数据合成最新的 state.
@@ -324,8 +325,8 @@ describe('使用 decorator 来添加 MiddleWare', () => {
             return {role};
         }
 
-        // 如果我们不对返回的 promise 值使用 MiddleWare,
-        // 最新 state 将变成一个 promise 对象.
+        // 如果我们返回一个 promise 值,
+        // 最新 state 将变成一个 promise 对象, 这并不符合我们的预期效果.
         // 我们可以使用 `agent-reducer` api `middleWare` 的 decorator 形式
         // 对方法添加 `MiddleWarePresets.takePromiseResolve()` 来解决问题，
         // 这个 MiddleWare 可以将 promise resolve 值转换成最新的 state.
