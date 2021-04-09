@@ -12,7 +12,7 @@ function useAgentReducer<T extends OriginAgent<S>, S>(
 ): T
 ```
 
-* originAgent - the model class or object.
+* entry - the model class or object.
 * middleWareOrEnv - it is an optional param, if you want to use `MiddleWare`, it can be a `MiddleWare`, if you want to set running env without `MiddleWare`, it can be an env config.
 * env - if you want to set both `MiddleWare` and running env, you can set an env config here.
 
@@ -41,19 +41,53 @@ function useMiddleWare<T extends OriginAgent<S>, S>(
 
 You can see how to use it [here](/tutorial?id=use-middleware).
 
-## useAgent
+## useAgentSelector
+
+This api function is a react hook, it can be used to extract data from a sharing model state. And only the extracted data change can cause its consumer (react component) rerender.
+
+```typescript
+export function useAgentSelector<T extends OriginAgent<S>, S, R>(
+  entry: T,
+  mapStateCallback: (state: T['state']) => R,
+): R
+```
+
+* entry - the model instance object.
+* mapStateCallback - a callback function for extracting data from model state.
+  
+This function returns data extracted from a model state directly.
+
+## useAgentMethods
+
+This api function is a react hook for calling a model methods. It never causes its consumer (react component) rerendering.
+
+```typescript
+export function useAgentMethods<T extends OriginAgent<S>, S>(
+  entry: T,
+  middleWareOrEnv?: MiddleWare | RunEnv,
+  env?: Omit<RunEnv, 'legacy'>,
+): Omit<T, 'state'>
+```
+
+* entry - the model instance object.
+* middleWareOrEnv - it is an optional param, if you want to use `MiddleWare`, it can be a `MiddleWare`, if you want to set running env without `MiddleWare`, it can be an env config.
+* env - if you want to set both `MiddleWare` and running env, you can set an env config here.
+
+This function returns a model like instance which has an empty state property. It only provides model methods.
+
+## ~~useAgent~~
 
 (not recommend)
 
 This api function is an old version abount [useAgentReducer](/api?id=useagentreducer), it is kept for supporting the old features of [agent-reducer](https://www.npmjs.com/package/agent-reducer). And we do not recommend to use it.
 
-## useBranch
+## ~~useBranch~~
 
 (not recommend)
 
 This api function is an old version abount [useMiddleWare](/api?id=usemiddleware). And we do not recommend to use it.
 
-## useMiddleActions
+## ~~useMiddleActions~~
 
 (not recommend)
 
@@ -71,7 +105,7 @@ function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActions<T, S
 * middleActions - a instance of class extends MiddleActions
 * otherParams - start an `Agent` object, and rest with MiddleWares
 
-## AgentProvider
+## ~~AgentProvider~~
 
 (not recommend)
 
@@ -88,7 +122,7 @@ interface Props{
 * value - the `Agent` object for sharing in `AgentProvider` children.
 * children - react nodes
 
-## useAgentContext
+## ~~useAgentContext~~
 
 (not recommend)
 
@@ -100,7 +134,7 @@ This is a react hook function, it picks `Agent` from a nearest [AgentProvider](/
 function useAgentContext<T extends OriginAgent>(): T
 ```
 
-## useParent
+## ~~useParent~~
 
 (not recommend)
 

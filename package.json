@@ -1,10 +1,13 @@
 {
   "name": "use-agent-reducer",
-  "version": "3.2.3",
+  "version": "3.2.5",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
   "scripts": {
+    "clear": "rm -rf ./dist & rm -f ./index.d.ts",
+    "lint": "eslint src --fix --ext .ts,.tsx ",
+    "lint-init": "eslint --init",
     "build": "webpack --config ./webpack.config.js --env.mode=production",
     "test": "jest --coverage",
     "docs": "docsify serve ./docs"
@@ -57,16 +60,14 @@
     "@types/jest": "^23.3.12",
     "@types/react": "16.7.18",
     "@types/react-dom": "^16.8.4",
+    "@typescript-eslint/eslint-plugin": "^4.21.0",
+    "@typescript-eslint/parser": "4.21.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "core-js": "^3.8.0",
     "jest": "^26.0.1",
     "typescript": "^3.8.3",
     "babel-eslint": "^9.0.0",
-    "eslint": "^5.4.0",
-    "eslint-plugin-flowtype": "^2.50.0",
-    "eslint-plugin-import": "^2.14.0",
-    "eslint-plugin-jsx-a11y": "^5.1.1",
     "husky": "^0.14.3",
     "lint-staged": "^7.2.2",
     "ts-jest": "^24.0.2",
@@ -82,7 +83,14 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/dom": "^7.26.3",
     "@testing-library/jest-dom": "^5.11.5",
-    "@testing-library/react-hooks": "^3.4.2"
+    "@testing-library/react-hooks": "^3.4.2",
+    "eslint": "^7.23.0",
+    "eslint-config-airbnb": "^18.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-react": "^7.23.1",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "eslint-import-resolver-typescript": "^2.4.0"
   },
   "engines": {
     "node": ">=8.0.0"
