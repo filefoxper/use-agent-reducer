@@ -8,9 +8,9 @@
 
 # use-agent-reducer
 
-This is a powerful `react hook` library for managing component state changes. It is designed for replacing reducer tools in `react hook` ecosystem. You can manage the major component state change logistic with it by a class or object model pattern.
+This is a powerful `react hook` library for managing state changes. It is designed for replacing reducer tools in `react hook` ecosystem. You can design a state change logistic by setting a model with class or object pattern.
 
-The core dependency of this library is [agent-reducer](https://www.npmjs.com/package/agent-reducer), you can read its [document](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/index.md) for a preview about what `use-agent-reducer` can do. But, we suggest you follow our [document](/introduction) and learn how to use it first.
+The core dependency of this library is [agent-reducer](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/index.md), you can read its document for a preview about what `use-agent-reducer` can do. But, we suggest you follow our [document](/introduction) and learn how to use it first.
 
 * [Introduction](introduction.md)
 * [Tutorial](/tutorial.md)

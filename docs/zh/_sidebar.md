@@ -3,3 +3,4 @@
 * [教程](/zh/tutorial.md)
 * [引导](/zh/guides.md)
 * [API 文档](/zh/api.md)
+* [更新日志](/zh/changes.md)

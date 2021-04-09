@@ -1,0 +1,6 @@
+.eslintrc.js
+test/
+jest.config.js
+babel.config.js
+index.js
+webpack.config.js

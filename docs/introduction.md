@@ -1,20 +1,20 @@
 # Introduction
 
-The primary work of this tool is using a `state producible model` to generate a `state changeable agent`. The agent changes state according to what the model produces out. So, [Model](/introduction?id=model) and [Agent](/introduction?id=agent) are very important in this document.
+The primary work of this tool is generating a `state changeable agent` from its `state producible model`. An agent changes state according to what its model produces out. So, [Model](/introduction?id=model) and [Agent](/introduction?id=agent) are very important concepts in this document.
 
-## motivation
+## Motivation
 
-The core library [agent-reducer](https://www.npmjs.com/package/agent-reducer) is a powerful independent tool for managing state changes. But it can not work in `react` directly, so we designed this library to connect `agent-reducer` with `react hooks`. 
+The core library [agent-reducer](https://www.npmjs.com/package/agent-reducer) is a powerful independent tool for managing state changes. But it can not work in `react` system directly, so we designed this library to connect `agent-reducer` with `react hooks`. 
 
 ## Concept
 
-There are two concepts we have mentioned above, `Model` and `Agent`. And we will explain the details about these concepts in this section.
+There are two concepts we have mentioned above, `Model` and `Agent`. They will  be explained in this section.
 
 #### Model
 
-`Model` is a class or an object which describes what kind of data you want to maintian and how to produce new one. We can describe the maintainable data with a property name `state`, and prepare some state producing methods in `Model`. In `agent-reducer`, concept `Model` has another name `OriginAgent`, but here, we call it `Model`.
+`Model` is a class or an object which describes what kind of data you want to maintian and how to produce a new one. You can describe a maintainable data with property name `state` in `Model`, and prepare some state producible methods beside. In `agent-reducer`, concept `Model` has another name `OriginAgent`, but here, we call it `Model`.
 
-1. Property `state` stores the data you want to maintian, it can be any type. Do not modify `state` manual, it is very important.
+1. Property `state` stores the data you want to maintian, it can be any type. Do not modify `state` manually, this may causes some problems.
 2. `method` is a function for producing a new `state`. You can consider what returns from a `method` as a new state.
    
 This is a `Model` example:
@@ -24,7 +24,7 @@ import {OriginAgent} from 'agent-reducer';
 
 // model
 class CountAgent implements OriginAgent<number> {
-    // with a initial state
+    // set a initial state
     state = 0;
 
     // use arrow function to produce a new state
@@ -51,9 +51,9 @@ class CountAgent implements OriginAgent<number> {
 
 #### Agent
 
-`Agent` is a Proxy object, it provides a latest state and methods for changing state. You can create an `Agent` object by using api useAgentReducer. A class model is always transformed into a instance object first by this api, then to be proxied as an `Agent` object. 
+`Agent` is a Proxy object, it provides a newest state and some methods base on the same name methods in its `Model` for changing state. You can create an `Agent` object by using api useAgentReducer with a `Model`. 
 
-The state of `Agent` object always keeps equal with its model state.
+The state of `Agent` object always keeps equal with its `Model` state.
 
 ```typescript
 import {OriginAgent} from 'agent-reducer';
@@ -90,11 +90,11 @@ The `use-agent-reducer` package lives in [npm](https://www.npmjs.com/get-npm). T
 ```
 npm i use-agent-reducer
 ```
-You'd better add `agent-reducer` into your package.json dependencies too. When  you are installing package `use-agent-reducer`, a `agent-reducer` package is always brought into your dependencies, but this can not resolve the problem: when you are developing with `use-agent-reducer`, you can not find `agent-reducer` helper easily. 
+You'd better add `agent-reducer` into your package.json dependencies too. When  you are installing package `use-agent-reducer`, a `agent-reducer` package is always brought into your `node_modules` directory, but this is not helpful for using `agent-reducer` API. 
 
 ## Getting started
 
-This section describes how to create a model, and how to call `agent-reducer` for help. After reading this section, you can master the basic usage of `use-agent-reducer`. 
+This section describes how to create a model, and how to call `agent-reducer` API for help. After reading this section, you can master the basic usage of `use-agent-reducer`. 
 
 #### create model
 

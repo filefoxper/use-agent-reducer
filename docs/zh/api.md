@@ -12,7 +12,7 @@ function useAgentReducer<T extends OriginAgent<S>, S>(
 ): T
 ```
 
-* originAgent - 模型，可以是 class 也可以是 object 。
+* entry - 模型，可以是 class 也可以是 object 。
 * middleWareOrEnv - 可选参数，如果想要设置 MiddleWare ，就传入 MiddleWare ，如果不想使用 MiddleWare ，想要配置运行环境参数，则传入环境配置。
 * env - 可选参数，如果想同时使用 MiddleWare 和 环境配置，请通过该参数传入环境配置。
 
@@ -41,19 +41,53 @@ function useMiddleWare<T extends OriginAgent<S>, S>(
 
 [使用案例](/zh/tutorial?id=use-middleware).
 
-## useAgent
+## useAgentSelector
+
+这是一个 react hook 方法，可用于提取被共享模型 state 中的部分数据，若被提取数据保持不变，则不会触发组件渲染。
+
+```typescript
+export function useAgentSelector<T extends OriginAgent<S>, S, R>(
+  entry: T,
+  mapStateCallback: (state: T['state']) => R,
+): R
+```
+
+* entry - 模型实例 object 。
+* mapStateCallback - state 提取方法，用于提取当前模型实例 state 的部分数据，如果被提取数据保持不变则不会触发组件渲染。
+  
+该方法返回值即为被提取数据。
+
+## useAgentMethods
+
+这是一个 react hook 方法，可用于提取被共享模型中的方法，该 hook 本身不会触发当前使用组件渲染。
+
+```typescript
+export function useAgentMethods<T extends OriginAgent<S>, S>(
+  entry: T,
+  middleWareOrEnv?: MiddleWare | RunEnv,
+  env?: Omit<RunEnv, 'legacy'>,
+): Omit<T, 'state'>
+```
+
+* entry - 模型实例 object 。
+* middleWareOrEnv - 可选参数，如果想要设置 MiddleWare ，就传入 MiddleWare ，如果不想使用 MiddleWare ，想要配置运行环境参数，则传入环境配置。
+* env - 可选参数，如果想同时使用 MiddleWare 和 环境配置，请通过该参数传入环境配置。
+
+该方法返回值为忽略了 state 数据的模型实例。
+
+## ~~useAgent~~
 
 (不推荐)
 
 当前 API 接口为老版本的 [useAgentReducer](/zh/api?id=useagentreducer)。
 
-## useBranch
+## ~~useBranch~~
 
 (不推荐)
 
 当前 API 接口为老版本的 [useMiddleWare](/zh/api?id=usemiddleware)。
 
-## useMiddleActions
+## ~~useMiddleActions~~
 
 (不推荐)
 
@@ -69,7 +103,7 @@ function useMiddleActions<T extends OriginAgent<S>, P extends MiddleActions<T, S
 * middleActions - 继承 MiddleActions 的 class
 * middleWare - MiddleWares
 
-## AgentProvider
+## ~~AgentProvider~~
 
 (不推荐)
 
@@ -86,7 +120,7 @@ interface Props{
 * value - `Agent` 代理对象，用于 children 共享。
 * children - react 组件
 
-## useAgentContext
+## ~~useAgentContext~~
 
 (不推荐)
 
@@ -98,7 +132,7 @@ interface Props{
 function useAgentContext<T extends OriginAgent>(): T
 ```
 
-## useParent
+## ~~useParent~~
 
 (不推荐)
 

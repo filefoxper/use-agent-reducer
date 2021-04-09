@@ -7,3 +7,7 @@
 而`useAgentReducer`方法因不受全局影响，依然只支持`agent-reducer@3.*`。
 
 [update] 重新增加被去除的`use-agent-reducer@1.*`方法：useBranch,useParent作为废弃方法。
+
+## v3.2.5 2021-04-10
+
+[new] add API `useAgentSelector` and `useAgentMethods`

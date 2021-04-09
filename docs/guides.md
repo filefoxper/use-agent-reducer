@@ -207,3 +207,42 @@ describe("set run env",()=>{
 
 Be careful in `env.strict`, you'd better not set it to be `false`. For it will make the state difference between `Agent` and your reducer tool.
 
+## model sharing optimization
+
+By using `model sharing`, we can share state updating between different components. But this feature brings problem too, that causes model sharing consumers( react components ) always render together, no matter if the state change is necessary for urrent consumer. From `use-agent-reducer@3.2.5`, we provide some new API functions for resolving this problem. You can use API function `useAgentSelector` to extract data from a model state which is truly used in component. And also, you can extract methods from a sharing model by using another API `useAgentMethods`.
+
+API `useAgentSelector` extracts data from a state, and only the extracted data change can cause its consumer (react component) rerender.  
+
+```typescript
+import {weakSharing} from 'agent-reducer';
+import {useAgentSelector} from 'use-agent-reducer';
+
+// model sharing reference
+const sharingRef = weakSharing(()=> Model);
+
+......
+
+// use a sharing model, 
+// and extract data from state by a state mapping function.
+// Only the extracted data change can cause its consumer rerender.
+const renderNeeds = useAgentSelector(sharingRef.current, (state)=> state.renderNeeds);
+```
+
+API `useAgentMethods` only provides methods from a model like instance, it never causes a rerender.
+
+```typescript
+import {weakSharing, MiddleWarePresets} from 'agent-reducer';
+import {useAgentMethods} from 'use-agent-reducer';
+
+// model sharing reference
+const sharingRef = weakSharing(()=> Model);
+
+......
+
+// use a sharing model,
+// get a model like instance, which omits the state property.
+// It is used for providing methods from sharing model,
+// and it never causes a rerender.
+const {fetchState} = useAgentMethods(sharingRef.current, MiddleWarePresets.takePromiseResolve());
+```
+
