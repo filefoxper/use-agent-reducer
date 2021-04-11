@@ -49,11 +49,13 @@ function useMiddleWare<T extends OriginAgent<S>, S>(
 export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   entry: T,
   mapStateCallback: (state: T['state']) => R,
+  equalityFn?:(prev: R, current: R) => boolean,
 ): R
 ```
 
 * entry - 模型实例 object 。
 * mapStateCallback - state 提取方法，用于提取当前模型实例 state 的部分数据，如果被提取数据保持不变则不会触发组件渲染。
+* equalityFn - 可选，用于对比 mapStateCallback 在模型 state 改变前后产生的数据，如果该函数返回 `true`，则 `useAgentSelector` 忽略 mapStateCallback 提取值的变化状况，不触发组件渲染。
   
 该方法返回值即为被提取数据。
 
@@ -74,6 +76,19 @@ export function useAgentMethods<T extends OriginAgent<S>, S>(
 * env - 可选参数，如果想同时使用 MiddleWare 和 环境配置，请通过该参数传入环境配置。
 
 该方法返回值为忽略了 state 数据的模型实例。
+
+## shallowEqual
+
+该方法可对两个数据进行浅对比，并判断两个数据是否等价。可用作[useAgentSelector](/zh/api?id=useagentselector)的`equalityFn`回调参数。
+
+```typescript
+function shallowEqual<R>(prev:R, current:R):boolean
+```
+
+* prev - 对比数据之一.
+* current - 对比数据之一.
+
+如果浅对比等价则返回 `true` ，否则返回 `false` 。
 
 ## ~~useAgent~~
 

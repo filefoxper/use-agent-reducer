@@ -682,7 +682,7 @@ check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/e
 model:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+iimport {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList, fetchTodoListWithDelay} from "@/service";
 
@@ -727,9 +727,8 @@ export default class SimpleTodoList implements OriginAgent<State> {
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
         const fetchParams = {...searchParams, currentPage, pageSize};
         const {content: dataSource, total} = await fetchTodoList(fetchParams);
-        // we do not copy searchParams here,
-        // we can use new feature of 'agent-reducer@3.2.0' to update state synchronously in component.
-        return {searchParams, dataSource, currentPage, pageSize, total};
+        // Copy searchParams here
+        return {searchParams:{...searchParams}, dataSource, currentPage, pageSize, total};
     }
 
     // this method should works with a page navigation
@@ -752,8 +751,8 @@ export default class SimpleTodoList implements OriginAgent<State> {
 page:
 
 ```typescript
-import React, {memo, useCallback, useEffect, useState} from 'react';
-import {RunEnv, useAgentReducer, useMiddleWare} from "use-agent-reducer";
+import React, {memo, useCallback, useEffect} from 'react';
+import {RunEnv, useAgentReducer, useMiddleWare, useAgentMethods, useAgentSelector} from "use-agent-reducer";
 import SimpleTodoList, {SearchParamsModel} from "./model";
 import {ContentInput, PageContent, PriorLevelSelect, SearchContent} from "@/components";
 import {Button, Pagination, Table} from "antd";
@@ -766,20 +765,30 @@ import {MiddleWarePresets, weakSharing} from "agent-reducer";
 // shares state updating with each other.
 // the model created by `agent-reducer` API `weakSharing`,
 // often be reset back, if there is no living `Agent` built on it.
-const searchParamsModel = weakSharing(()=>SearchParamsModel);
+const searchParamsModel = weakSharing(() => SearchParamsModel);
 
-const simpleTodoList = weakSharing(()=>SimpleTodoList);
+const simpleTodoList = weakSharing(() => SimpleTodoList);
 
 const SearchParamComponent = memo(() => {
 
-    const {state, changeSearchContent, changeSearchPriorLevel} = useAgentReducer(searchParamsModel.current);
+    const {state, changeSearchContent, changeSearchPriorLevel, feedback} = useAgentReducer(searchParamsModel.current);
 
     // `Agent` bases on object simpleTodoList,
     // If we use class `SimpleTodoList` as a model,
     // `useAgentReducer` should create a private model object inside,
     // and then, no state updating can be shared now.
     // So, model sharing only works on 'Agents' base on a same model object.
-    const {search} = useAgentReducer(simpleTodoList.current);
+    // API `useAgentMethods` can optimize our component,
+    // it never leads its consumer (component) rerender.
+    const {search} = useAgentMethods(simpleTodoList.current);
+
+    // API `useAgentSelector` can optimize our component,
+    // it only leads its consumer (component) rerender, when the extracted data changes.
+    const searchParams = useAgentSelector(simpleTodoList.current, ({searchParams}) => searchParams);
+
+    useEffect(() => {
+        feedback(searchParams);
+    }, [searchParams]);
 
     const handleSubmit = useCallback(async () => {
         // submit current searchParams with model object `simpleTodoList`
@@ -799,8 +808,6 @@ const SearchParamComponent = memo(() => {
 
 export default function NewFeatures() {
 
-    const {feedback} = useAgentReducer(searchParamsModel.current);
-
     // `Agent` bases on model `simpleTodoList`
     const agent = useAgentReducer(simpleTodoList.current);
 
@@ -818,7 +825,6 @@ export default function NewFeatures() {
     // handle page change
     const handleChangePage = useCallback(async (currentPage: number, pageSize: number = 10) => {
         // feedback searchParams with model object `searchParamsModel`.
-        feedback(state.searchParams);
         await changePageLatest(currentPage, pageSize);
     }, [state]);
 
@@ -846,6 +852,6 @@ export default function NewFeatures() {
 }
 ```
 
-`Agents` base on a same model object can update state synchronously. Using this feature of `agent-reducer` can make your code more simple.
+`Agents` base on a same model object can update state synchronously. Using this feature of `agent-reducer` can make your code more simple. And use API [useAgentSelector](/api?id=useagentselector) and [useAgentMethods](/api?id=useagentmethods) can make your component render more less with `agent-reducer` model sharing.
 
 You can do more things to make a search page model better.

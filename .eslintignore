@@ -1,4 +1,5 @@
 .eslintrc.js
+example/
 test/
 jest.config.js
 babel.config.js
