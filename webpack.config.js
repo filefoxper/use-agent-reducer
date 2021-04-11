@@ -1,4 +1,5 @@
 const webpack = require('webpack');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
@@ -29,7 +30,7 @@ const agentReducerExternal = {
     amd: 'agent-reducer',
 };
 
-function entry() {
+function entry(env) {
     return {
         externals: {
             'react': reactExternal,
@@ -106,10 +107,10 @@ function entry() {
                     'NODE_ENV': JSON.stringify('production')
                 }
             })
-        ]
+        ].concat(env.analyze ? new BundleAnalyzerPlugin() : [])
     }
 }
 
 module.exports = function (env) {
-    return entry();
+    return entry(env);
 };
