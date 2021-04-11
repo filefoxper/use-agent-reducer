@@ -226,13 +226,12 @@ export function shallowEqual<R>(prev:R, current:R):boolean {
   if (prevKeys.length !== currentKeys.length) {
     return false;
   }
-  const keySet = new Set(currentKeys);
-  const hasDiffKey = prevKeys.some((key) => !keySet.has(key));
+  const pre = (prev as Record<string, unknown>);
+  const curr = (current as Record<string, unknown>);
+  const hasDiffKey = prevKeys.some((key) => !Object.prototype.hasOwnProperty.call(curr, key));
   if (hasDiffKey) {
     return false;
   }
-  const pre = (prev as Record<string, unknown>);
-  const curr = (current as Record<string, unknown>);
   const hasDiffValue = currentKeys.some((key) => {
     const currentValue = curr[key];
     const prevValue = pre[key];
