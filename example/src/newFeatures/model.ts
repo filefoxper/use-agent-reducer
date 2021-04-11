@@ -43,9 +43,8 @@ export default class SimpleTodoList implements OriginAgent<State> {
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
         const fetchParams = {...searchParams, currentPage, pageSize};
         const {content: dataSource, total} = await fetchTodoList(fetchParams);
-        // we do not copy searchParams here,
-        // we can use new feature of 'agent-reducer@3.2.0' to update state synchronously in component.
-        return {searchParams, dataSource, currentPage, pageSize, total};
+        // Copy searchParams here
+        return {searchParams:{...searchParams}, dataSource, currentPage, pageSize, total};
     }
 
     // this method should works with a page navigation

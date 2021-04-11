@@ -203,11 +203,11 @@ describe("设置运行环境 RunEnv",()=>{
 
 通过使用 `agent-reducer` 的模型共享特性，我们可以很容易地在不同组件间同步渲染数据，但这也给我们的组件带来了一定的负担，因为只要模型 state 有变更，无论变更数据是否对当前组件有用，必然会引起渲染行为，这不是我们愿意看到的。自 `use-agent-reducer@3.2.5` 起，我们提供了相关的性能优化接口：`useAgentSelector` 、 `useAgentMethods`。
 
-API 接口 `useAgentSelector` ，可用于提取当前组件需要的部分数据，如果该部分数据没有发生改变，则不会触发当前组件的渲染。
+API 接口 [useAgentSelector](/zh/api?id=useagentselector)  ，可用于提取当前组件需要的部分数据，如果该部分数据没有发生改变，则不会触发当前组件的渲染。通过使用 `equalityFn` 对前后两次 state 提取数据进行对比，可进一步优化渲染性能，若对比返回值为 `true` ，则忽略提取数据的改变状况，不触发当前组件的渲染。
 
 ```typescript
 import {weakSharing} from 'agent-reducer';
-import {useAgentSelector} from 'use-agent-reducer';
+import {useAgentSelector, shallowEqual} from 'use-agent-reducer';
 
 // 共享模型引用
 const sharingRef = weakSharing(()=> Model);
@@ -217,9 +217,18 @@ const sharingRef = weakSharing(()=> Model);
 // 使用共享模型实例，通过 callback 从 state 中提取当前组件需的要数据，
 // 如果提取数据保持不变，则不会触发组件渲染
 const renderNeeds = useAgentSelector(sharingRef.current, (state)=> state.renderNeeds);
+
+// 提取数据对比器，若返回 true ，则不触发组件渲染
+function equalityFn<R>(prev:R, current:R):boolean{
+    // 浅对比 API，方便使用者，
+    // 可直接用在 useAgentSelector 上
+    return shallowEqual(prev, current);
+}
+
+const renderNeeds = useAgentSelector(sharingRef.current, (state)=> state.renderNeeds,equalityFn);
 ```
 
-API 接口 `useAgentMethods` ， 不会触发当前组件渲染，该接口只提供了当前组件需要使用的模型方法。
+API 接口 [useAgentMethods](/zh/api?id=useagentmethods) ， 不会触发当前组件渲染，该接口只提供了当前组件需要使用的模型方法。
 
 ```typescript
 import {weakSharing, MiddleWarePresets} from 'agent-reducer';

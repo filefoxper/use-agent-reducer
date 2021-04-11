@@ -1,6 +1,6 @@
 {
   "name": "use-agent-reducer",
-  "version": "3.2.5",
+  "version": "3.2.7",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",

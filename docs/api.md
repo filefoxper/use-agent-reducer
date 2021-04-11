@@ -49,11 +49,13 @@ This api function is a react hook, it can be used to extract data from a sharing
 export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   entry: T,
   mapStateCallback: (state: T['state']) => R,
+  equalityFn?:(prev: R, current: R) => boolean,
 ): R
 ```
 
 * entry - the model instance object.
-* mapStateCallback - a callback function for extracting data from model state.
+* mapStateCallback - a callback function for extracting data from model state. The callback param state is a current model state.
+* equalityFn - optional param, a callback function to compare the previous extracted data with the current one. If this function returns `true`, `useAgentSelector` do not make its consumer (react component) rerender, no matter if the extracted data changes. Param `prev` is the previous extracted data, and param `current` is the current one.
   
 This function returns data extracted from a model state directly.
 
@@ -74,6 +76,19 @@ export function useAgentMethods<T extends OriginAgent<S>, S>(
 * env - if you want to set both `MiddleWare` and running env, you can set an env config here.
 
 This function returns a model like instance which has an empty state property. It only provides model methods.
+
+## shallowEqual
+
+This api function is a shortcut `equalityFn` callback for using api [useAgentSelector](/api?id=useagentselector). It compares `prev` extracted data and `current` extracted data with a shallow `key-value` equality comparator.
+
+```typescript
+function shallowEqual<R>(prev:R, current:R):boolean
+```
+
+* prev - one data for comparing with another.
+* current - one data for comparing with another.
+
+It returns a `boolean` value. If the two params are equal, it returns `true`, otherwise it returns `false`. 
 
 ## ~~useAgent~~
 

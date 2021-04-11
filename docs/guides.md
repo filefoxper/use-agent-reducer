@@ -211,11 +211,12 @@ Be careful in `env.strict`, you'd better not set it to be `false`. For it will m
 
 By using `model sharing`, we can share state updating between different components. But this feature brings problem too, that causes model sharing consumers( react components ) always render together, no matter if the state change is necessary for urrent consumer. From `use-agent-reducer@3.2.5`, we provide some new API functions for resolving this problem. You can use API function `useAgentSelector` to extract data from a model state which is truly used in component. And also, you can extract methods from a sharing model by using another API `useAgentMethods`.
 
-API `useAgentSelector` extracts data from a state, and only the extracted data change can cause its consumer (react component) rerender.  
+API [useAgentSelector](/api?id=useagentselector) extracts data from a state, and only the extracted data change may cause its consumer (react component) rerender. You can also use `equalityFn` to show if the consumer should rerender with a new extracted data.
+The `shallowEqual` is a simple `equalityFn`, you can use it directly.
 
 ```typescript
 import {weakSharing} from 'agent-reducer';
-import {useAgentSelector} from 'use-agent-reducer';
+import {useAgentSelector,shallowEqual} from 'use-agent-reducer';
 
 // model sharing reference
 const sharingRef = weakSharing(()=> Model);
@@ -226,9 +227,24 @@ const sharingRef = weakSharing(()=> Model);
 // and extract data from state by a state mapping function.
 // Only the extracted data change can cause its consumer rerender.
 const renderNeeds = useAgentSelector(sharingRef.current, (state)=> state.renderNeeds);
+
+// tell `useAgentSelector` to rerender consumer (component),
+// while equalityFn returns false.
+// The param `prev` is the previous extracted data, 
+// and `current` is the current extracted data
+function equalityFn<R>(prev:R, current:R):boolean{
+    // `shallowEqual` compares the `key-values` 
+    // between `prev` and `current`, 
+    // if all of them are equal, it returns true.
+    // This function only compares data own properties.
+    // You can also use `shallowEqual` directly to `useAgentSelector`.
+    return shallowEqual(prev, current);
+}
+
+const renderNeeds = useAgentSelector(sharingRef.current, ({renderNeeds})=> renderNeeds,equalityFn);
 ```
 
-API `useAgentMethods` only provides methods from a model like instance, it never causes a rerender.
+API [useAgentMethods](/api?id=useagentmethods) only provides methods from a model like instance, it never causes a rerender.
 
 ```typescript
 import {weakSharing, MiddleWarePresets} from 'agent-reducer';

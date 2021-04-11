@@ -116,6 +116,7 @@ export function useMiddleWare<T extends OriginAgent<S>, S>(
 export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   entry: T,
   mapStateCallback: (state: T['state']) => R,
+  equalityFn?:(prev: R, current: R)=>boolean,
 ): R {
   const reducerRef = useRef<null | AgentReducer<S, Action, T>>(null);
 
@@ -136,12 +137,12 @@ export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   const weakDispatch = useCallback(
     (action: Action) => {
       const next = mapStateCallback(action.args as S);
-      if (current === next) {
+      if (current === next || (equalityFn && equalityFn(current, next))) {
         return;
       }
       dispatch(action);
     },
-    [current, dispatch],
+    [current, dispatch, equalityFn],
   );
 
   reducer.update(entry.state, weakDispatch);
@@ -207,6 +208,37 @@ export function useAgentMethods<T extends OriginAgent<S>, S>(
   );
 
   return reducer.agent;
+}
+
+function isObject<T>(data: T):boolean {
+  return data && Object.prototype.toString.apply(data) === '[object Object]';
+}
+
+export function shallowEqual<R>(prev:R, current:R):boolean {
+  if (Object.is(prev, current)) {
+    return true;
+  }
+  if (!isObject(prev) || !isObject(current)) {
+    return false;
+  }
+  const prevKeys = Object.keys(prev);
+  const currentKeys = Object.keys(current);
+  if (prevKeys.length !== currentKeys.length) {
+    return false;
+  }
+  const keySet = new Set(currentKeys);
+  const hasDiffKey = prevKeys.some((key) => !keySet.has(key));
+  if (hasDiffKey) {
+    return false;
+  }
+  const pre = (prev as Record<string, unknown>);
+  const curr = (current as Record<string, unknown>);
+  const hasDiffValue = currentKeys.some((key) => {
+    const currentValue = curr[key];
+    const prevValue = pre[key];
+    return !Object.is(currentValue, prevValue);
+  });
+  return !hasDiffValue;
 }
 
 /** **** deprecated **** */
