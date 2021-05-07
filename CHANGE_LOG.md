@@ -11,3 +11,7 @@
 ## v3.2.5 2021-04-10
 
 [new] add API `useAgentSelector` and `useAgentMethods`
+
+## v3.3.0 2021-05-07
+
+[compile] add `es` package for reducing the size.

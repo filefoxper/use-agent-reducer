@@ -92,11 +92,11 @@ function entry(env) {
                                             corejs: {version: 3, proposals: true}
                                         }
                                     ],
-                                    '@babel/preset-react'
+                                    '@babel/preset-react',
+                                    '@babel/preset-typescript'
                                 ]
                             }
-                        },
-                        "ts-loader"
+                        }
                     ]
                 }
             ]

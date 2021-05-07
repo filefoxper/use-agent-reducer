@@ -92,6 +92,59 @@ npm i use-agent-reducer
 ```
 You'd better add `agent-reducer` into your package.json dependencies too. When  you are installing package `use-agent-reducer`, a `agent-reducer` package is always brought into your `node_modules` directory, but this is not helpful for using `agent-reducer` API. 
 
+The directory `use-agent-reducer/es` is supplied for a small size building in different compiling target environment. You can use [babel](https://babeljs.io/docs/en/configuration) to do this, `babel` will supply a common polyfill for both of your code and `use-agent-reducer`.
+
+the example of babel.config.js :
+
+```javascript
+module.exports = {
+    plugins: [
+        ["@babel/plugin-transform-runtime"],
+        [
+            '@babel/plugin-proposal-class-properties',
+            {loose: true},
+        ]
+    ],
+    presets: [
+        [
+            '@babel/preset-env',
+            {
+                modules: false,
+                targets: {
+                    // 想要支持的浏览器最低环境
+                    "browsers": ["last 2 versions", "ie >=9"]
+                },
+                useBuiltIns: "usage",
+                corejs: {version: 3, proposals: true}
+            }
+        ],
+        .......
+    ]
+}
+```
+
+If you still want to use `import {...} from 'use-agent-reducer'`, you can use complier `alias` function too resolve it.
+
+For example, you can use webpack.config.js like:
+
+```javascript
+{
+    ...,
+    resolve: {
+        alias:{
+            // transform import target name here
+            'use-agent-reducer':'use-agent-reducer/es'
+        },
+        extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],
+        plugins: [
+            new TsconfigPathsPlugin({configFile: "./tsconfig.json"})
+        ]
+    },
+    ...,
+}
+```
+
+
 ## Getting started
 
 This section describes how to create a model, and how to call `agent-reducer` API for help. After reading this section, you can master the basic usage of `use-agent-reducer`. 

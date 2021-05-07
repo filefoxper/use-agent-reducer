@@ -1,14 +1,17 @@
 {
   "name": "use-agent-reducer",
-  "version": "3.2.8",
+  "version": "3.3.0",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
   "scripts": {
-    "clear": "rm -rf ./dist & rm -f ./index.d.ts",
+    "clear": "rm -rf ./dist & rm -rf ./es",
     "lint": "eslint src --fix --ext .ts,.tsx ",
     "lint-init": "eslint --init",
-    "build": "webpack --config ./webpack.config.js --env.mode=production",
+    "es-build": "babel src --extensions '.ts' --config-file ./babel.es.config.js --out-dir es",
+    "es-d": "cp ./index.d.ts ./es/index.d.ts",
+    "base-build": "webpack --config ./webpack.config.js --env.mode=production",
+    "build": "mkdir ./es & npm run es-d & npm run es-build & npm run base-build",
     "test": "jest --coverage",
     "docs": "docsify serve ./docs",
     "analyze": "webpack --config ./webpack.config.js --env.mode=production --env.analyze"
@@ -19,6 +22,7 @@
   },
   "files": [
     "dist",
+    "es",
     "index.js",
     "index.d.ts"
   ],
@@ -42,6 +46,7 @@
     "agent-reducer": ">=3.2.4"
   },
   "devDependencies": {
+    "@babel/cli": "^7.13.16",
     "@babel/core": "7.2.2",
     "@babel/runtime": "7.3.0",
     "@babel/preset-env": "^7.5.2",

@@ -3,5 +3,5 @@
 /.idea/
 /coverage/
 /dist/
-/index.d.ts
+/es/
 package-lock.json
