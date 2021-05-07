@@ -1,6 +1,7 @@
 .eslintrc.js
 example/
 test/
+babel.es.config.js
 jest.config.js
 babel.config.js
 index.js

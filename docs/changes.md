@@ -8,6 +8,10 @@
 * [update] API [useAgentSelector](/api?id=useagentselector) add a new param `equalityFn` for comparing current extracted data with the previous one, and then deside if its consumer (react component) should be rerendered.
 * [new] add API [shallowEqual](/api?id=shallowequal) for a shallow comparing with two data.
 
-## v3.2.8 2021-04-01
+## v3.2.8 2021-04-11
 
 * [build] decrease the package size
+
+## v3.3.0 2021-05-07
+
+* [build] decrease the package size with a `es` package. [See details](/introduction?id=installation) .

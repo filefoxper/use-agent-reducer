@@ -85,13 +85,75 @@ const agent = useAgentReducer(CountAgent);
 
 ## 安装
 
-`use-agent-reducer`长期发布于[npm](https://www.npmjs.com/get-npm)。如果想要安装最新的稳定版本，可以使用命令：
+`use-agent-reducer` 长期发布于[npm](https://www.npmjs.com/get-npm)。如果想要安装最新的稳定版本，可以使用命令：
 
 ```
 npm i use-agent-reducer
 ```
 
 我们希望在使用当前工具的同时，也能将 `agent-reducer` 的最新版本加入您的 package.json 文件，这对您使用该核心包中的辅助 API，以及代码关联提示都是十分有利的。
+
+为了支持低版本浏览器，`use-agent-reducer` 编译时会从 core.js 引入一些用户环境可能本身就支持的 polyfill 函数，从而导致引入包过大的问题。目前使用者可以通过直接使用 `use-agent-reducer/es` API，并自行提供 polyfill 的方式来解决这个问题。
+
+代码：
+
+```typescript
+import {MiddleWarePresets} from 'agent-reducer/es';
+
+......
+```
+
+babel配置：
+
+```javascript
+module.exports = {
+    plugins: [
+        ["@babel/plugin-transform-runtime"],
+        [
+            '@babel/plugin-proposal-class-properties',
+            {loose: true},
+        ]
+    ],
+    presets: [
+        [
+            '@babel/preset-env',
+            {
+                modules: false,
+                targets: {
+                    // 想要支持的浏览器最低环境
+                    "browsers": ["last 2 versions", "ie >=9"]
+                },
+                useBuiltIns: "usage",
+                corejs: {version: 3, proposals: true}
+            }
+        ],
+        .......
+    ]
+}
+```
+
+具体配置可参考 [babel](https://babeljs.io/docs/en/configuration) 官方配置。
+
+如果不希望更改引用方式，还可以使用 alias 技术，将原来的 `use-agent-reducer` 在编译时转换成 `use-agent-reducer/es`。
+
+如 webpack.config.js 配置中：
+
+```javascript
+{
+    ...,
+    resolve: {
+        alias:{
+            // 引用名转换
+            'use-agent-reducer':'use-agent-reducer/es'
+        },
+        extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],
+        plugins: [
+            new TsconfigPathsPlugin({configFile: "./tsconfig.json"})
+        ]
+    },
+    ...,
+}
+```
 
 ## 快速开始
 
