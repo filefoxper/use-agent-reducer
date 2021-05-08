@@ -129,10 +129,42 @@ For example, you can use webpack.config.js like:
 
 ```javascript
 {
+    module: {
+            rules: [
+                // your code
+                {
+                    test: /\.js$|\.ts$|\.tsx$/,
+                    exclude: /(node_modules|bower_components)/,
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                cacheDirectory: true
+                            }
+                        }
+                    ]
+                },
+                // use-agent-reducer/es code
+                {
+                    test: /\.js$|\.ts$|\.tsx$/,
+                    include: /(node_modules\/agent-reducer\/es|node_modules\/use-agent-reducer\/es)/,
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                cacheDirectory: true
+                            }
+                        }
+                    ]
+                },
+                ......
+            ]
+    },
     ...,
     resolve: {
         alias:{
             // transform import target name here
+            'agent-reducer':'agent-reducer/es',
             'use-agent-reducer':'use-agent-reducer/es'
         },
         extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],

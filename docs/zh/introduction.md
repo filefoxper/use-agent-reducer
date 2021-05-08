@@ -140,10 +140,42 @@ module.exports = {
 
 ```javascript
 {
+    module: {
+            rules: [
+                // 你的代码
+                {
+                    test: /\.js$|\.ts$|\.tsx$/,
+                    exclude: /(node_modules|bower_components)/,
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                cacheDirectory: true
+                            }
+                        }
+                    ]
+                },
+                // use-agent-reducer/es的代码
+                {
+                    test: /\.js$|\.ts$|\.tsx$/,
+                    include: /(node_modules\/agent-reducer\/es|node_modules\/use-agent-reducer\/es)/,
+                    use: [
+                        {
+                            loader: 'babel-loader',
+                            options: {
+                                cacheDirectory: true
+                            }
+                        }
+                    ]
+                },
+                ......
+            ]
+    },
     ...,
     resolve: {
         alias:{
             // 引用名转换
+            'agent-reducer':'agent-reducer/es',
             'use-agent-reducer':'use-agent-reducer/es'
         },
         extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],
