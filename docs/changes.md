@@ -15,3 +15,7 @@
 ## v3.3.0 2021-05-07
 
 * [build] decrease the package size with a `es` package. [See details](/introduction?id=installation) .
+
+## v3.3.2 2021-05-24
+
+* [bug] fix the problem about `useAgentMethods` can not update the state itself.

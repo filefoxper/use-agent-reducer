@@ -182,15 +182,10 @@ export function useAgentMethods<T extends OriginAgent<S>, S>(
       ...env,
       legacy: false,
       expired: false,
-      updateBy: 'manual',
     });
   }
 
   const { current: reducer } = reducerRef;
-
-  const dispatch = useCallback(() => {}, []);
-
-  reducer.update(entry.state, dispatch);
 
   useEffect(
     () => () => {
