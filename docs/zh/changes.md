@@ -14,4 +14,8 @@
 
 ## v3.3.0 2021-05-07
 
-* [build] 提供了 `es` 包，以便减小编译后的包体积。[参考详情](/zh/introduction?id=安装)
+* [编译] 提供了 `es` 包，以便减小编译后的包体积。[参考详情](/zh/introduction?id=安装)
+
+## v3.3.2 2021-05-24
+
+* [bug] 修复 `useAgentMethods` 不能更新 state 的问题。
