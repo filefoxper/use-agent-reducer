@@ -19,3 +19,7 @@
 ## v3.3.2 2021-05-24
 
 * [bug] fix the problem about `useAgentMethods` can not update the state itself.
+
+## v3.4.0 2021-06-01
+
+* [refactor] adjust by `agent-reducer@3.4.1` . 

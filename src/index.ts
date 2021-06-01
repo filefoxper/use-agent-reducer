@@ -14,10 +14,11 @@ import {
   OriginAgent,
   useMiddleActions as useAgentMiddleActions,
   useMiddleWare as useAgentMiddleWare,
+  LifecycleMiddleWare,
+  MiddleActions,
+  Action,
+  AgentReducer,
 } from 'agent-reducer';
-import { LifecycleMiddleWare } from 'agent-reducer/libs/global.type';
-import { MiddleActions } from 'agent-reducer/libs/middleActions';
-import { Action, AgentReducer } from 'agent-reducer/libs/reducer.type';
 
 export type Listener = (agent: OriginAgent) => any;
 
@@ -69,7 +70,7 @@ export function useAgentReducer<T extends OriginAgent<S>, S>(
 
   const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
 
-  const reducerRef = useRef<null | AgentReducer<S, Action, T>>(null);
+  const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
     reducerRef.current = createAgentReducer(entry, middleWare, {
@@ -118,7 +119,7 @@ export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   mapStateCallback: (state: T['state']) => R,
   equalityFn?:(prev: R, current: R)=>boolean,
 ): R {
-  const reducerRef = useRef<null | AgentReducer<S, Action, T>>(null);
+  const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
     reducerRef.current = createAgentReducer(entry, {
@@ -174,7 +175,7 @@ export function useAgentMethods<T extends OriginAgent<S>, S>(
 
   const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
 
-  const reducerRef = useRef<null | AgentReducer<S, Action, T>>(null);
+  const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
     reducerRef.current = createAgentReducer(entry, middleWare, {
@@ -246,7 +247,7 @@ export function useAgent<T extends OriginAgent<S>, S>(
 
   const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
 
-  const reducerRef = useRef<null | AgentReducer<S, Action, T>>(null);
+  const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
     reducerRef.current = createAgentReducer(entry, middleWare, {
