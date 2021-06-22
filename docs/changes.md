@@ -23,3 +23,7 @@
 ## v3.4.0 2021-06-01
 
 * [refactor] adjust by `agent-reducer@3.4.1` . 
+  
+## v3.6.0 2021-06-22
+
+* [refactor] adjust by `agent-reducer@3.6.0` . 
