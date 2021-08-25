@@ -187,7 +187,7 @@ describe('使用useMiddleWare复制一个专注一种任务模式的agent', () =
 
     it('使用AgentProvider和useAgentContext可以在深层组件内使用外部agent', function () {
         const AgentProv=({children}:{children?:ReactNodeLike})=>{
-            const agent=useAgent(CountAgent);
+            const agent=useAgentReducer(CountAgent);
             return (
                 <AgentProvider value={agent}>
                     {children}
