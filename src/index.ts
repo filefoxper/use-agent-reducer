@@ -17,7 +17,7 @@ import {
   LifecycleMiddleWare,
   MiddleActions,
   Action,
-  AgentReducer,
+  AgentReducer, DefaultActionType,
 } from 'agent-reducer';
 
 export type Listener = (agent: OriginAgent) => any;
@@ -86,19 +86,23 @@ export function useAgentReducer<T extends OriginAgent<S>, S>(
 
   const [state, dispatch] = useReducer(reducer, reducer.initialState);
 
-  reducer.update(state, dispatch);
-
   useEffect(
-    () => () => {
-      const { current: red } = reducerRef;
-      if (!red) {
-        return;
+    () => {
+      reducer.update(state, dispatch);
+      if (reducer.agent.state !== state) {
+        dispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
       }
-      red.env.expired = true;
-      if (!red.destroy) {
-        return;
-      }
-      red.destroy();
+      return () => {
+        const { current: red } = reducerRef;
+        if (!red) {
+          return;
+        }
+        red.env.expired = true;
+        if (!red.destroy) {
+          return;
+        }
+        red.destroy();
+      };
     },
     [],
   );
@@ -146,19 +150,24 @@ export function useAgentSelector<T extends OriginAgent<S>, S, R>(
     [current, dispatch, equalityFn],
   );
 
-  reducer.update(entry.state, weakDispatch);
+  useEffect(() => {
+    reducer.update(entry.state, weakDispatch);
+  }, [weakDispatch]);
 
   useEffect(
-    () => () => {
-      const { current: red } = reducerRef;
-      if (!red) {
-        return;
-      }
-      red.env.expired = true;
-      if (!red.destroy) {
-        return;
-      }
-      red.destroy();
+    () => {
+      weakDispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
+      return () => {
+        const { current: red } = reducerRef;
+        if (!red) {
+          return;
+        }
+        red.env.expired = true;
+        if (!red.destroy) {
+          return;
+        }
+        red.destroy();
+      };
     },
     [],
   );
@@ -262,19 +271,23 @@ export function useAgent<T extends OriginAgent<S>, S>(
 
   const [state, dispatch] = useReducer(reducer, reducer.initialState);
 
-  reducer.update(state, dispatch);
-
   useEffect(
-    () => () => {
-      const { current: red } = reducerRef;
-      if (!red) {
-        return;
+    () => {
+      reducer.update(state, dispatch);
+      if (reducer.agent.state !== state) {
+        dispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
       }
-      red.env.expired = true;
-      if (!red.destroy) {
-        return;
-      }
-      red.destroy();
+      return () => {
+        const { current: red } = reducerRef;
+        if (!red) {
+          return;
+        }
+        red.env.expired = true;
+        if (!red.destroy) {
+          return;
+        }
+        red.destroy();
+      };
     },
     [],
   );

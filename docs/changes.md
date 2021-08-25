@@ -27,3 +27,7 @@
 ## v3.6.0 2021-06-22
 
 * [refactor] adjust by `agent-reducer@3.6.0` . 
+
+## v3.7.0 2021-08-25
+
+* [bug] fix the problem about when using `react-dev-tool`, the state can not be changed.
