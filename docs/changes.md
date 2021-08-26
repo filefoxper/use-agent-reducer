@@ -31,3 +31,7 @@
 ## v3.7.0 2021-08-25
 
 * [bug] fix the problem about when using `react-dev-tool`, the state can not be changed.
+
+## v3.7.1 2021-08-26
+
+* [bug] fix the problem about when using `react-refresh`, the state can not be connected.

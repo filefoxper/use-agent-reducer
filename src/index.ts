@@ -88,6 +88,9 @@ export function useAgentReducer<T extends OriginAgent<S>, S>(
 
   useEffect(
     () => {
+      if (reducer && reducer.env.expired) {
+        reducer.reconnect();
+      }
       reducer.update(state, dispatch);
       if (reducer.agent.state !== state) {
         dispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
@@ -156,6 +159,9 @@ export function useAgentSelector<T extends OriginAgent<S>, S, R>(
 
   useEffect(
     () => {
+      if (reducer && reducer.env.expired) {
+        reducer.reconnect();
+      }
       weakDispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
       return () => {
         const { current: red } = reducerRef;
@@ -198,16 +204,21 @@ export function useAgentMethods<T extends OriginAgent<S>, S>(
   const { current: reducer } = reducerRef;
 
   useEffect(
-    () => () => {
-      const { current: red } = reducerRef;
-      if (!red) {
-        return;
+    () => {
+      if (reducer && reducer.env.expired) {
+        reducer.reconnect();
       }
-      red.env.expired = true;
-      if (!red.destroy) {
-        return;
-      }
-      red.destroy();
+      return () => {
+        const { current: red } = reducerRef;
+        if (!red) {
+          return;
+        }
+        red.env.expired = true;
+        if (!red.destroy) {
+          return;
+        }
+        red.destroy();
+      };
     },
     [],
   );
