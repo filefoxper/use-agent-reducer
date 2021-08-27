@@ -35,3 +35,7 @@
 ## v3.7.1 2021-08-26
 
 * [bug] fix the problem about when using `react-refresh`, the state can not be connected.
+
+## v3.7.2 2021-08-27
+
+* [bug] fix the problem about use-agent-reducer inside ts error.

@@ -1,7 +1,5 @@
 import React, {ReactNode} from 'react';
-import {MiddleWare, OriginAgent} from 'agent-reducer';
-import {LifecycleMiddleWare} from 'agent-reducer/libs/global.type';
-import {MiddleActions} from 'agent-reducer/libs/middleActions';
+import {MiddleWare, OriginAgent,LifecycleMiddleWare,MiddleActions} from 'agent-reducer';
 
 export declare type Listener = (agent: OriginAgent) => any;
 
