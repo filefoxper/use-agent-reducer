@@ -35,3 +35,7 @@
 ## v3.7.1 2021-08-26
 
 * [bug] 修复关于使用 `react-refresh` 热更新时，state 无法链接的问题。
+
+## v3.7.2 2021-08-27
+
+* [bug] 修复 use-agent-reducer 内部 ts 错误.
