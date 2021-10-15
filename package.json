@@ -1,6 +1,6 @@
 {
   "name": "use-agent-reducer",
-  "version": "3.7.2",
+  "version": "3.8.0",
   "main": "./index.js",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
@@ -42,9 +42,6 @@
     "react-dom": ">=16.8.0",
     "agent-reducer": ">=3.7.2"
   },
-  "dependencies": {
-    "agent-reducer": "3.7.2"
-  },
   "devDependencies": {
     "@babel/cli": "^7.13.16",
     "@babel/core": "7.2.2",
@@ -70,6 +67,7 @@
     "@typescript-eslint/parser": "4.21.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
+    "agent-reducer": "3.7.2",
     "core-js": "^3.8.0",
     "jest": "^26.0.1",
     "typescript": "^3.8.3",

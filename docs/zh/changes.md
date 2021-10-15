@@ -39,3 +39,8 @@
 ## v3.7.2 2021-08-27
 
 * [bug] 修复 use-agent-reducer 内部 ts 错误.
+
+## v3.8.0 2021-10-15
+
+* [bug] 修复 use-agent-reducer 内嵌 agent-reducer@3.7.2 的问题。
+* [优化] 更改了 use-agent-reducer 对 agent-reducer 的依赖模式。
