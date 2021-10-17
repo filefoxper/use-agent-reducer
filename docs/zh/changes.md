@@ -44,3 +44,8 @@
 
 * [bug] 修复 use-agent-reducer 内嵌 agent-reducer@3.7.2 的问题。
 * [优化] 更改了 use-agent-reducer 对 agent-reducer 的依赖模式。
+
+## v4.0.0 2021-10-30
+
+* [优化] 使用 `agent-reducer@4.0.0` 依赖
+* [优化] 删除 bad design 与对老版本 `agent-reducer` 的支持

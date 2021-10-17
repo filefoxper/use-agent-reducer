@@ -66,7 +66,7 @@ export interface State {
 模型：
 
 ```typescript
-import {OriginAgent} from "agent-reducer";
+import {Model} from "agent-reducer";
 import {PriorLevel, State, Todo} from "@/type";
 
 const defaultState: State = {
@@ -80,7 +80,7 @@ const defaultState: State = {
 /**
  * 这是一个简单 TodoList 页面模型
  */
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
     // 设置 state 初始值
     state = defaultState;
 
@@ -188,7 +188,7 @@ export default function SimpleSearch() {
 
 首先让我们来解决问题 1 和 问题 2。`MiddleWarePresets.takePromiseResolve` 可以将一个异步方法的返回值（promise.resolve出的对象）转换成新的 state ，我们可以利用它来把查询请求过程写到模型方法中去。
 
-查看[MiddleWare 资源列表](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/api/middle_ware_presets.md)
+查看[MiddleWare 资源列表](https://filefoxper.github.io/agent-reducer/#/zh/api?id=middlewarepresets)
 
 
 [源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/useMiddleWare)
@@ -196,7 +196,7 @@ export default function SimpleSearch() {
 模型:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, State, Todo} from "@/type";
 import {fetchTodoList} from "@/service";
 
@@ -208,7 +208,7 @@ const defaultState: State = {
     total: 0
 };
 
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
 
     state = defaultState;
 
@@ -314,12 +314,12 @@ export default function UseMiddleWare() {
 模型:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList} from "@/service";
 
 // 拆分出的查询条件显式模型
-export class SearchParamsModel implements OriginAgent<SearchParams> {
+export class SearchParamsModel implements Model<SearchParams> {
 
     state: SearchParams = {};
 
@@ -349,7 +349,7 @@ const defaultState: State = {
     total: 0
 };
 
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
 
     state = defaultState;
 
@@ -482,7 +482,7 @@ export default function SplitModel() {
 
 数据请求伴往往随着如网络延时这样的各种不确定因素，因此请求响应顺序并不会与请求发送顺序保持一致。这导致最新 state 数据可能被早期发送请求的响应数据覆盖。这时，我们需要使用 `MiddleWarePresets.takeLatest` 来保证返回数据版本的正确性，即只接收最新发送请求的响应数据。
 
-[查看 MiddleWare 资源列表](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/api/middle_ware_presets.md)
+[查看 MiddleWare 资源列表](https://filefoxper.github.io/agent-reducer/#/zh/api?id=middlewares)
 
 [源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/takeLatest)
 
@@ -490,11 +490,11 @@ export default function SplitModel() {
 模型:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList, fetchTodoListWithDelay} from "@/service";
 
-export class SearchParamsModel implements OriginAgent<SearchParams> {
+export class SearchParamsModel implements Model<SearchParams> {
 
     state: SearchParams = {};
 
@@ -520,7 +520,7 @@ const defaultState: State = {
     total: 0
 };
 
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
 
     state = defaultState;
     
@@ -650,18 +650,20 @@ export default function TakeLatest() {
 
 通过利用这条特性，我们可以让组件更干净，更简单。我们将通过模型共享原则去除 `SearchParamComponent` 中用于数据传递的 props 属性。
 
+可以从[官网文档](https://filefoxper.github.io/agent-reducer/#/zh/feature?id=模型共享)获取更多关于模型共享的信息。
+
 [源码位置](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/newFeatures)
 
 模型:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList, fetchTodoListWithDelay} from "@/service";
 
 const defaultSearchParams={};
 
-export class SearchParamsModel implements OriginAgent<SearchParams> {
+export class SearchParamsModel implements Model<SearchParams> {
 
     state: SearchParams = defaultSearchParams;
 
@@ -687,7 +689,7 @@ const defaultState: State = {
     total: 0
 };
 
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
 
     state = defaultState;
 

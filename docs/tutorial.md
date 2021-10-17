@@ -61,12 +61,12 @@ export interface State {
 
 Now, we can build a `SimpleTodoList` model, see code below. It can change search params, data source, page infos. When the request of todo list responds, we can use method `changeDataSource` to change `state.dataSource`, and we also need method `changePageInfo` to change the page infos in state.
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/simpleSearch)
+check [source code](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/simpleSearch)
 
 model:
 
 ```typescript
-import {OriginAgent} from "agent-reducer";
+import {Model} from "agent-reducer";
 import {PriorLevel, State, Todo} from "@/type";
 
 const defaultState: State = {
@@ -80,7 +80,7 @@ const defaultState: State = {
 /**
  * this is a simple todo list model
  */
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
     // set default state
     state = defaultState;
 
@@ -190,14 +190,14 @@ We will recode this model to resolve these problems.
 
 Now, let us resolve problem 1 and 2 first. We can use `MiddleWarePresets.takePromiseResolve` to make request function be called inside model.
 
-Check MiddleWare list from `agent-reducer` api [MiddleWares](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_wares.md) and [MiddleWarePresets](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware_presets.md).
+Check MiddleWare list from `agent-reducer` api [MiddleWares](https://filefoxper.github.io/agent-reducer/#/api?id=middlewares) and [MiddleWarePresets](https://filefoxper.github.io/agent-reducer/#/api?id=middlewarepresets).
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/useMiddleWare)
+check [source code](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/useMiddleWare)
 
 model:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, State, Todo} from "@/type";
 import {fetchTodoList} from "@/service";
 
@@ -212,7 +212,7 @@ const defaultState: State = {
 /**
  * this is a simple todo list model
  */
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
     // set default state
     state = defaultState;
 
@@ -316,17 +316,17 @@ It is better than the basic example, let us resolve another problem。
 
 Before click the submit button, search params for sending request should not be changed. So we need to split model `SimpleTodoList` into two parts, one for keeping search params from a newest submit action, and another for managing search params real time changes. 
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/splitModel)
+check [source code](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/splitModel)
 
 model:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList} from "@/service";
 
 // split search params change out
-export class SearchParamsModel implements OriginAgent<SearchParams> {
+export class SearchParamsModel implements Model<SearchParams> {
 
     state: SearchParams = {};
 
@@ -358,7 +358,7 @@ const defaultState: State = {
 /**
  * this is a simple todo list model
  */
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
     // set default state
     state = defaultState;
 
@@ -497,7 +497,7 @@ Now, this searching page can work well, let us add more things to make the model
 
 Sometimes, http request may be delayed, this may cause the newest dataSource be override by an early request response. We can use `MiddleWarePresets.takeLatest` to resolve this problem.
 
-Check MiddleWare list from `agent-reducer` api [MiddleWares](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_wares.md) and [MiddleWarePresets](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware_presets.md).
+Check MiddleWare list from `agent-reducer` api [MiddleWares](https://filefoxper.github.io/agent-reducer/#/api?id=middlewares) and [MiddleWarePresets](https://filefoxper.github.io/agent-reducer/#/api?id=middlewarepresets).
 
 
 check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/takeLatest)
@@ -506,11 +506,11 @@ check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/e
 model:
 
 ```typescript
-import {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList, fetchTodoListWithDelay} from "@/service";
 
-export class SearchParamsModel implements OriginAgent<SearchParams> {
+export class SearchParamsModel implements Model<SearchParams> {
 
     state: SearchParams = {};
 
@@ -539,7 +539,7 @@ const defaultState: State = {
 /**
  * this is a simple todo list model
  */
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
     // set default state
     state = defaultState;
     
@@ -625,7 +625,7 @@ export default function TakeLatest() {
 
     // MiddleWarePresets.takeLatest() has chained with a MiddleWares.takePromiseResolve()
     // useMiddleWare create a copy version from 'agent',
-    // and its MiddleWare will cover MiddleWare from decorators in 'OriginAgent'.
+    // and its MiddleWare will cover MiddleWare from decorators in 'Model'.
     // when currentPage is 2, we make a delay 3000 ms,
     // so if you quickly change page to 3 during 3000 ms,
     // the newest dataSource of page 3 should be covered by dataSource of page 2,
@@ -677,18 +677,20 @@ That means we can create `Agents` base on a same model object in different react
 
 With this feature we can rebuild `SearchParamComponent` without props for model communication. 
 
-check [sourceCode](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/newFeatures)
+You can learn model sharing by following the [official document](https://filefoxper.github.io/agent-reducer/#/feature?id=model-sharing).
+
+check [source code](https://github.com/filefoxper/use-agent-reducer/blob/master/example/src/newFeatures)
 
 model:
 
 ```typescript
-iimport {middleWare, MiddleWarePresets, MiddleWares, OriginAgent} from "agent-reducer";
+iimport {middleWare, MiddleWarePresets, MiddleWares, Model} from "agent-reducer";
 import {FetchParams, PriorLevel, SearchParams, State, Todo} from "@/type";
 import {fetchTodoList, fetchTodoListWithDelay} from "@/service";
 
 const defaultSearchParams={};
 
-export class SearchParamsModel implements OriginAgent<SearchParams> {
+export class SearchParamsModel implements Model<SearchParams> {
     // set default state
     state: SearchParams = defaultSearchParams;
 
@@ -720,7 +722,7 @@ const defaultState: State = {
 /**
  * this is a simple todo list model
  */
-export default class SimpleTodoList implements OriginAgent<State> {
+export default class SimpleTodoList implements Model<State> {
     // set default state
     state = defaultState;
 
