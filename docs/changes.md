@@ -45,7 +45,7 @@
 * [bug] fix the problem about use-agent-reducer includes an inside agent-reducer@3.7.2.
 * [refactor] optimize the dependency mode of `agent-reducer`.
 
-## v4.0.0 2021-10-30
+## v4.0.0 2021-10-25
 
 * [refactor] use `agent-reducer@4.0.0` .
 * [refactor] remove bad designs .

@@ -1,17 +1,18 @@
 {
   "name": "use-agent-reducer",
-  "version": "4.0.0-alpha",
-  "main": "./index.js",
+  "version": "4.0.0",
+  "main": "dist/use-agent-reducer.mini.js",
+  "module": "esm/use-agent-reducer.js",
+  "typings": "index.d.ts",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
   "scripts": {
-    "clear": "rm -rf ./dist & rm -rf ./es",
+    "clear": "rm -rf ./dist & rm -rf ./es & rm -rf ./esm",
     "lint": "eslint src --fix --ext .ts,.tsx ",
     "lint-init": "eslint --init",
     "es-build": "babel src --extensions '.ts' --config-file ./babel.es.config.js --out-dir es",
-    "es-d": "cp ./index.d.ts ./es/index.d.ts",
     "base-build": "webpack --config ./webpack.config.js --env.mode=production",
-    "build": "mkdir ./es & npm run es-d & npm run es-build & npm run base-build",
+    "build": "mkdir ./es & npm run es-build & npm run base-build",
     "test": "jest --coverage",
     "docs": "docsify serve ./docs",
     "analyze": "webpack --config ./webpack.config.js --env.mode=production --env.analyze"
@@ -20,9 +21,11 @@
     "type": "git",
     "url": "https://github.com/filefoxper/use-agent-reducer"
   },
+  "homepage": "https://filefoxper.github.io/use-agent-reducer/#/",
   "files": [
     "dist",
     "es",
+    "esm",
     "index.js",
     "index.d.ts"
   ],
@@ -40,7 +43,7 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "agent-reducer": ">=4.0.0-alpha"
+    "agent-reducer": ">=4.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.16",
@@ -85,7 +88,7 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-test-renderer": "^16.7.0",
-    "agent-reducer": "4.0.0-alpha",
+    "agent-reducer": "4.0.0",
     "ts-jest": "^24.0.2",
     "ts-loader": "^6.0.4",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
@@ -96,8 +99,5 @@
     "webpack": "4.35.3",
     "webpack-bundle-analyzer": "^3.7.0",
     "webpack-cli": "3.3.5"
-  },
-  "engines": {
-    "node": ">=8.0.0"
   }
 }

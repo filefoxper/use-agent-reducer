@@ -7,7 +7,6 @@ import React, {
 import {
   create,
   MiddleWare,
-  OriginAgent,
   withMiddleWare,
   LifecycleMiddleWare,
   Action,

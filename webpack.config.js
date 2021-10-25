@@ -9,6 +9,8 @@ const entryPath = pathBuilder.resolve('src', 'index.ts');
 
 const targetPath = pathBuilder.resolve('dist');
 
+const esTargetPath = pathBuilder.resolve('esm');
+
 const reactExternal = {
     root: 'React',
     commonjs2: 'react',
@@ -30,7 +32,7 @@ const agentReducerExternal = {
     amd: 'agent-reducer',
 };
 
-function entry(env) {
+function entry(env,name,output) {
     return {
         externals: {
             'react': reactExternal,
@@ -40,11 +42,10 @@ function entry(env) {
         mode: 'production',
         devtool: false,
         entry: {
-            ['use-agent-reducer']: entryPath,
-            ['use-agent-reducer.min']: entryPath
+            [name]: entryPath,
         },
         output: {
-            path: targetPath,
+            path: output||targetPath,
             filename: '[name].js',
             library: 'use-agent-reducer',
             libraryTarget: 'umd'
@@ -54,7 +55,7 @@ function entry(env) {
             minimize: true,
             minimizer: [
                 new UglifyJsPlugin({
-                    include: /\.min\.js$/
+                    include: /\.mini\.js$/
                 }),
             ],
             namedChunks: true
@@ -86,7 +87,7 @@ function entry(env) {
                                         {
                                             modules: false,
                                             targets: {
-                                                "browsers": ["last 2 versions", "ie >=9"]
+                                                "browsers": ["ie >= 11"]
                                             },
                                             useBuiltIns: "usage",
                                             corejs: {version: 3, proposals: true}
@@ -111,6 +112,11 @@ function entry(env) {
     }
 }
 
-module.exports = function (env) {
-    return entry(env);
-};
+module.exports = [
+    function (env) {
+        return entry(env,'use-agent-reducer.mini');
+    },
+    function (env) {
+        return entry(env,'use-agent-reducer',esTargetPath,);
+    }
+];
