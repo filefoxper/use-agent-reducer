@@ -1,110 +1,48 @@
 import React, {
-  ReactNode,
-  useCallback,
-  useContext,
   useEffect,
   useMemo,
   useReducer,
   useRef,
-  useState,
 } from 'react';
 import {
-  createAgentReducer,
+  create,
   MiddleWare,
-  OriginAgent,
-  useMiddleActions as useAgentMiddleActions,
-  useMiddleWare as useAgentMiddleWare,
+  withMiddleWare,
   LifecycleMiddleWare,
-  MiddleActions,
   Action,
-  AgentReducer, DefaultActionType,
+  AgentReducer,
+  DefaultActionType,
+  Model,
 } from 'agent-reducer';
 
-export type Listener = (agent: OriginAgent) => any;
-
-class AgentShipping {
-  private listeners: Listener[] = [];
-
-  private agent: OriginAgent;
-
-  constructor(agent: OriginAgent) {
-    this.agent = agent;
-  }
-
-  getAgent(): OriginAgent {
-    return this.agent;
-  }
-
-  subscribe(listener: Listener) {
-    this.listeners.push(listener);
-    return () => {
-      const index = this.listeners.findIndex((l) => l === listener);
-      if (index < 0) {
-        return;
-      }
-      this.listeners.splice(index, 1);
-    };
-  }
-
-  update(agent: OriginAgent) {
-    this.agent = agent;
-    this.listeners.forEach((listener) => {
-      listener(agent);
-    });
-  }
-}
-
-const AgentContext = React.createContext<AgentShipping | null>(null);
-
-export type RunEnv = {
-  strict?: boolean;
-  nextExperience?: boolean;
-};
-
-export function useAgentReducer<T extends OriginAgent<S>, S>(
+export function useAgentReducer<T extends Model<S>, S>(
   entry: T | { new (): T },
-  middleWareOrEnv?: MiddleWare | RunEnv,
-  env?: Omit<RunEnv, 'legacy'>,
+  ...mdws: MiddleWare[]
 ): T {
-  const runEnv = typeof middleWareOrEnv !== 'function' ? middleWareOrEnv : env;
-
-  const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
-
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
-    reducerRef.current = createAgentReducer(entry, middleWare, {
-      ...runEnv,
-      ...env,
-      legacy: false,
-      expired: false,
-      updateBy: 'manual',
-    });
+    reducerRef.current = create(entry, ...mdws);
   }
 
   const { current: reducer } = reducerRef;
 
-  const [state, dispatch] = useReducer(reducer, reducer.initialState);
+  const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
   useEffect(
     () => {
-      if (reducer && reducer.env.expired) {
-        reducer.reconnect();
+      if (reducer) {
+        reducer.connect(dispatch);
       }
-      reducer.update(state, dispatch);
       if (reducer.agent.state !== state) {
-        dispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
+        dispatch({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       }
       return () => {
         const { current: red } = reducerRef;
         if (!red) {
           return;
         }
-        red.env.expired = true;
-        if (!red.destroy) {
-          return;
-        }
-        red.destroy();
+        red.disconnect();
       };
     },
     [],
@@ -113,15 +51,15 @@ export function useAgentReducer<T extends OriginAgent<S>, S>(
   return reducer.agent;
 }
 
-export function useMiddleWare<T extends OriginAgent<S>, S>(
+export function useMiddleWare<T extends Model<S>, S>(
   agent: T,
   ...middleWare: (MiddleWare | LifecycleMiddleWare)[]
 ): T {
-  const { current } = useRef(useAgentMiddleWare(agent, ...middleWare));
+  const { current } = useRef(withMiddleWare(agent, ...middleWare));
   return current;
 }
 
-export function useAgentSelector<T extends OriginAgent<S>, S, R>(
+export function useAgentSelector<T extends Model<S>, S, R>(
   entry: T,
   mapStateCallback: (state: T['state']) => R,
   equalityFn?:(prev: R, current: R)=>boolean,
@@ -129,50 +67,42 @@ export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
-    reducerRef.current = createAgentReducer(entry, {
-      legacy: false,
-      expired: false,
-      updateBy: 'manual',
-    });
+    reducerRef.current = create(entry);
   }
 
   const { current: reducer } = reducerRef;
 
-  const [state, dispatch] = useReducer(reducer, reducer.initialState);
+  const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
   const current = useMemo(() => mapStateCallback(state), [state]);
 
-  const weakDispatch = useCallback(
-    (action: Action) => {
-      const next = mapStateCallback(action.args as S);
-      if (current === next || (equalityFn && equalityFn(current, next))) {
-        return;
-      }
-      dispatch(action);
-    },
-    [current, dispatch, equalityFn],
-  );
+  const weakDispatch = (action: Action) => {
+    const next = mapStateCallback(action.state as S);
+    if (current === next || (equalityFn && equalityFn(current, next))) {
+      return;
+    }
+    dispatch(action);
+  };
 
-  useEffect(() => {
-    reducer.update(entry.state, weakDispatch);
-  }, [weakDispatch]);
+  const dispatchRef = useRef(weakDispatch);
+
+  dispatchRef.current = weakDispatch;
 
   useEffect(
     () => {
-      if (reducer && reducer.env.expired) {
-        reducer.reconnect();
+      const dispatchWrap = (action:Action) => {
+        dispatchRef.current(action);
+      };
+      if (reducer) {
+        reducer.connect(dispatchWrap);
       }
-      weakDispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
+      dispatchRef.current({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       return () => {
         const { current: red } = reducerRef;
         if (!red) {
           return;
         }
-        red.env.expired = true;
-        if (!red.destroy) {
-          return;
-        }
-        red.destroy();
+        red.disconnect();
       };
     },
     [],
@@ -181,43 +111,29 @@ export function useAgentSelector<T extends OriginAgent<S>, S, R>(
   return current;
 }
 
-export function useAgentMethods<T extends OriginAgent<S>, S>(
+export function useAgentMethods<T extends Model<S>, S>(
   entry: T,
-  middleWareOrEnv?: MiddleWare | RunEnv,
-  env?: Omit<RunEnv, 'legacy'>,
+  ...middleWares: MiddleWare[]
 ): Omit<T, 'state'> {
-  const runEnv = typeof middleWareOrEnv !== 'function' ? middleWareOrEnv : env;
-
-  const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
-
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   if (reducerRef.current === null) {
-    reducerRef.current = createAgentReducer(entry, middleWare, {
-      ...runEnv,
-      ...env,
-      legacy: false,
-      expired: false,
-    });
+    reducerRef.current = create(entry, ...middleWares);
   }
 
   const { current: reducer } = reducerRef;
 
   useEffect(
     () => {
-      if (reducer && reducer.env.expired) {
-        reducer.reconnect();
+      if (reducer) {
+        reducer.connect();
       }
       return () => {
         const { current: red } = reducerRef;
         if (!red) {
           return;
         }
-        red.env.expired = true;
-        if (!red.destroy) {
-          return;
-        }
-        red.destroy();
+        red.disconnect();
       };
     },
     [],
@@ -254,125 +170,4 @@ export function shallowEqual<R>(prev:R, current:R):boolean {
     return !Object.is(currentValue, prevValue);
   });
   return !hasDiffValue;
-}
-
-/** **** deprecated **** */
-
-export function useAgent<T extends OriginAgent<S>, S>(
-  entry: T | { new (): T },
-  middleWareOrEnv?: MiddleWare | RunEnv,
-  env?: RunEnv,
-): T {
-  const runEnv = typeof middleWareOrEnv !== 'function' ? middleWareOrEnv : env;
-
-  const middleWare = typeof middleWareOrEnv === 'function' ? middleWareOrEnv : undefined;
-
-  const reducerRef = useRef<null | AgentReducer<S, T>>(null);
-
-  if (reducerRef.current === null) {
-    reducerRef.current = createAgentReducer(entry, middleWare, {
-      ...runEnv,
-      ...env,
-      expired: false,
-      updateBy: 'manual',
-    });
-  }
-
-  const { current: reducer } = reducerRef;
-
-  const [state, dispatch] = useReducer(reducer, reducer.initialState);
-
-  useEffect(
-    () => {
-      reducer.update(state, dispatch);
-      if (reducer.agent.state !== state) {
-        dispatch({ type: DefaultActionType.DX_MUTE_STATE, args: reducer.agent.state });
-      }
-      return () => {
-        const { current: red } = reducerRef;
-        if (!red) {
-          return;
-        }
-        red.env.expired = true;
-        if (!red.destroy) {
-          return;
-        }
-        red.destroy();
-      };
-    },
-    [],
-  );
-
-  return reducer.agent;
-}
-
-export function useMiddleActions<
-  T extends OriginAgent<S>,
-  P extends MiddleActions<T, S>,
-  S = any
->(
-  middleActions: { new (agent: T): P } | P,
-  ...middleWare: (MiddleWare | LifecycleMiddleWare)[]
-): P {
-  const ref = useRef(useAgentMiddleActions(middleActions, ...middleWare) as P);
-  return ref.current;
-}
-
-/**
- * @deprecated
- * @param agent
- * @param middleWare
- */
-export function useBranch<T extends OriginAgent<S>, S>(
-  agent: T,
-  middleWare: MiddleWare | LifecycleMiddleWare,
-): T {
-  return useMiddleWare(agent, middleWare);
-}
-
-export function AgentProvider<T extends OriginAgent<S>, S>({
-  value,
-  children,
-}: {
-  readonly value: T;
-  readonly children?: ReactNode;
-}) {
-  const ref = useRef(new AgentShipping(value));
-  useEffect(() => {
-    ref.current.update(value);
-  }, [value.state]);
-  return React.createElement(
-    AgentContext.Provider,
-    { value: ref.current },
-    children,
-  );
-}
-
-export function useAgentContext<T extends OriginAgent>(): T {
-  const shipping = useContext(AgentContext);
-
-  const ref = useRef<OriginAgent | null>(shipping ? shipping.getAgent() : null);
-
-  const [, setState] = useState<null | any>(
-    ref.current ? ref.current.state : null,
-  );
-
-  useEffect(() => {
-    if (!shipping) {
-      return undefined;
-    }
-    return shipping.subscribe((agent: OriginAgent): void => {
-      ref.current = agent;
-      setState(agent.state);
-    });
-  }, [shipping]);
-
-  return ref.current as T;
-}
-
-/**
- * @deprecated
- */
-export function useParent<T extends OriginAgent>(): T {
-  return useAgentContext<T>();
 }

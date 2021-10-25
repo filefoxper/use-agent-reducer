@@ -49,19 +49,4 @@ describe('MiddleWare override', () => {
         expect(agent.state).toEqual({id: 1, name: 'Jimmy', role: 'GUEST'});
     });
 
-    it('api `useMiddleWare` can override api middleWare from `agent-reducer`', async () => {
-        // MiddleWarePresets.takePromiseResolve will be override by
-        // `MiddleWarePresets.takePromiseResolveAssignable` which is added by decorator middleWare,
-        // MiddleWarePresets.takePromiseResolveAssignable will be override by
-        // MiddleWarePresets.takePromiseResolve which is added by api useMiddleWare
-        const {result} = renderHook(() => useAgentReducer(UserModel, MiddleWarePresets.takePromiseResolve(), {nextExperience: true}));
-        const agent = result.current;
-        const {result: copyResult} = renderHook(() => useMiddleWare(agent, MiddleWarePresets.takePromiseResolve()));
-        const copy = copyResult.current;
-        await act(async () => {
-            await copy.fetchUser();
-        });
-        expect(agent.state).toEqual({id: 1, name: 'Jimmy'});
-    });
-
 });

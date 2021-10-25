@@ -20,10 +20,10 @@ There are two concepts we have mentioned above, `Model` and `Agent`. They will  
 This is a `Model` example:
 
 ```typescript
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 
 // model
-class CountAgent implements OriginAgent<number> {
+class CountAgent implements Model<number> {
     // set a initial state
     state = 0;
 
@@ -56,10 +56,10 @@ class CountAgent implements OriginAgent<number> {
 The state of `Agent` object always keeps equal with its `Model` state.
 
 ```typescript
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-class CountAgent implements OriginAgent<number> {
+class CountAgent implements Model<number> {
 
     state = 0;
 
@@ -92,91 +92,6 @@ npm i use-agent-reducer
 ```
 You'd better add `agent-reducer` into your package.json dependencies too. When  you are installing package `use-agent-reducer`, a `agent-reducer` package is always brought into your `node_modules` directory, but this is not helpful for using `agent-reducer` API. 
 
-The directory `use-agent-reducer/es` is supplied for a small size building in different compiling target environment. You can use [babel](https://babeljs.io/docs/en/configuration) to do this, `babel` will supply a common polyfill for both of your code and `use-agent-reducer`.
-
-the example of babel.config.js :
-
-```javascript
-module.exports = {
-    plugins: [
-        ["@babel/plugin-transform-runtime"],
-        [
-            '@babel/plugin-proposal-class-properties',
-            {loose: true},
-        ]
-    ],
-    presets: [
-        [
-            '@babel/preset-env',
-            {
-                modules: false,
-                targets: {
-                    // 想要支持的浏览器最低环境
-                    "browsers": ["last 2 versions", "ie >=9"]
-                },
-                useBuiltIns: "usage",
-                corejs: {version: 3, proposals: true}
-            }
-        ],
-        .......
-    ]
-}
-```
-
-If you still want to use `import {...} from 'use-agent-reducer'`, you can use complier `alias` function too resolve it.
-
-For example, you can use webpack.config.js like:
-
-```javascript
-{
-    module: {
-            rules: [
-                // your code
-                {
-                    test: /\.js$|\.ts$|\.tsx$/,
-                    exclude: /(node_modules|bower_components)/,
-                    use: [
-                        {
-                            loader: 'babel-loader',
-                            options: {
-                                cacheDirectory: true
-                            }
-                        }
-                    ]
-                },
-                // use-agent-reducer/es code
-                {
-                    test: /\.js$|\.ts$|\.tsx$/,
-                    include: /(node_modules\/agent-reducer\/es|node_modules\/use-agent-reducer\/es)/,
-                    use: [
-                        {
-                            loader: 'babel-loader',
-                            options: {
-                                cacheDirectory: true
-                            }
-                        }
-                    ]
-                },
-                ......
-            ]
-    },
-    ...,
-    resolve: {
-        alias:{
-            // transform import target name here
-            'agent-reducer':'agent-reducer/es',
-            'use-agent-reducer':'use-agent-reducer/es'
-        },
-        extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],
-        plugins: [
-            new TsconfigPathsPlugin({configFile: "./tsconfig.json"})
-        ]
-    },
-    ...,
-}
-```
-
-
 ## Getting started
 
 This section describes how to create a model, and how to call `agent-reducer` API for help. After reading this section, you can master the basic usage of `use-agent-reducer`. 
@@ -189,14 +104,14 @@ with object pattern:
 
 ```typescript
 import React from 'react';
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-interface Model extends OriginAgent<number>{
+interface IModel extends Model<number>{
     state: number
 }
 
-const model: Model={
+const model: IModel={
 
     state: 0, // initial state
 
@@ -229,10 +144,10 @@ with class pattern:
 
 ```typescript
 import React from 'react';
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-class Model implements OriginAgent<number>{
+class IModel implements Model<number>{
 
     state: number;
 
@@ -250,7 +165,7 @@ class Model implements OriginAgent<number>{
 
 const MyComponent = () =>{
     // api useAgentReducer is a react hook
-    const agent = useAgentReducer(Model);
+    const agent = useAgentReducer(IModel);
     // you can reassign agent method into another object,
     // keyword `this` in method always represent 
     // the instance of Model which is created inside api `useAgentReducer`.
@@ -277,7 +192,7 @@ MiddleWare system makes `Agent` methods more flexible. You can use MiddleWare to
 The code below shows how to use MiddleWare, and we use `MiddleWarePresets.takePromiseResolve` for example.
 
 ``` typescript
-import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, Model} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
 import {useAgentReducer, useMiddleWare} from "use-agent-reducer";
 
@@ -292,7 +207,7 @@ type User = {
 describe('use MiddleWare with APIs', () => {
 
     // model for managing user data
-    class UserModel implements OriginAgent<User> {
+    class UserModel implements Model<User> {
 
         state: User;
 
@@ -375,7 +290,7 @@ The code above shows 3 ways to use MiddleWares to `Agent` method.
 If you are using `Babel decorator plugin`, you can use MiddleWares more simple.
 
 ``` typescript
-import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, Model} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
 import {useAgentReducer} from "use-agent-reducer";
 
@@ -390,7 +305,7 @@ type User = {
 describe('use decorator MiddleWare', () => {
 
     // model for managing user data
-    class UserModel implements OriginAgent<User> {
+    class UserModel implements Model<User> {
 
         // default state
         state: User = {id: null, name: null, role: 'GUEST'};
@@ -442,4 +357,4 @@ describe('use decorator MiddleWare', () => {
 });
 ```
 
-You can check [simple unit test here](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/basic.spec.tsx), and learn more about MiddleWare in [agent-reducer guides about middleWare](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/guides/about_middle_ware.md). You can check a MiddleWare list from `agent-reducer` api [MiddleWares](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_wares.md) and [MiddleWarePresets](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware_presets.md).
+You can check [simple unit test here](https://github.com/filefoxper/use-agent-reducer/blob/master/test/en/basic.spec.tsx), and learn more about MiddleWare in [agent-reducer guides about middleWare](https://filefoxper.github.io/use-agent-reducer/#/guides?id=middleware). You can check a MiddleWare list from `agent-reducer` api [MiddleWares](https://filefoxper.github.io/agent-reducer/#/api?id=middlewares) and [MiddleWarePresets](https://filefoxper.github.io/agent-reducer/#/api?id=middlewarepresets).

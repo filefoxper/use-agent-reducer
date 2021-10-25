@@ -20,10 +20,10 @@
 模型样例:
 
 ```typescript
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 
 // 模型
-class CountAgent implements OriginAgent<number> {
+class CountAgent implements Model<number> {
     // 初始化 state 数据
     state = 0;
 
@@ -55,10 +55,10 @@ class CountAgent implements OriginAgent<number> {
 模型代理 `Agent` 的 state 总是与其模型 `Model` 的 state 保持一致的。
 
 ```typescript
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-class CountAgent implements OriginAgent<number> {
+class CountAgent implements Model<number> {
 
     state = 0;
 
@@ -93,100 +93,6 @@ npm i use-agent-reducer
 
 我们希望在使用当前工具的同时，也能将 `agent-reducer` 的最新版本加入您的 package.json 文件，这对您使用该核心包中的辅助 API，以及代码关联提示都是十分有利的。
 
-为了支持低版本浏览器，`use-agent-reducer` 编译时会从 core.js 引入一些用户环境可能本身就支持的 polyfill 函数，从而导致引入包过大的问题。目前使用者可以通过直接使用 `use-agent-reducer/es` API，并自行提供 polyfill 的方式来解决这个问题。
-
-代码：
-
-```typescript
-import {MiddleWarePresets} from 'agent-reducer/es';
-
-......
-```
-
-babel配置：
-
-```javascript
-module.exports = {
-    plugins: [
-        ["@babel/plugin-transform-runtime"],
-        [
-            '@babel/plugin-proposal-class-properties',
-            {loose: true},
-        ]
-    ],
-    presets: [
-        [
-            '@babel/preset-env',
-            {
-                modules: false,
-                targets: {
-                    // 想要支持的浏览器最低环境
-                    "browsers": ["last 2 versions", "ie >=9"]
-                },
-                useBuiltIns: "usage",
-                corejs: {version: 3, proposals: true}
-            }
-        ],
-        .......
-    ]
-}
-```
-
-具体配置可参考 [babel](https://babeljs.io/docs/en/configuration) 官方配置。
-
-如果不希望更改引用方式，还可以使用 alias 技术，将原来的 `use-agent-reducer` 在编译时转换成 `use-agent-reducer/es`。
-
-如 webpack.config.js 配置中：
-
-```javascript
-{
-    module: {
-            rules: [
-                // 你的代码
-                {
-                    test: /\.js$|\.ts$|\.tsx$/,
-                    exclude: /(node_modules|bower_components)/,
-                    use: [
-                        {
-                            loader: 'babel-loader',
-                            options: {
-                                cacheDirectory: true
-                            }
-                        }
-                    ]
-                },
-                // use-agent-reducer/es的代码
-                {
-                    test: /\.js$|\.ts$|\.tsx$/,
-                    include: /(node_modules\/agent-reducer\/es|node_modules\/use-agent-reducer\/es)/,
-                    use: [
-                        {
-                            loader: 'babel-loader',
-                            options: {
-                                cacheDirectory: true
-                            }
-                        }
-                    ]
-                },
-                ......
-            ]
-    },
-    ...,
-    resolve: {
-        alias:{
-            // 引用名转换
-            'agent-reducer':'agent-reducer/es',
-            'use-agent-reducer':'use-agent-reducer/es'
-        },
-        extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],
-        plugins: [
-            new TsconfigPathsPlugin({configFile: "./tsconfig.json"})
-        ]
-    },
-    ...,
-}
-```
-
 ## 快速开始
 
 本节主要阐述如何创建一个模型，以及如何使用 `agent-reducer` 辅助功能。本节内容可以辅助您快速掌握 `use-agent-reducer` 的基本用法。
@@ -199,14 +105,14 @@ module.exports = {
 
 ```typescript
 import React from 'react';
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-interface Model extends OriginAgent<number>{
+interface IModel extends Model<number>{
     state: number
 }
 
-const model: Model={
+const model: IModel={
 
     state: 0, // 初始化 state 数据
 
@@ -240,10 +146,10 @@ ES6 class 模型:
 
 ```typescript
 import React from 'react';
-import {OriginAgent} from 'agent-reducer';
+import {Model} from 'agent-reducer';
 import {useAgentReducer} from 'use-agent-reducer';
 
-class Model implements OriginAgent<number>{
+class IModel implements Model<number>{
 
     state: number;
 
@@ -262,7 +168,7 @@ class Model implements OriginAgent<number>{
 const MyComponent = () =>{
     // api useAgentReducer 是一个 react hook，
     // 所以我们应该在 react 组件或自定义 hook 中使用它
-    const agent = useAgentReducer(Model);
+    const agent = useAgentReducer(IModel);
     // agent 方法可以被赋予其他对象,
     // 方法中的关键词 `this` 总是代表着模型 Model 的实例对象，
     // 该实例对象被隐藏在了API `useAgentReducer` 中。
@@ -289,7 +195,7 @@ MiddleWare 系统可以让 `Agent` 代理方法更加灵活。你可以通过 Mi
 在以下代码中，我们通过使用 `MiddleWarePresets.takePromiseResolve` 为大家展示如何使用 MiddleWare。
 
 ``` typescript
-import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, Model} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
 import {useAgentReducer, useMiddleWare} from "use-agent-reducer";
 
@@ -304,7 +210,7 @@ type User = {
 describe('通过 API 来使用 MiddleWare ', () => {
 
     // 创建 User 数据管理模型
-    class UserModel implements OriginAgent<User> {
+    class UserModel implements Model<User> {
 
         state: User;
 
@@ -384,7 +290,7 @@ describe('通过 API 来使用 MiddleWare ', () => {
 如果您在项目中使用了 `Babel decorator plugin` ，那么使用 `decorator` 为每个方法添加各自需要的 `MiddleWare` ，将会是更好的选择。
 
 ``` typescript
-import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, Model} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
 import {useAgentReducer} from "use-agent-reducer";
 
@@ -399,7 +305,7 @@ type User = {
 describe('使用 decorator 来添加 MiddleWare', () => {
 
     // 创建 User 数据管理模型
-    class UserModel implements OriginAgent<User> {
+    class UserModel implements Model<User> {
 
         // 初始化默认 state 数据
         state: User = {id: null, name: null, role: 'GUEST'};

@@ -44,19 +44,4 @@ describe('MiddleWare 覆盖现象', () => {
         expect(agent.state).toEqual({id: 1, name: 'Jimmy', role: 'GUEST'});
     });
 
-    it('通过 API `useMiddleWare` 添加的 MiddleWare 会在复制版中覆盖通过所有 MiddleWare', async () => {
-        // `agent-reducer` API middleWare 添加的 MiddleWarePresets.takePromiseResolveAssignable
-        // 会覆盖 useAgentReducer 添加的 `MiddleWarePresets.takePromiseResolve`，
-        // 而 API useMiddleWare 添加的 MiddleWarePresets.takePromiseResolve 会覆盖
-        // API middleWare 添加的 MiddleWarePresets.takePromiseResolveAssignable
-        const {result} = renderHook(() => useAgentReducer(UserModel, MiddleWarePresets.takePromiseResolve(), {nextExperience: true}));
-        const agent = result.current;
-        const {result: copyResult} = renderHook(() => useMiddleWare(agent, MiddleWarePresets.takePromiseResolve()));
-        const copy = copyResult.current;
-        await act(async () => {
-            await copy.fetchUser();
-        });
-        expect(agent.state).toEqual({id: 1, name: 'Jimmy'});
-    });
-
 });

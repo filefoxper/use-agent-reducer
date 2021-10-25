@@ -12,32 +12,32 @@
 ```typescript
 function sharing<
     S,
-    T extends OriginAgent<S> = OriginAgent<S>
+    T extends Model<S> = Model<S>
     >(
-  factory:()=>T|{new ():T},
+  factory:(...args:any[])=>T|{new ():T,initial:(...args:any[])=>T},
 ):{current:T}
 ```
 
 * factory - 生成共享模型的工厂方法，通过该方法返回一个被共享的模型（class 或 object）
   
-该方法返回一个持久化共享模型包装，从返回值的 `current` 属性中可取出模型。
+该方法返回一个持久化共享模型包装，从返回值的 `current` 属性中可取出模型，使用 `initial` 属性方法可以初始化模型。
 
 #### weakSharing
 
 ```typescript
 function weakSharing<
     S,
-    T extends OriginAgent<S> = OriginAgent<S>
+    T extends Model<S> = Model<S>
     >(
-  factory:()=>T|{new ():T},
+  factory:(...args:any[])=>T|{new ():T,initial:(...args:any[])=>T},
 ):{current:T}
 ```
 
 * factory - 生成共享模型的工厂方法，通过该方法返回一个被共享的模型（class 或 object）
   
-该方法返回一个弱持久化共享模型包装，从返回值的 `current` 属性中可取出模型，当模型生成的 `Agent` 代理全被销毁时，模型会通过传入的  factory 工厂方法进行模型重置。
+该方法返回一个弱持久化共享模型包装，从返回值的 `current` 属性中可取出模型，当模型生成的 `Agent` 代理全被销毁时，模型会通过传入的  factory 工厂方法进行模型重置，使用 `initial` 属性方法可以初始化模型。
 
-您可以查看教程中关于模型共享的[例子](/zh/tutorial?id=使用模型共享)，进一步理解如何使用这一特性。
+您可以查看教程中关于模型共享的[例子](/zh/tutorial?id=使用模型共享)，进一步理解如何使用这一特性，也可以预览[官方文档](https://filefoxper.github.io/agent-reducer/#/zh/feature?id=模型共享)加深对模型共享的理解。
 
 ## 关键词 this
 
@@ -49,14 +49,14 @@ function weakSharing<
 
 目前为止，我们有三种添加 `MiddleWare` 的方式。
 
-1. `useAgentReducer`，这是当前库的基础接口，通过它，我们可以添加基本的 `MiddleWare` 。使用如 `useAgentReducer( OriginAgent, MiddleWare )`。
-2. `middleWare`，这是来自核心库[agent-reducer api](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/api/middle_ware.md)的接口，通过它我们可以直接在模型方法上添加不同的 MiddleWare ，这些 MiddleWare 会在 `Agent` 代理调用相关方法时被唤醒。通过该接口添加的 MiddleWare 会覆盖通过 `useAgentReducer` 统一添加的 MiddleWare 。
+1. `useAgentReducer`，这是当前库的基础接口，通过它，我们可以添加基本的 `MiddleWare` 。使用如 `useAgentReducer( Model, MiddleWare )`。
+2. `middleWare`，这是来自核心库[agent-reducer api](https://filefoxper.github.io/agent-reducer/#/zh/api?id=middleware)的接口，通过它我们可以直接在模型方法上添加不同的 MiddleWare ，这些 MiddleWare 会在 `Agent` 代理调用相关方法时被唤醒。通过该接口添加的 MiddleWare 会覆盖通过 `useAgentReducer` 统一添加的 MiddleWare 。
 3. `useMiddleWare`，这是当前库的一个 react hook 接口，通过这个接口可以复制一个 `Agent` 代理，并添加只作用与该复制代理方法的 MiddleWare ，而这些 MiddleWare 在 `Agent` 复制品中拥有最高执行级别，会屏蔽掉通过前两个接口添加的所有 MiddleWare 。
 
 [关于 MiddleWare 覆盖现象的单元测试 middleWare.override.spec.ts](https://github.com/filefoxper/use-agent-reducer/blob/master/test/zh/middleWare.override.spec.tsx). 
 
 ```typescript
-import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, Model} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
 import {useAgentReducer, useMiddleWare} from "use-agent-reducer";
 
@@ -71,7 +71,7 @@ type User = {
 describe('MiddleWare 覆盖现象', () => {
 
     // 管理 User 数据的模型
-    class UserModel implements OriginAgent<User> {
+    class UserModel implements Model<User> {
 
         // 默认 User 数据
         state: User = {id: null, name: null, role: 'GUEST'};
@@ -119,85 +119,6 @@ describe('MiddleWare 覆盖现象', () => {
 
 });
 ```
-
-## 关于运行环境配置 RunEnv
-
-RunEnv 是 `Agent` 代理运行是的环境配置。通过修改该参数，你可以提前体验下一版本新特性，也可以让每次 state 修改变成立即运行的实时更新。
-
-配置结构如下:
-```typescript
-// 运行环境配置
-export interface RunEnv {
-  // 默认 'true',
-  // 当这个参数被设置成 'false' 时，
-  // 每次 `Agent` 方法调用产生的 state 修改都会立即生效，
-  // 这种行为看似非常有用，但实则破坏了代码中数据更新的一致性，
-  // 并造成 `Agent` state 与 react state 不同步的问题。
-  // 所以，我们并不推荐关闭它 
-  strict?: boolean;
-  // 默认 'false',
-  // 如果设置为 'true',
-  // 'agent-reducer' 会引入下一版本的体验特性
-  nextExperience?:boolean;
-}
-```
-你可以在`此`查看如何配置运行环境。 [此](https://github.com/filefoxper/use-agent-reducer/blob/master/test/zh/setEnv.spec.tsx)。
-
-```typescript
-import {OriginAgent} from "agent-reducer";
-import {act, renderHook} from "@testing-library/react-hooks";
-import {useAgentReducer} from "agent-reducer";
-
-type Role = 'GUEST' | 'USER' | 'MASTER';
-
-type User = {
-    id: number | null,
-    name: string | null,
-    role: Role
-}
-
-describe("设置运行环境 RunEnv",()=>{
-
-    // User 模型
-    class UserModel implements OriginAgent<User> {
-
-        // 初始化数据
-        state: User = {id: null, name: null, role: 'GUEST'};
-
-        // 方法返回值可被更新为最新 state
-        changeUserName(name: string): User {
-            return {...this.state, name};
-        }
-
-        changeUserRole(role: Role): User {
-            return {...this.state, role};
-        }
-    }
-
-    it("不修改 strict，当我们在 react 事件回调中连续两次修改 state ，第一次修改将被第二次覆盖",()=>{
-        const {result, rerender} = renderHook(() => useAgentReducer(UserModel));
-        const agent = result.current;
-        act(() => {
-            agent.changeUserRole('MASTER');
-            agent.changeUserName('Jimmy');
-        });
-        expect(agent.state.role).toBe('GUEST');
-    });
-
-    it("设置 strict 为 false，当我们在 react 事件回调中连续两次修改 state ，第一次修改会与被第二次累积起来",()=>{
-        const {result, rerender} = renderHook(() => useAgentReducer(UserModel,{strict:false}));
-        const agent = result.current;
-        act(() => {
-            agent.changeUserRole('MASTER');
-            agent.changeUserName('Jimmy');
-        });
-        expect(agent.state.role).toBe('MASTER');
-    });
-
-});
-```
-
-当心 `strict` 配置，我们不认为实时更新 state 是一件好事，你也应该有同样的觉悟。
 
 ## 模型共享优化
 
