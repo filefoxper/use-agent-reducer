@@ -163,3 +163,164 @@ const sharingRef = weakSharing(()=> Model);
 // 使用共享模型实例，获取模型方法，不会触发当前组件重渲染
 const {fetchState} = useAgentMethods(sharingRef.current, MiddleWarePresets.takePromiseResolve());
 ```
+
+## 模型共享与 Context
+
+很明显，agent-reducer 的模型共享是为全局或特性页面设计的。这种设计能满足我们的大部分需求，但如果我们想在可复用组件中使用共享机制，那还得靠 `React.Context` 技术。为此我们也提供了相应的 API，与早期版本单个模型分享不同，当前 `Context` 模型既支持单模型实例共享，也支持模型实例集合共享。让我们来看看 API [useModelProvider](/zh/api?id=usemodelprovider) 和 [useModel](/zh/api?id=usemodel)是如何用作 `React.Context` 模型共享的。
+
+```typescript
+import React from 'react';
+import {Model} from 'agent-reducer';
+import {
+    useModelProvider, 
+    useModel, 
+    useAgentReducer,
+    useAgentMethods,
+    useAgentSelector
+} from 'use-agent-reducer';
+
+class IncreaseModel implements Model<number>{
+
+    state = 0;
+
+    increase(){
+        return this.state + 1;
+    }
+
+}
+
+class DecreaseModel implements Model<number>{
+
+    state = 0;
+
+    decrease(){
+        return this.state - 1;
+    }
+
+}
+
+const DeepComp = ()=>{
+    // 通过 class 可直接查询到 Provider 提供的模型实例
+    const increaseModel = useModel(IncreaseModel);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <button onClick={increase}>increase</button>
+    );
+};
+
+const MyComp = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // useModelProvider 利用当前高层模型实例创建一个 Provider
+    const IncreaseScope = useModelProvider(increaseModel);
+
+    return (
+        <IncreaseScope>
+            <span>{increaseCount}</span>
+            <DeepComp/>
+        </IncreaseScope>
+    );
+};
+
+const DeepComp1 = ()=>{
+    // 通过 class 可直接查询到 Provider 提供的模型实例
+    const increaseModel = useModel(IncreaseModel);
+    // 通过数组索引 index，可查找出对应的模型实例
+    const decreaseModel = useModel(1);
+    const decreaseCount = useAgentSelector(decreaseModel, s=>s);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <>
+            <span>{decreaseCount}</span>
+            <button onClick={increase}>increase</button>
+        </>
+    );
+};
+
+const MyComp1 = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // 可以用数组的形式在一个 Provider 中维护多个模型实例
+    const Scope = useModelProvider([increaseModel, new DecreaseModel()]);
+
+    return (
+        <Scope>
+            <span>{increaseCount}</span>
+            <DeepComp1/>
+        </Scope>
+    );
+};
+
+const DeepComp2 = ()=>{
+    const increaseModel = useModel(IncreaseModel);
+    // 通过对象属性也能查询被共享的模型实例
+    const decreaseModel = useModel('decreaseModel');
+    const decreaseCount = useAgentSelector(decreaseModel, s=>s);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <>
+            <span>{decreaseCount}</span>
+            <button onClick={increase}>increase</button>
+        </>
+    );
+};
+
+const MyComp2 = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // 可以把模型实例组织成一个对象
+    const Scope = useModelProvider({
+        increaseModel, 
+        decreaseModel: new DecreaseModel()
+    });
+
+    return (
+        <Scope>
+            <span>{increaseCount}</span>
+            <DeepComp2/>
+        </Scope>
+    );
+};
+
+const DeepComp3 = ()=>{
+    // 哪怕是深层 Provider 依然不能阻隔对模型实例的查询
+    const increaseModel = useModel(IncreaseModel);
+    const decreaseModel = useModel(DecreaseModel);
+    const decreaseCount = useAgentSelector(decreaseModel, s=>s);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <>
+            <span>{decreaseCount}</span>
+            <button onClick={increase}>increase</button>
+        </>
+    );
+};
+
+const MyComp3 = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // 标记 useModel 可查找的最顶层 Provider
+    const IncreaseScope = useModelProvider(increaseModel, true);
+
+    const DecreaseScope = useModelProvider(new DecreaseModel());
+
+    return (
+        <IncreaseScope>
+            <span>{increaseCount}</span>
+            <DecreaseScope>
+                <DeepComp3/>
+            </<DecreaseScope>>
+        </IncreaseScope>
+    );
+};
+```
+
+通过上例我们可以知道，`useModelProvider` 可创建一个 `Context.Provider` 组件，而它维护的模型实例或集合可以使用 `useModel` 进行查询，如果最近一层 Provider 中无法查到，就会去上一层找，直到顶层 Provider（无更高层 Provider ，或有 isRootProvider 为 true 的标记）。如果始终无法找到 `useModel` 将抛出无法找到模型实例的异常。
