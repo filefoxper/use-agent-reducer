@@ -8,6 +8,8 @@
 
 # use-agent-reducer
 
+[文档地址](https://filefoxper.github.io/use-agent-reducer/#/zh/)
+
 [agent-reducer](https://www.npmjs.com/package/agent-reducer) 是一款非常不错的 reducer 模型化工具，它没有过于复杂的结构，且并不直接依赖于 react、 redux 等外部运行环境。为了可以在 react 环境中使用它，我们开发了 `use-agent-reducer` 。这是一款用于支持 `agent-reducer` 的 react hook 工具，为此，你需要准备一套版本大于 `16.8.0` 的 react 开发环境来使用它。 
 
 以下代码对比了经典 reducer 用法，你会发现 agent-reducer 的优势所在。
@@ -111,7 +113,7 @@ export const Counter = memo(() => {
 ```
 以上代码是一个简单的例子，通过点击 stepUp 按钮可以让当前 state 自动加 1，点击 stepDown 按钮则减 1。useAgentReducer 方法返回的对象是当前模型的代理对象，通过调用代理对象方法可以修改当前 state 数据，并触使页面渲染。
 
-这里涉及到一些 [agent-reducer](https://github.com/filefoxper/agent-reducer/blob/master/documents/zh/index.md) 的基本概念，比如 OriginAgent 模型、 Agent 代理，以及 Agent 代理方法中 this 的安全性等（比如：stepUp 方法中的 this，在赋值给 onClick 后依然安全指向模型实例对象）
+这里涉及到一些 [agent-reducer](https://filefoxper.github.io/agent-reducer/#/zh/) 的基本概念，比如 OriginAgent 模型、 Agent 代理，以及 Agent 代理方法中 this 的安全性等（比如：stepUp 方法中的 this，在赋值给 onClick 后依然安全指向模型实例对象）
 
 关于 Promise 等特殊返回数据，可通过 `MiddleWare` 进行 state 再加工。如下：
 
