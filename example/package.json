@@ -19,8 +19,8 @@
     "moment": "^2.24.0",
     "classnames": "^2.2.6",
     "babel-polyfill": "^6.26.0",
-    "agent-reducer": "4.0.0-alpha.2",
-    "use-agent-reducer": "4.0.0-alpha.2"
+    "agent-reducer": "4.0.2",
+    "use-agent-reducer": "4.0.0"
   },
   "devDependencies": {
     "@babel/core": "7.15.8",

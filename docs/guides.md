@@ -180,3 +180,166 @@ const sharingRef = weakSharing(()=> Model);
 const {fetchState} = useAgentMethods(sharingRef.current, MiddleWarePresets.takePromiseResolve());
 ```
 
+## model sharing & context
+
+Usually, `model sharing` is powerful enough for a global or page scope sharing usage. But, if we want to use it in a reusable Component or customized hook function, it can not help us so much, and now, we need `React.Context` for help. From `use-agent-reducer@4.1.0`, we provide two API `useModelProvider` and `useModel` for building a `React.Context` model sharing tree, and you can use them for a reusable `model sharing`.
+
+```typescript
+import React from 'react';
+import {Model} from 'agent-reducer';
+import {
+    useModelProvider, 
+    useModel, 
+    useAgentReducer,
+    useAgentMethods,
+    useAgentSelector
+} from 'use-agent-reducer';
+
+class IncreaseModel implements Model<number>{
+
+    state = 0;
+
+    increase(){
+        return this.state + 1;
+    }
+
+}
+
+class DecreaseModel implements Model<number>{
+
+    state = 0;
+
+    decrease(){
+        return this.state - 1;
+    }
+
+}
+
+const DeepComp = ()=>{
+    // we can fetch the model instance of IncreaseModel 
+    // from IncreaseScope by using API useModel,
+    // and pass the class into it as a query condition.
+    const increaseModel = useModel(IncreaseModel);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <button onClick={increase}>increase</button>
+    );
+};
+
+const MyComp = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // use Context to pass model into the child components.
+    // useModelProvider creates a Context.Provider with value props inside.
+    const IncreaseScope = useModelProvider(increaseModel);
+
+    return (
+        <IncreaseScope>
+            <span>{increaseCount}</span>
+            <DeepComp/>
+        </IncreaseScope>
+    );
+};
+
+const DeepComp1 = ()=>{
+    const increaseModel = useModel(IncreaseModel);
+    // select model instance by the index of array
+    const decreaseModel = useModel(1);
+    const decreaseCount = useAgentSelector(decreaseModel, s=>s);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <>
+            <span>{decreaseCount}</span>
+            <button onClick={increase}>increase</button>
+        </>
+    );
+};
+
+const MyComp1 = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // we can use a array to organize the model instances,
+    // which are able to be selected from the child component.
+    const Scope = useModelProvider([increaseModel, new DecreaseModel()]);
+
+    return (
+        <Scope>
+            <span>{increaseCount}</span>
+            <DeepComp1/>
+        </Scope>
+    );
+};
+
+const DeepComp2 = ()=>{
+    const increaseModel = useModel(IncreaseModel);
+    // select model instance by the property name of object
+    const decreaseModel = useModel('decreaseModel');
+    const decreaseCount = useAgentSelector(decreaseModel, s=>s);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <>
+            <span>{decreaseCount}</span>
+            <button onClick={increase}>increase</button>
+        </>
+    );
+};
+
+const MyComp2 = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // we can use a object to organize the model instances too
+    const Scope = useModelProvider({
+        increaseModel, 
+        decreaseModel: new DecreaseModel()
+    });
+
+    return (
+        <Scope>
+            <span>{increaseCount}</span>
+            <DeepComp2/>
+        </Scope>
+    );
+};
+
+const DeepComp3 = ()=>{
+    // still can be found in the deep provider child component
+    const increaseModel = useModel(IncreaseModel);
+    const decreaseModel = useModel(DecreaseModel);
+    const decreaseCount = useAgentSelector(decreaseModel, s=>s);
+    const {increase} = useAgentMethods(increaseModel);
+    return (
+        <>
+            <span>{decreaseCount}</span>
+            <button onClick={increase}>increase</button>
+        </>
+    );
+};
+
+const MyComp3 = ()=>{
+
+    const increaseModel = new IncreaseModel();
+
+    const increaseCount = useAgentSelector(increaseModel, s=>s);
+    // mark the top Provider for model instance query.
+    const IncreaseScope = useModelProvider(increaseModel, true);
+
+    const DecreaseScope = useModelProvider(new DecreaseModel());
+
+    return (
+        <IncreaseScope>
+            <span>{increaseCount}</span>
+            <DecreaseScope>
+                <DeepComp3/>
+            </<DecreaseScope>>
+        </IncreaseScope>
+    );
+};
+```
+
+The example above shows that API [useModel](/api?id=usemodel) can find model instance by class, property name and index from its provider which is created by [useModelProvider](/api?id=usemodelprovider). If it can not find any matched model instance, it will keep finding from the parent provider, if there is no provider above, and the matched model instance is still not exist, `useModel` throw an Error with a `can not find model instance` message. 

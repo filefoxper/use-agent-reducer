@@ -69,7 +69,7 @@ export function useAgentMethods<T extends Model<S>, S>(
 ```
 
 * entry - the model instance object.
-* mdws - MiddleWares
+* mdws - optional param, MiddleWares
 
 This function returns a model like instance which has an empty state property. It only provides model methods.
 
@@ -78,7 +78,7 @@ This function returns a model like instance which has an empty state property. I
 This api function is a shortcut `equalityFn` callback for using api [useAgentSelector](/api?id=useagentselector). It compares `prev` extracted data and `current` extracted data with a shallow `key-value` equality comparator.
 
 ```typescript
-function shallowEqual<R>(prev:R, current:R):boolean
+export function shallowEqual<R>(prev:R, current:R):boolean
 ```
 
 * prev - one data for comparing with another.
@@ -86,3 +86,36 @@ function shallowEqual<R>(prev:R, current:R):boolean
 
 It returns a `boolean` value. If the two params are equal, it returns `true`, otherwise it returns `false`. 
   
+## useModelProvider
+
+This api function is a react hook for providing a react `Context.Provider` component according to the value models. And then we can use API [useModel](/api?id=usemodel) to select a model instance out.
+
+```typescript
+export function useModelProvider(
+    models: Model|Record<string, Model>|Array<Model>,
+    isRootProvider?: boolean,
+):NamedExoticComponent<{ children: JSX.Element }>;
+```
+
+* models - the model instance or model instances which are needed in the `Provider` children component. It can be an model instance object, a customized object with model instance values or a customized array with model instance elements.
+* isRootProvider - optional param, mark if the `Provider` is a root `Provider`.
+
+It returns a react `Context.Provider` component without any props.
+
+## useModel
+
+This api function is a react hook for selecting model instance from the nearest `Provider` to the fastest `Provider` which are created by API [useModelProvider](/api?id=usemodelprovider).
+
+This API always starts selecting from the nearest `Provider`, if there is no matched model instance in this `Provider`, it goes to its parent `Provider`, util it find the model instance out, and returns it for you. If the final selecting result is undefined, it throws an `Error Exception`.
+
+The `Provider` set with `isRootProvider` can stop the finding.
+
+```typescript
+export function useModel<T extends Model>(
+    key: string| number| { new(): T },
+):T;
+```
+
+* key - the model name marked in customized object, the index value in customized array or the class of the finding model instance.
+
+It returns the first matched model instance.

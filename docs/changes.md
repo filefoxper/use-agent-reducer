@@ -49,3 +49,7 @@
 
 * [refactor] use `agent-reducer@4.0.0` .
 * [refactor] remove bad designs .
+
+## v4.1.0 2021-11-16
+
+* [new] add API [useModelProvider](/api?id=usemodelprovider) and [useModel](/api?id=usemodel).

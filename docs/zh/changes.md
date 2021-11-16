@@ -49,3 +49,7 @@
 
 * [优化] 使用 `agent-reducer@4.0.0` 依赖
 * [优化] 删除 bad design 与对老版本 `agent-reducer` 的支持
+
+## v4.1.0 2021-11-16
+
+* [新增] 接口 [useModelProvider](/zh/api?id=usemodelprovider) 和 [useModel](/zh/api?id=usemodel)
