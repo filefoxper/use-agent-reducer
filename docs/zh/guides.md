@@ -302,6 +302,16 @@ const DeepComp3 = ()=>{
     );
 };
 
+const DeepContent3 = ()=>{
+    // 中间层
+    const DecreaseScope = useModelProvider(new DecreaseModel());
+    return (
+        <DecreaseScope>
+            <DeepComp3/>
+        </<DecreaseScope>
+    );
+};
+
 const MyComp3 = ()=>{
 
     const increaseModel = new IncreaseModel();
@@ -310,14 +320,10 @@ const MyComp3 = ()=>{
     // 标记 useModel 可查找的最顶层 Provider
     const IncreaseScope = useModelProvider(increaseModel, true);
 
-    const DecreaseScope = useModelProvider(new DecreaseModel());
-
     return (
         <IncreaseScope>
             <span>{increaseCount}</span>
-            <DecreaseScope>
-                <DeepComp3/>
-            </<DecreaseScope>>
+            <DeepContent3/>
         </IncreaseScope>
     );
 };

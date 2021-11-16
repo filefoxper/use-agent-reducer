@@ -10,6 +10,8 @@
 
  other language: [中文](https://github.com/filefoxper/use-agent-reducer/blob/master/README_zh.md)
 
+ [Document](https://filefoxper.github.io/use-agent-reducer/#/)
+
 [agent-reducer](https://www.npmjs.com/package/agent-reducer) is a very powerful tool, it converts a model object (`OriginAgent`) to be a state changeable object (`Agent`). It is designed on the reducer running base. Every thing returned from an `Agent` method will be a next state.
 
 `use-agent-reducer` is designed for using `agent-reducer` in react hooks environment。
@@ -115,7 +117,7 @@ export const Counter = memo(() => {
 });
 ```
 
-The code below shows how to use API `useAgentReducer` with `OriginAgent` model, there are some concepts and designs about `agent-reducer` you should know first, you can learn these from [agent-reducer](https://github.com/filefoxper/agent-reducer/blob/master/documents/en/index.md), then you will know what can be a model and why after reassign `Agent` method (`stepUp`) into another object, keyword `this` still represent `Agent` when the method is running.
+The code below shows how to use API `useAgentReducer` with `OriginAgent` model, there are some concepts and designs about `agent-reducer` you should know first, you can learn these from [agent-reducer](https://filefoxper.github.io/agent-reducer/#/), then you will know what can be a model and why after reassign `Agent` method (`stepUp`) into another object, keyword `this` still represent `Agent` when the method is running.
 
 As `agent-reducer` is designed by taking a next state from an `Agent` method return, we can not take a promise resolve data to be next state, but we can use `MiddleWare` in `agent-reducer` to reproduce a promise object, and take its resolve data as next state.
 

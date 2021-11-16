@@ -1,5 +1,5 @@
 import {MiddleWare, Model, LifecycleMiddleWare} from 'agent-reducer';
-import {NamedExoticComponent} from "react";
+import {NamedExoticComponent, ReactNode} from "react";
 
 export declare function useAgentReducer<T extends Model<S>, S>(entry: T | {
     new(): T;
@@ -26,7 +26,7 @@ export declare function shallowEqual<R>(prev: R, current: R): boolean;
 export declare function useModelProvider(
     models: Model|Record<string, Model>|Array<Model>,
     isRootProvider?: boolean,
-):NamedExoticComponent<{ children: JSX.Element }>;
+):NamedExoticComponent<{ children?: ReactNode }>;
 
 export declare function useModel<T extends Model>(
     key: string| number| { new(): T },
