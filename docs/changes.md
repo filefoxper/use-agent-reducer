@@ -57,3 +57,7 @@
 ## v4.1.1 2021-11-16
 
 * [bug] fix typescript problem about useModelProvider.
+
+## v4.1.2 2021-11-16
+
+* [bug] fix the problem about useModelProvider can not link each other well, when the nested Provider's creator are not nested.

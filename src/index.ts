@@ -157,25 +157,26 @@ export function useModelProvider(
   models: Model|Record<string, Model>|Array<Model>,
   isRootProvider?: boolean,
 ):NamedExoticComponent<{ children?: ReactNode }> {
-  const contextValue = useContext(ModelContext);
-  const parent = isRootProvider ? null : contextValue;
-  const value = useMemo(() => {
-    const entries = Object.entries(models);
-    const hasState = entries.some(([k]) => k === 'state');
-    if (hasState) {
-      return { parent, currents: { current: models } };
-    }
-    const e = entries.map(([k, v]) => {
-      const { current } = weakSharing(() => v);
-      return [k, current];
-    });
-    const currents = Object.fromEntries(e);
-    return { parent, currents };
-  }, []);
-
   return useMemo(() => memo((
     { children }: { children?: ReactNode },
-  ) => createElement(ModelContext.Provider, { value }, children)), []);
+  ) => {
+    const contextValue = useContext(ModelContext);
+    const parent = isRootProvider ? null : contextValue;
+    const value = useMemo(() => {
+      const entries = Object.entries(models);
+      const hasState = entries.some(([k]) => k === 'state');
+      if (hasState) {
+        return { parent, currents: { current: models } };
+      }
+      const e = entries.map(([k, v]) => {
+        const { current } = weakSharing(() => v);
+        return [k, current];
+      });
+      const currents = Object.fromEntries(e);
+      return { parent, currents };
+    }, []);
+    return createElement(ModelContext.Provider, { value }, children);
+  }), []);
 }
 
 function findModelBy(
