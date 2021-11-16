@@ -53,3 +53,7 @@
 ## v4.1.0 2021-11-16
 
 * [new] add API [useModelProvider](/api?id=usemodelprovider) and [useModel](/api?id=usemodel).
+
+## v4.1.1 2021-11-16
+
+* [bug] fix typescript problem about useModelProvider.

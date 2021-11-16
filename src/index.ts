@@ -1,6 +1,6 @@
 import React, {
   createElement,
-  memo, NamedExoticComponent,
+  memo, NamedExoticComponent, ReactNode,
   useContext,
   useEffect,
   useMemo,
@@ -156,7 +156,7 @@ const ModelContext = React.createContext<ContextValue|null>(null);
 export function useModelProvider(
   models: Model|Record<string, Model>|Array<Model>,
   isRootProvider?: boolean,
-):NamedExoticComponent<{ children: JSX.Element }> {
+):NamedExoticComponent<{ children?: ReactNode }> {
   const contextValue = useContext(ModelContext);
   const parent = isRootProvider ? null : contextValue;
   const value = useMemo(() => {
@@ -174,7 +174,7 @@ export function useModelProvider(
   }, []);
 
   return useMemo(() => memo((
-    { children }: { children: JSX.Element },
+    { children }: { children?: ReactNode },
   ) => createElement(ModelContext.Provider, { value }, children)), []);
 }
 

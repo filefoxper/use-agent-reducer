@@ -53,3 +53,7 @@
 ## v4.1.0 2021-11-16
 
 * [新增] 接口 [useModelProvider](/zh/api?id=usemodelprovider) 和 [useModel](/zh/api?id=usemodel)
+
+## v4.1.1 2021-11-16
+
+* [bug] 修复 useModelProvider 接口的 typescript 问题。

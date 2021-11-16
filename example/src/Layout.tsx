@@ -4,6 +4,7 @@ import UseMiddleWare from "@/useMiddleWare";
 import SplitModel from "@/splitModel";
 import TakeLatest from "@/takeLatest";
 import NewFeatures from "@/newFeatures";
+import ModelProvider from "@/modelProvider";
 
 const Title=({children})=>{
     return (
@@ -26,6 +27,8 @@ export default memo(() => {
                 <TakeLatest/>
                 <Title>use new features</Title>
                 <NewFeatures/>
+                <Title>model provider</Title>
+                <ModelProvider/>
             </div>
         </div>
     );

@@ -321,6 +321,16 @@ const DeepComp3 = ()=>{
     );
 };
 
+const DeepContent3 = ()=>{
+    // middle
+    const DecreaseScope = useModelProvider(new DecreaseModel());
+    return (
+        <DecreaseScope>
+            <DeepComp3/>
+        </<DecreaseScope>
+    );
+};
+
 const MyComp3 = ()=>{
 
     const increaseModel = new IncreaseModel();
@@ -334,9 +344,7 @@ const MyComp3 = ()=>{
     return (
         <IncreaseScope>
             <span>{increaseCount}</span>
-            <DecreaseScope>
-                <DeepComp3/>
-            </<DecreaseScope>>
+            <DeepContent3/>
         </IncreaseScope>
     );
 };
