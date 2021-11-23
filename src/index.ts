@@ -17,6 +17,7 @@ import {
   DefaultActionType,
   Model,
   weakSharing,
+  Factory, SharingRef, getSharingType,
 } from 'agent-reducer';
 
 export function useAgentReducer<T extends Model<S>, S>(
@@ -153,6 +154,10 @@ type ContextValue={
 
 const ModelContext = React.createContext<ContextValue|null>(null);
 
+function recreateWeakSharingModel(model:Model) {
+  return getSharingType(model) === 'weak' ? model : weakSharing(() => model);
+}
+
 export function useModelProvider(
   models: Model|Record<string, Model>|Array<Model>,
   isRootProvider?: boolean,
@@ -166,10 +171,10 @@ export function useModelProvider(
       const entries = Object.entries(models);
       const hasState = entries.some(([k]) => k === 'state');
       if (hasState) {
-        return { parent, currents: { current: models } };
+        return { parent, currents: { current: recreateWeakSharingModel(models as Model) } };
       }
       const e = entries.map(([k, v]) => {
-        const { current } = weakSharing(() => v);
+        const { current } = recreateWeakSharingModel(v);
         return [k, current];
       });
       const currents = Object.fromEntries(e);
@@ -213,6 +218,17 @@ export function useModel<T extends Model>(
     throw new Error('Can not find the model.');
   }
   return result;
+}
+
+export function useWeakSharing<
+    S,
+    T extends Model<S> = Model<S>>(factory:Factory<S, T>):SharingRef<S, T> {
+  const sharingRef = useRef<SharingRef<S, T>|null>(null);
+  if (sharingRef.current) {
+    return sharingRef.current;
+  }
+  sharingRef.current = weakSharing(factory);
+  return sharingRef.current;
 }
 
 function isObject<T>(data: T): boolean {

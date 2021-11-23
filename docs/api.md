@@ -119,3 +119,19 @@ export function useModel<T extends Model>(
 * key - the model name marked in customized object, the index value in customized array or the class of the finding model instance.
 
 It returns the first matched model instance.
+
+## useWeakSharing
+
+Creates a `weakSharing` refernce, so, you can pass this ref to component props, or `React.Context` for a component inside sharing.
+
+```typescript
+export declare function useWeakSharing<
+    S,
+    T extends Model<S> = Model<S>>(factory:Factory<S, T>):SharingRef<S, T>;
+```
+
+* factory - the callback factory for recreating model instance.
+
+returns a sharingRef.
+
+It is the hook way for using the `agent-reducer` API [weakSharing](https://filefoxper.github.io/agent-reducer/#/api?id=weaksharing) in component.

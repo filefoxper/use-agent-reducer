@@ -1,4 +1,4 @@
-import {MiddleWare, Model, LifecycleMiddleWare} from 'agent-reducer';
+import {MiddleWare, Model, LifecycleMiddleWare, Factory, SharingRef} from 'agent-reducer';
 import {NamedExoticComponent, ReactNode} from "react";
 
 export declare function useAgentReducer<T extends Model<S>, S>(entry: T | {
@@ -31,3 +31,7 @@ export declare function useModelProvider(
 export declare function useModel<T extends Model>(
     key: string| number| { new(): T },
 ):T;
+
+export declare function useWeakSharing<
+    S,
+    T extends Model<S> = Model<S>>(factory:Factory<S, T>):SharingRef<S, T>;
