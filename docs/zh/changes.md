@@ -65,3 +65,7 @@
 ## v4.1.3 2021-11-23
 
 * [新增] 新增 API [useWeakSharing](/zh/api?id=useweaksharing)。
+
+## v4.1.4 2021-11-23
+
+* [bug] 修复由 4.1.3 useWeakSharing 引起的 API [useModelProvider](/api?id=usemodelprovider) "can not find model" 错误问题。
