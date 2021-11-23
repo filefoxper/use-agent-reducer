@@ -61,3 +61,7 @@
 ## v4.1.2 2021-11-16
 
 * [bug] 修复并行 useModelProvider 产生的嵌套 Provider 无法找到模型实例的问题。
+
+## v4.1.3 2021-11-23
+
+* [新增] 新增 API [useWeakSharing](/zh/api?id=useweaksharing)。

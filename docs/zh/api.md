@@ -117,4 +117,20 @@ export function useModel<T extends Model>(
 如果查询失败，该方法会爆错，否则返回查询到的最近一个符合条件的模型实例。
 
 
+## useWeakSharing
+
+创建一个 `weakSharing` 引用，可通过 props 或 React.Context 传递给子组件进行渲染同步。
+
+```typescript
+export declare function useWeakSharing<
+    S,
+    T extends Model<S> = Model<S>>(factory:Factory<S, T>):SharingRef<S, T>;
+```
+
+* factory - 创建模型实例的回调函数
+
+返回一个 sharing 引用.
+
+当前 API 是 `agent-reducer` API [weakSharing](https://filefoxper.github.io/agent-reducer/#/api?id=weaksharing) 的一个 hook 应用。
+
   
