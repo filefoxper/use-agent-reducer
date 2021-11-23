@@ -64,4 +64,8 @@
 
 ## v4.1.3 2021-11-23
 
-* [refactor] create API [useWeakSharing](/api?id=useweaksharing)。
+* [refactor] create API [useWeakSharing](/api?id=useweaksharing).
+
+## v4.1.4 2021-11-23
+
+* [bug] fix the API [useModelProvider](/api?id=usemodelprovider) problem, "can not find model" error which is caused by 4.1.3.

@@ -155,7 +155,7 @@ type ContextValue={
 const ModelContext = React.createContext<ContextValue|null>(null);
 
 function recreateWeakSharingModel(model:Model) {
-  return getSharingType(model) === 'weak' ? model : weakSharing(() => model);
+  return getSharingType(model) === 'weak' ? model : weakSharing(() => model).current;
 }
 
 export function useModelProvider(
@@ -174,7 +174,7 @@ export function useModelProvider(
         return { parent, currents: { current: recreateWeakSharingModel(models as Model) } };
       }
       const e = entries.map(([k, v]) => {
-        const { current } = recreateWeakSharingModel(v);
+        const current = recreateWeakSharingModel(v);
         return [k, current];
       });
       const currents = Object.fromEntries(e);
