@@ -36,11 +36,14 @@ export function useAgentReducer<T extends Model<S>, S>(
 
   useEffect(
     () => {
+      const dispatcher = (action:Action) => {
+        dispatch({ ...action, state: reducer.agent.state });
+      };
       if (reducer) {
-        reducer.connect(dispatch);
+        reducer.connect(dispatcher);
       }
       if (reducer.agent.state !== state) {
-        dispatch({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
+        dispatcher({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       }
       return () => {
         const { current: red } = reducerRef;
@@ -82,11 +85,12 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   const current = useMemo(() => mapStateCallback(state), [state]);
 
   const weakDispatch = (action: Action) => {
-    const next = mapStateCallback(action.state as S);
+    const modelState = reducer.agent.state;
+    const next = mapStateCallback(modelState);
     if (current === next || (equalityFn && equalityFn(current, next))) {
       return;
     }
-    dispatch(action);
+    dispatch({ ...action, state: modelState });
   };
 
   const dispatchRef = useRef(weakDispatch);

@@ -69,3 +69,7 @@
 ## v4.1.4 2021-11-23
 
 * [bug] fix the API [useModelProvider](/api?id=usemodelprovider) problem, "can not find model" error which is caused by 4.1.3.
+
+## v4.1.5 2021-12-12
+
+* [update] update for `agent-reducer@4.0.4`.
