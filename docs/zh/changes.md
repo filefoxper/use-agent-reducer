@@ -69,3 +69,7 @@
 ## v4.1.4 2021-11-23
 
 * [bug] 修复由 4.1.3 useWeakSharing 引起的 API [useModelProvider](/api?id=usemodelprovider) "can not find model" 错误问题。
+
+## v4.1.5 2021-12-12
+
+* [update] 跟随 `agent-reducer@4.0.4` 更新。
