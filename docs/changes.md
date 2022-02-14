@@ -73,3 +73,7 @@
 ## v4.1.5 2021-12-12
 
 * [update] update for `agent-reducer@4.0.4`.
+
+## v4.1.6 2022-02-14
+
+* [bug] resolve the problem about the agent methods from parent component can't work in useEffect.
