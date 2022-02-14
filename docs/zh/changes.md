@@ -77,3 +77,7 @@
 ## v4.1.6 2022-02-14
 
 * [bug] 修复子组件的 useEffect 中使用父组件 agent 未链接问题。
+
+## v4.1.7 2022-02-14
+
+* [bug] 修复关于 `useModel` API 中使用 Model class 时，class 传参错误问题。

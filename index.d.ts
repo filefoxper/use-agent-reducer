@@ -29,7 +29,7 @@ export declare function useModelProvider(
 ):NamedExoticComponent<{ children?: ReactNode }>;
 
 export declare function useModel<T extends Model>(
-    key: string| number| { new(): T },
+    key: string| number| { new(...args:any[]): T },
 ):T;
 
 export declare function useWeakSharing<
