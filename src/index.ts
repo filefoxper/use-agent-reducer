@@ -229,7 +229,7 @@ function findModelBy(
 }
 
 export function useModel<T extends Model>(
-  key: string| number| { new(): T },
+  key: string| number| { new(...args:any[]): T },
 ):T {
   const parent = useContext(ModelContext);
   const result = useMemo(() => {

@@ -77,3 +77,7 @@
 ## v4.1.6 2022-02-14
 
 * [bug] resolve the problem about the agent methods from parent component can't work in useEffect.
+
+## v4.1.7 2022-02-14
+
+* [bug] resolve the problem about typescript error to `useModel` API, when the param is a class with constructor params.
