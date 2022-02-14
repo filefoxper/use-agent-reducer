@@ -17,7 +17,7 @@ import {
   DefaultActionType,
   Model,
   weakSharing,
-  Factory, SharingRef, getSharingType,
+  Factory, SharingRef, getSharingType, Reducer, ReducerPadding,
 } from 'agent-reducer';
 
 export function useAgentReducer<T extends Model<S>, S>(
@@ -26,19 +26,26 @@ export function useAgentReducer<T extends Model<S>, S>(
 ): T {
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
-  if (reducerRef.current === null) {
+  const initialed = reducerRef.current !== null;
+
+  if (!initialed) {
     reducerRef.current = create(entry, ...mdws);
   }
 
-  const { current: reducer } = reducerRef;
+  const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
   const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
+  const dispatcher = (action:Action) => {
+    dispatch({ ...action, state: reducer.agent.state });
+  };
+
+  if (!initialed) {
+    reducer.connect(dispatcher);
+  }
+
   useEffect(
     () => {
-      const dispatcher = (action:Action) => {
-        dispatch({ ...action, state: reducer.agent.state });
-      };
       if (reducer) {
         reducer.connect(dispatcher);
       }
@@ -74,11 +81,13 @@ export function useAgentSelector<T extends Model<S>, S, R>(
 ): R {
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
-  if (reducerRef.current === null) {
+  const initialed = reducerRef.current !== null;
+
+  if (!initialed) {
     reducerRef.current = create(entry);
   }
 
-  const { current: reducer } = reducerRef;
+  const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
   const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
@@ -97,11 +106,16 @@ export function useAgentSelector<T extends Model<S>, S, R>(
 
   dispatchRef.current = weakDispatch;
 
+  const dispatchWrap = (action: Action) => {
+    dispatchRef.current(action);
+  };
+
+  if (!initialed) {
+    reducer.connect(dispatchWrap);
+  }
+
   useEffect(
     () => {
-      const dispatchWrap = (action: Action) => {
-        dispatchRef.current(action);
-      };
       if (reducer) {
         reducer.connect(dispatchWrap);
       }
@@ -126,11 +140,17 @@ export function useAgentMethods<T extends Model<S>, S>(
 ): Omit<T, 'state'> {
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
-  if (reducerRef.current === null) {
+  const initialed = reducerRef.current !== null;
+
+  if (!initialed) {
     reducerRef.current = create(entry, ...middleWares);
   }
 
-  const { current: reducer } = reducerRef;
+  const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
+
+  if (!initialed) {
+    reducer.connect();
+  }
 
   useEffect(
     () => {
