@@ -1,4 +1,4 @@
-import {MiddleWare, Model, LifecycleMiddleWare, Factory, SharingRef} from 'agent-reducer';
+import {MiddleWare, Model, LifecycleMiddleWare, Factory, SharingRef, EffectCallback} from 'agent-reducer';
 import {NamedExoticComponent, ReactNode} from "react";
 
 export declare function useAgentReducer<T extends Model<S>, S>(entry: T | {
@@ -20,6 +20,12 @@ export declare function useAgentMethods<T extends Model<S>, S>(
     entry: T,
     ...middleWares: MiddleWare[]
 ): Omit<T, 'state'>;
+
+export declare function useAgentEffect<S, T extends Model<S>=Model<S>>(
+    callback:EffectCallback<S>,
+    target:T,
+    ...methods:(((...args:any[])=>any)|string)[]
+):void;
 
 export declare function shallowEqual<R>(prev: R, current: R): boolean;
 

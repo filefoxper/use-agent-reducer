@@ -81,3 +81,7 @@
 ## v4.1.7 2022-02-14
 
 * [bug] 修复关于 `useModel` API 中使用 Model class 时，class 传参错误问题。
+
+## v4.2.0 2022-03-19
+
+* [update] 新增 API [useAgentEffect](/zh/api?id=useagenteffect)

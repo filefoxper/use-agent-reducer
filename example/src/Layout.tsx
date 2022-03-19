@@ -5,6 +5,7 @@ import SplitModel from "@/splitModel";
 import TakeLatest from "@/takeLatest";
 import NewFeatures from "@/newFeatures";
 import ModelProvider from "@/modelProvider";
+import Effect from '@/effect';
 
 const Title=({children})=>{
     return (
@@ -29,6 +30,8 @@ export default memo(() => {
                 <NewFeatures/>
                 <Title>model provider</Title>
                 <ModelProvider/>
+                <Title>effect provider</Title>
+                <Effect/>
             </div>
         </div>
     );

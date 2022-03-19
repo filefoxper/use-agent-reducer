@@ -857,3 +857,132 @@ export default function NewFeatures() {
 `Agents` base on a same model object can update state synchronously. Using this feature of `agent-reducer` can make your code more simple. And use API [useAgentSelector](/api?id=useagentselector) and [useAgentMethods](/api?id=useagentmethods) can make your component render more less with `agent-reducer` model sharing.
 
 You can do more things to make a search page model better.
+
+## Use agent effect
+
+If you need effect API of `agent-reducer` directly, you can refer to [document](https://filefoxper.github.io/agent-reducer/#/guides?id=effect), if you are more interest to [effect decorator](https://filefoxper.github.io/agent-reducer/#/guides?id=effect-decorator) you can take look at the guids of agent-reducer. But, here we just introduce API [useAgentEffect](/api?id=useagenteffect) .
+
+how to add a agent effect to model in react?
+
+```typescript
+useAgentEffect((prevState, currentState, methodName)=>{
+    // `prevState` is the model state before this change.
+    // `currentState` is the model state right now.
+    // `methodName` is the name of model or agent method
+    // which leads this change.
+    // If this effect is caused by effect mount,
+    // param `methodName` is `null`.
+    ......
+    // return function destroy() {
+    //   ......
+    // }
+    // if returns a function, 
+    // this function will be called before effect callback triggered again. 
+    // It is often used for clean or destroy something.
+},model, ...methods);
+```
+
+We can use this API to try `SearchParamsModel.feedback`.
+
+```typescript
+import React, {memo, useCallback, useEffect} from 'react';
+import {
+    useAgentReducer,
+    useMiddleWare,
+    useAgentMethods,
+    useAgentSelector,
+    useModelProvider,
+    useModel, useAgentEffect
+} from "./ar";
+import SimpleTodoList, {SearchParamsModel} from "./model";
+import {ContentInput, PageContent, PriorLevelSelect, SearchContent} from "@/components";
+import {Button, Pagination, Table} from "antd";
+import Column from "antd/lib/table/Column";
+import {PriorLevel, SearchParams, State} from "@/type";
+
+const SearchParamComponent = memo(() => {
+
+    const {state, changeSearchContent, changeSearchPriorLevel, feedback} = useAgentReducer(SearchParamsModel);
+
+    const todoListModel = useModel(SimpleTodoList);
+
+    const {search} = useAgentMethods(todoListModel);
+
+    // In fact, only the `todoListModel.changePage` action
+    // can lead the `feedback` happen.
+    // So, we can use `useAgentEffect` to listen 
+    // the `todoListModel.changePage` method, 
+    // and call `feedback`.
+    useAgentEffect<State>((prevState, currentState) => {
+        feedback(currentState.searchParams);
+    }, todoListModel, todoListModel.changePage);
+
+    const handleSubmit = useCallback(async () => {
+        search(state);
+    }, [state]);
+
+    return (
+        <SearchContent>
+            <label>content: </label>
+            <ContentInput value={state.content} onChange={changeSearchContent}/>
+            <label>prior level: </label>
+            <PriorLevelSelect value={state.priorLevel} onChange={changeSearchPriorLevel}/>
+            <Button type="primary" onClick={handleSubmit}>submit</Button>
+        </SearchContent>
+    );
+});
+
+const Search = memo(()=>{
+    const SearchProvider = useModelProvider(new SearchParamsModel());
+    return (
+        <SearchProvider>
+            <SearchParamComponent/>
+        </SearchProvider>
+    );
+})
+
+export default function Effect() {
+
+    const todoListModel = new SimpleTodoList();
+
+    const agent = useAgentReducer(todoListModel);
+
+    const TodoListProvider = useModelProvider(todoListModel);
+
+    const {
+        state,
+        search,
+        changePage
+    } = agent;
+
+    useEffect(() => {
+        search();
+    }, []);
+
+    const renderPriorLevel = useCallback((value: PriorLevel) => {
+        return value === PriorLevel.NORMAL ? 'normal' : 'emergency';
+    }, []);
+
+    return (
+        <PageContent>
+            <TodoListProvider>
+                <Search/>
+                <Table dataSource={state.dataSource || []} pagination={false} rowKey="id">
+                    <Column title="id" dataIndex="id" width={'20%'}/>
+                    <Column title="content" dataIndex="content" width={'60%'}/>
+                    <Column title="prior level" dataIndex="priorLevel" render={renderPriorLevel} width={'20%'}/>
+                </Table>
+                <Pagination
+                    current={state.currentPage}
+                    total={state.total}
+                    pageSize={state.pageSize}
+                    onChange={changePage}
+                />
+            </TodoListProvider>
+        </PageContent>
+    );
+
+}
+```
+
+useAgentEffect API 是为了解决一些 useEffect 难以解决问题而创造的，例如该接口提供了 `prevState`, `currentState` 对比机制，再如，useAgentEffect 可监听特定方法产生的 state 变化并做出反应。请悬着合适的时机使用该 API，切勿滥用。

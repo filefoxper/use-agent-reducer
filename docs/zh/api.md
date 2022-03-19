@@ -133,4 +133,22 @@ export declare function useWeakSharing<
 
 当前 API 是 `agent-reducer` API [weakSharing](https://filefoxper.github.io/agent-reducer/#/api?id=weaksharing) 的一个 hook 应用。
 
-  
+## useAgentEffect
+
+要求 agent-reducer >=4.2.3 ，创建一个模型副作用监听目标模型或代理 state 变化。
+
+```typescript
+export declare function useAgentEffect<S, T extends Model<S>=Model<S>>(
+    callback:EffectCallback<S>,
+    target:T,
+    ...methods:(((...args:any[])=>any)|string)[]
+):void;
+```
+
+* callback - 副作用回调函数，可接收 `prevState`, `state`, `methodName` 三个参数：改变前 state，改变后 state，引起改变的方法。
+* target - 被监听的模型或代理对象。
+* methods - 可选，指定需要监听的方法，不加方法过滤，在第一次使用 useAgentEffect 时，副作用回调函数会被立即触发一次。如添加该参数，当且仅当由指定方法引起 state 变更时才会触发副作用回调函数
+
+该 API 无返回值。
+
+移步至[教程](/zh/tutorial?id=使用副作用)，看看如何使用该 API。
