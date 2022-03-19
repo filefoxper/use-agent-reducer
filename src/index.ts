@@ -17,7 +17,14 @@ import {
   DefaultActionType,
   Model,
   weakSharing,
-  Factory, SharingRef, getSharingType, Reducer, ReducerPadding,
+  Factory,
+  SharingRef,
+  getSharingType,
+  Reducer,
+  ReducerPadding,
+  addEffect,
+  EffectWrap,
+  EffectCallback,
 } from 'agent-reducer';
 
 export function useAgentReducer<T extends Model<S>, S>(
@@ -242,6 +249,35 @@ export function useModel<T extends Model>(
     throw new Error('Can not find the model.');
   }
   return result;
+}
+
+export function useAgentEffect<S, T extends Model<S>=Model<S>>(
+  callback:EffectCallback<S>,
+  target:T,
+  ...methods:(((...args:any[])=>any)|string)[]
+):void {
+  const effectRef = useRef<EffectWrap<S, T>|null>(null);
+
+  if (effectRef.current !== null) {
+    effectRef.current.update(callback);
+  }
+
+  useEffect(() => {
+    if (!methods || !methods.length) {
+      const effect = addEffect<S, T>(callback, target);
+      effectRef.current = effect;
+      return () => {
+        effectRef.current = null;
+        effect.unmount();
+      };
+    }
+    const effects = methods.map((method) => addEffect(callback, target, method));
+    return () => {
+      effects.forEach((effect) => {
+        effect.unmount();
+      });
+    };
+  }, []);
 }
 
 export function useWeakSharing<

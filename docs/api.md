@@ -135,3 +135,23 @@ export declare function useWeakSharing<
 returns a sharingRef.
 
 It is the hook way for using the `agent-reducer` API [weakSharing](https://filefoxper.github.io/agent-reducer/#/api?id=weaksharing) in component.
+
+## useAgentEffect
+
+creates a effect to listen the state changes of model or agent.
+
+```typescript
+export declare function useAgentEffect<S, T extends Model<S>=Model<S>>(
+    callback:EffectCallback<S>,
+    target:T,
+    ...methods:(((...args:any[])=>any)|string)[]
+):void;
+```
+
+* callback - a function which accepts params as `prevState`, `currentState`, `methodName`. It is triggered when the state of `target` changes.
+* target - model or agent, which you want to listen the state change from.
+* methods - optional, if you don't need it, the effect `callback` will triggerd immediately when using `useAgentEffect`, if you add them, only the state changes caused by these methods can trigger the effect `callback`.
+
+returns void.
+
+Go to [tutorial](/tutorial?id=use-agent-effect) to see, how to use it.

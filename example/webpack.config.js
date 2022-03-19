@@ -72,13 +72,9 @@ function entry(mode) {
               options: {
                 cacheDirectory: true,
                 plugins: [
-                  ["@babel/plugin-transform-runtime"],
-                  ['@babel/plugin-proposal-decorators', {legacy: true}],
-                  ['@babel/plugin-proposal-export-namespace-from'],
-                  [
-                    '@babel/plugin-proposal-class-properties',
-                    {loose: true},
-                  ],
+                  ['@babel/plugin-transform-runtime'],
+                  ['@babel/plugin-proposal-decorators', { legacy: true }],
+                  ['@babel/plugin-proposal-class-properties', { loose: true }],
                   ["import", {
                     "libraryName": "antd",
                     "libraryDirectory": "es",
@@ -86,7 +82,17 @@ function entry(mode) {
                   }]
                 ],
                 presets: [
-                  ['@babel/preset-env', {modules: false}],
+                  [
+                    '@babel/preset-env',
+                    {
+                      modules: false,
+                      targets: {
+                        chrome: '63'
+                      },
+                      useBuiltIns: 'usage',
+                      corejs: { version: 3, proposals: true }
+                    }
+                  ],
                   '@babel/preset-react',
                   '@babel/preset-typescript'
                 ]

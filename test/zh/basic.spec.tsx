@@ -1,6 +1,6 @@
-import {middleWare, MiddleWarePresets, OriginAgent} from "agent-reducer";
+import {middleWare, MiddleWarePresets, Model, OriginAgent} from "agent-reducer";
 import {act, renderHook} from "@testing-library/react-hooks";
-import {useAgentReducer, useMiddleWare} from "../../src";
+import {useAgentEffect, useAgentReducer, useAgentSelector, useMiddleWare} from "../../src";
 
 type Role = 'GUEST' | 'USER' | 'MASTER';
 
@@ -170,4 +170,55 @@ describe('使用 decorator 来添加 MiddleWare', () => {
         expect(agent.state).toEqual({id: 1, name: 'Jimmy', role: 'USER'});
     });
 
+});
+
+describe('使用 effect',()=>{
+
+    // 创建 User 数据管理模型
+    class UserModel implements Model<User> {
+
+        // 初始化默认 state 数据
+        state: User = {id: null, name: null, role: 'GUEST'};
+
+        // 调用方法，产生的返回值可被认为是下一个最新的 state 数据
+        changeUserName(name: string): User {
+            return {...this.state, name};
+        }
+
+        // 如果我们返回一份不完整数据,
+        // 最新 state 将变的个不完整, 这并不符合我们的预期效果.
+        // 我们可以使用 `agent-reducer` api `middleWare` 的 decorator 形式
+        // 对方法添加 `MiddleWarePresets.takeAssignable()` 来解决问题，
+        // 这个 MiddleWare 可以将返回值与当前 state 数据合成最新的 state.
+        @middleWare(MiddleWarePresets.takeAssignable())
+        changeUserRole(role: Role): Partial<User> {
+            return {role};
+        }
+
+        // 如果我们返回一个 promise 值,
+        // 最新 state 将变成一个 promise 对象, 这并不符合我们的预期效果.
+        // 我们可以使用 `agent-reducer` api `middleWare` 的 decorator 形式
+        // 对方法添加 `MiddleWarePresets.takePromiseResolve()` 来解决问题，
+        // 这个 MiddleWare 可以将 promise resolve 值转换成最新的 state.
+        @middleWare(MiddleWarePresets.takePromiseResolve())
+        async fetchUser(): Promise<User> {
+            const {name,role} = this.state;
+            return {id: 1, name, role};
+        }
+    }
+
+    test('使用 useAgentEffect',async ()=>{
+        const model = new UserModel();
+        const {result} = renderHook(() => useAgentReducer(model));
+        const agent = result.current;
+        renderHook(() => useAgentEffect<User>(()=>{
+            agent.fetchUser();
+        },agent,agent.changeUserName,agent.changeUserRole));
+        act( () => {
+            agent.changeUserName('Jimmy');
+            agent.changeUserRole('USER');
+        });
+        await Promise.resolve();
+        expect(agent.state).toEqual({id: 1, name: 'Jimmy', role: 'USER'});
+    });
 });

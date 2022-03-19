@@ -81,3 +81,7 @@
 ## v4.1.7 2022-02-14
 
 * [bug] resolve the problem about typescript error to `useModel` API, when the param is a class with constructor params.
+
+## v4.2.0 2022-03-19
+
+* [update] create API [useAgentEffect](/api?id=useagenteffect).
