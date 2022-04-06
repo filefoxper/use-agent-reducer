@@ -85,3 +85,7 @@
 ## v4.2.0 2022-03-19
 
 * [update] create API [useAgentEffect](/api?id=useagenteffect).
+
+## v4.3.0 2022-04-06
+
+* [update] update for `agent-reducer@4.3.0`.
