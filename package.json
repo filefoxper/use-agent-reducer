@@ -1,6 +1,6 @@
 {
   "name": "use-agent-reducer",
-  "version": "4.2.0",
+  "version": "4.3.0",
   "main": "dist/use-agent-reducer.mini.js",
   "module": "esm/use-agent-reducer.js",
   "typings": "index.d.ts",
@@ -43,7 +43,7 @@
   "peerDependencies": {
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
-    "agent-reducer": ">=4.2.3"
+    "agent-reducer": ">=4.3.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.13.16",
@@ -88,7 +88,7 @@
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-test-renderer": "^16.7.0",
-    "agent-reducer": "4.2.3",
+    "agent-reducer": "4.3.0",
     "ts-jest": "^24.0.2",
     "ts-loader": "^6.0.4",
     "tsconfig-paths-webpack-plugin": "^3.2.0",
