@@ -113,10 +113,12 @@ The `Provider` set with `isRootProvider` can stop the finding.
 ```typescript
 export function useModel<T extends Model>(
     key: string| number| { new(): T },
+    defaultModel?:T,
 ):T;
 ```
 
 * key - the model name marked in customized object, the index value in customized array or the class of the finding model instance.
+* defaultModel - optional, provide a default model, when the useModel can not fetch model instance from parent Context, it will use the default one.
 
 It returns the first matched model instance.
 
