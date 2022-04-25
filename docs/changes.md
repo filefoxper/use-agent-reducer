@@ -89,3 +89,7 @@
 ## v4.3.0 2022-04-06
 
 * [update] update for `agent-reducer@4.3.0`.
+
+## v4.3.1 2022-04-25
+
+* [design] add the param defaultModel for API [useModel](/api?id=usemodel)

@@ -109,10 +109,12 @@ export function useModelProvider(
 ```typescript
 export function useModel<T extends Model>(
     key: string| number| { new(): T },
+    defaultModel?:T
 ):T;
 ```
 
 * key - 查询索引，如果当前作用域 Provider 或其父 Provider 中又包含当前 key 的对象模型实例集合，则获取最近一层相关的 key 对应的实例。key 可以是字符串，可以是数字，也可以是模型的 class 。
+* defaultModel - 可选，当 useModel 无法从父级 Context 获取模型实例时，会采用默认模型实例。
 
 如果查询失败，该方法会爆错，否则返回查询到的最近一个符合条件的模型实例。
 

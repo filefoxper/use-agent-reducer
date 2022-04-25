@@ -36,6 +36,7 @@ export declare function useModelProvider(
 
 export declare function useModel<T extends Model>(
     key: string| number| { new(...args:any[]): T },
+    defaultModel?:T,
 ):T;
 
 export declare function useWeakSharing<

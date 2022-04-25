@@ -237,6 +237,7 @@ function findModelBy(
 
 export function useModel<T extends Model>(
   key: string| number| { new(...args:any[]): T },
+  defaultModel?:T,
 ):T {
   const parent = useContext(ModelContext);
   const result = useMemo(() => {
@@ -245,10 +246,13 @@ export function useModel<T extends Model>(
     }
     return findModelBy(parent, ([, model]) => Object.getPrototypeOf(model).constructor === key);
   }, []) as T;
-  if (!result) {
+  if (result) {
+    return result;
+  }
+  if (!defaultModel) {
     throw new Error('Can not find the model.');
   }
-  return result;
+  return defaultModel;
 }
 
 export function useAgentEffect<S, T extends Model<S>=Model<S>>(

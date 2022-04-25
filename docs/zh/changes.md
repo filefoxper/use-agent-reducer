@@ -89,3 +89,7 @@
 ## v4.3.0 2022-04-06
 
 * [update] 跟随 `agent-reducer@4.3.0` 更新。
+
+## v4.3.1 2022-04-25
+
+* [新增] 为 API [useModel](/zh/api?id=usemodel) 添加第二个参数 defaultModel。
