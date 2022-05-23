@@ -3,6 +3,7 @@ import React, {
   memo, NamedExoticComponent, ReactNode,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useReducer,
   useRef,
@@ -47,11 +48,7 @@ export function useAgentReducer<T extends Model<S>, S>(
     dispatch({ ...action, state: reducer.agent.state });
   };
 
-  if (!initialed) {
-    reducer.connect(dispatcher);
-  }
-
-  useEffect(
+  useLayoutEffect(
     () => {
       if (reducer) {
         reducer.connect(dispatcher);
@@ -117,11 +114,7 @@ export function useAgentSelector<T extends Model<S>, S, R>(
     dispatchRef.current(action);
   };
 
-  if (!initialed) {
-    reducer.connect(dispatchWrap);
-  }
-
-  useEffect(
+  useLayoutEffect(
     () => {
       if (reducer) {
         reducer.connect(dispatchWrap);
@@ -155,11 +148,7 @@ export function useAgentMethods<T extends Model<S>, S>(
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
-  if (!initialed) {
-    reducer.connect();
-  }
-
-  useEffect(
+  useLayoutEffect(
     () => {
       if (reducer) {
         reducer.connect();
