@@ -97,3 +97,7 @@
 ## v4.5.0 2022-05-23
 
 * [update] 使用 agent-reducer@4.5.0 auto connect 特性。并修复使用同一 `weakSharing` 弱共享组件，互切时，无法清理模型状态的问题
+
+## v4.5.1 2022-05-23
+
+* [optimize] 使用 agent-reducer 自动 connect 同步更新功能

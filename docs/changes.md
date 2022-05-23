@@ -97,3 +97,7 @@
 ## v4.5.0 2022-05-23
 
 * [update] use agent-reducer@4.5.0 auto connect feature. And resolve the problem about `weakSharing` switch between two Components can not lead reset.
+
+## v4.5.1 2022-05-23
+
+* [optimize] use the feature of agent-reducer connecting update.

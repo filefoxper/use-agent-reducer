@@ -42,7 +42,7 @@ export function useAgentReducer<T extends Model<S>, S>(
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
-  const [state, dispatch] = useReducer(reducer, reducer.agent.state);
+  const [, dispatch] = useReducer(reducer, reducer.agent.state);
 
   const dispatcher = (action:Action) => {
     dispatch({ ...action, state: reducer.agent.state });
@@ -52,9 +52,6 @@ export function useAgentReducer<T extends Model<S>, S>(
     () => {
       if (reducer) {
         reducer.connect(dispatcher);
-      }
-      if (reducer.agent.state !== state) {
-        dispatcher({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       }
       return () => {
         const { current: red } = reducerRef;
@@ -119,7 +116,6 @@ export function useAgentSelector<T extends Model<S>, S, R>(
       if (reducer) {
         reducer.connect(dispatchWrap);
       }
-      dispatchRef.current({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       return () => {
         const { current: red } = reducerRef;
         if (!red) {
