@@ -93,3 +93,7 @@
 ## v4.3.1 2022-04-25
 
 * [design] add the param defaultModel for API [useModel](/api?id=usemodel)
+
+## v4.5.0 2022-05-23
+
+* [update] use agent-reducer@4.5.0 auto connect feature. And resolve the problem about `weakSharing` switch between two Components can not lead reset.

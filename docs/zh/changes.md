@@ -93,3 +93,7 @@
 ## v4.3.1 2022-04-25
 
 * [新增] 为 API [useModel](/zh/api?id=usemodel) 添加第二个参数 defaultModel。
+
+## v4.5.0 2022-05-23
+
+* [update] 使用 agent-reducer@4.5.0 auto connect 特性。并修复使用同一 `weakSharing` 弱共享组件，互切时，无法清理模型状态的问题
