@@ -105,3 +105,8 @@
 ## v4.5.2 2022-05-24
 
 * [bug] resolve the problem about switch `weakSharing` usages, the cache is still remains.
+
+## v4.5.3 2022-05-24
+
+* [update] update version with `agent-reducer`.
+
