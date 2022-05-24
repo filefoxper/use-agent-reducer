@@ -101,3 +101,7 @@
 ## v4.5.1 2022-05-23
 
 * [optimize] 使用 agent-reducer 自动 connect 同步更新功能
+
+## v4.5.2 2022-05-24
+
+* [bug] 修复切换 `weakSharing` 共享组件时，state 依然留存的问题。

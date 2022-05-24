@@ -6,7 +6,7 @@ import React, {
   useLayoutEffect,
   useMemo,
   useReducer,
-  useRef,
+  useRef, useState,
 } from 'react';
 import {
   create,
@@ -15,7 +15,6 @@ import {
   LifecycleMiddleWare,
   Action,
   AgentReducer,
-  DefaultActionType,
   Model,
   weakSharing,
   Factory,
@@ -32,12 +31,19 @@ export function useAgentReducer<T extends Model<S>, S>(
   entry: T | { new(): T },
   ...mdws: MiddleWare[]
 ): T {
+  const [version, setVersion] = useState(0);
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
-    reducerRef.current = create(entry, ...mdws);
+    const reducerFn = create<S, T>(entry, ...mdws);
+    reducerRef.current = reducerFn;
+    reducerFn.recreate(() => {
+      reducerFn.disconnect();
+      reducerRef.current = null;
+      setVersion((v) => v + 1);
+    });
   }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
@@ -61,7 +67,7 @@ export function useAgentReducer<T extends Model<S>, S>(
         red.disconnect();
       };
     },
-    [],
+    [version],
   );
 
   return reducer.agent;
@@ -80,12 +86,20 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   mapStateCallback: (state: T['state']) => R,
   equalityFn?: (prev: R, current: R) => boolean,
 ): R {
+  const [version, setVersion] = useState(0);
+
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
-    reducerRef.current = create(entry);
+    const reducerFn = create<S, T>(entry);
+    reducerRef.current = reducerFn;
+    reducerFn.recreate(() => {
+      reducerFn.disconnect();
+      reducerRef.current = null;
+      setVersion((v) => v + 1);
+    });
   }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
@@ -124,7 +138,7 @@ export function useAgentSelector<T extends Model<S>, S, R>(
         red.disconnect();
       };
     },
-    [],
+    [version],
   );
 
   return current;
@@ -134,12 +148,20 @@ export function useAgentMethods<T extends Model<S>, S>(
   entry: T,
   ...middleWares: MiddleWare[]
 ): Omit<T, 'state'> {
+  const [version, setVersion] = useState(0);
+
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
-    reducerRef.current = create(entry, ...middleWares);
+    const reducerFn = create<S, T>(entry, ...middleWares);
+    reducerRef.current = reducerFn;
+    reducerFn.recreate(() => {
+      reducerFn.disconnect();
+      reducerRef.current = null;
+      setVersion((v) => v + 1);
+    });
   }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
@@ -157,7 +179,7 @@ export function useAgentMethods<T extends Model<S>, S>(
         red.disconnect();
       };
     },
-    [],
+    [version],
   );
 
   return reducer.agent;

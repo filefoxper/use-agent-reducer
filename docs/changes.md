@@ -101,3 +101,7 @@
 ## v4.5.1 2022-05-23
 
 * [optimize] use the feature of agent-reducer connecting update.
+
+## v4.5.2 2022-05-24
+
+* [bug] resolve the problem about switch `weakSharing` usages, the cache is still remains.
