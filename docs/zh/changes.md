@@ -105,3 +105,7 @@
 ## v4.5.2 2022-05-24
 
 * [bug] 修复切换 `weakSharing` 共享组件时，state 依然留存的问题。
+
+## v4.5.3 2022-05-24
+
+* [update] 跟随 `agent-reducer` 版本。
