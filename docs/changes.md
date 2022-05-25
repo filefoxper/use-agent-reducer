@@ -94,19 +94,11 @@
 
 * [design] add the param defaultModel for API [useModel](/api?id=usemodel)
 
-## v4.5.0 2022-05-23
+## ~~v4.5.0 to v4.5.3~~
 
-* [update] use agent-reducer@4.5.0 auto connect feature. And resolve the problem about `weakSharing` switch between two Components can not lead reset.
+* [deprecated] These versions are not reasonable for trying to make switch of several components with same `weakSharing` model synchronously. The react effects always work by a global updating, not only work for a special component. Consider that, we make a decision to rollback to `4.3.1`.
 
-## v4.5.1 2022-05-23
+## v4.5.4 2022-05-25
 
-* [optimize] use the feature of agent-reducer connecting update.
-
-## v4.5.2 2022-05-24
-
-* [bug] resolve the problem about switch `weakSharing` usages, the cache is still remains.
-
-## v4.5.3 2022-05-24
-
-* [update] update version with `agent-reducer`.
+* [revert] rollback to 4.3.1
 

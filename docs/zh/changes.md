@@ -94,18 +94,10 @@
 
 * [新增] 为 API [useModel](/zh/api?id=usemodel) 添加第二个参数 defaultModel。
 
-## v4.5.0 2022-05-23
+## ~~v4.5.0 to v4.5.3~~
 
-* [update] 使用 agent-reducer@4.5.0 auto connect 特性。并修复使用同一 `weakSharing` 弱共享组件，互切时，无法清理模型状态的问题
+* [deprecated] 这些版本考虑了 effect 的运行时机，这是非常不合理的，react effect 并非生命周期。每个 effect 都是对一次全量更新做出的反应，是单个组件对一次全量更新副作用的汇总项，而非针对单个组件。为此，我们决定维持 4.3.1 以及之前版本的正确理解方案，做出回滚操作。
 
-## v4.5.1 2022-05-23
+## v4.5.4 2022-05-25
 
-* [optimize] 使用 agent-reducer 自动 connect 同步更新功能
-
-## v4.5.2 2022-05-24
-
-* [bug] 修复切换 `weakSharing` 共享组件时，state 依然留存的问题。
-
-## v4.5.3 2022-05-24
-
-* [update] 跟随 `agent-reducer` 版本。
+* [revert] 回滚至 4.3.1
