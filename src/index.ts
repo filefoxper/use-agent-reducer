@@ -3,10 +3,9 @@ import React, {
   memo, NamedExoticComponent, ReactNode,
   useContext,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useReducer,
-  useRef, useState,
+  useRef,
 } from 'react';
 import {
   create,
@@ -15,6 +14,7 @@ import {
   LifecycleMiddleWare,
   Action,
   AgentReducer,
+  DefaultActionType,
   Model,
   weakSharing,
   Factory,
@@ -31,33 +31,33 @@ export function useAgentReducer<T extends Model<S>, S>(
   entry: T | { new(): T },
   ...mdws: MiddleWare[]
 ): T {
-  const [version, setVersion] = useState(0);
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
-    const reducerFn = create<S, T>(entry, ...mdws);
-    reducerRef.current = reducerFn;
-    reducerFn.recreate(() => {
-      reducerFn.disconnect();
-      reducerRef.current = null;
-      setVersion((v) => v + 1);
-    });
+    reducerRef.current = create(entry, ...mdws);
   }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
-  const [, dispatch] = useReducer(reducer, reducer.agent.state);
+  const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
   const dispatcher = (action:Action) => {
     dispatch({ ...action, state: reducer.agent.state });
   };
 
-  useLayoutEffect(
+  if (!initialed) {
+    reducer.connect(dispatcher);
+  }
+
+  useEffect(
     () => {
       if (reducer) {
         reducer.connect(dispatcher);
+      }
+      if (reducer.agent.state !== state) {
+        dispatcher({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       }
       return () => {
         const { current: red } = reducerRef;
@@ -67,7 +67,7 @@ export function useAgentReducer<T extends Model<S>, S>(
         red.disconnect();
       };
     },
-    [version],
+    [],
   );
 
   return reducer.agent;
@@ -86,20 +86,12 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   mapStateCallback: (state: T['state']) => R,
   equalityFn?: (prev: R, current: R) => boolean,
 ): R {
-  const [version, setVersion] = useState(0);
-
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
-    const reducerFn = create<S, T>(entry);
-    reducerRef.current = reducerFn;
-    reducerFn.recreate(() => {
-      reducerFn.disconnect();
-      reducerRef.current = null;
-      setVersion((v) => v + 1);
-    });
+    reducerRef.current = create(entry);
   }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
@@ -125,11 +117,16 @@ export function useAgentSelector<T extends Model<S>, S, R>(
     dispatchRef.current(action);
   };
 
-  useLayoutEffect(
+  if (!initialed) {
+    reducer.connect(dispatchWrap);
+  }
+
+  useEffect(
     () => {
       if (reducer) {
         reducer.connect(dispatchWrap);
       }
+      dispatchRef.current({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       return () => {
         const { current: red } = reducerRef;
         if (!red) {
@@ -138,7 +135,7 @@ export function useAgentSelector<T extends Model<S>, S, R>(
         red.disconnect();
       };
     },
-    [version],
+    [],
   );
 
   return current;
@@ -148,25 +145,21 @@ export function useAgentMethods<T extends Model<S>, S>(
   entry: T,
   ...middleWares: MiddleWare[]
 ): Omit<T, 'state'> {
-  const [version, setVersion] = useState(0);
-
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
-    const reducerFn = create<S, T>(entry, ...middleWares);
-    reducerRef.current = reducerFn;
-    reducerFn.recreate(() => {
-      reducerFn.disconnect();
-      reducerRef.current = null;
-      setVersion((v) => v + 1);
-    });
+    reducerRef.current = create(entry, ...middleWares);
   }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
-  useLayoutEffect(
+  if (!initialed) {
+    reducer.connect();
+  }
+
+  useEffect(
     () => {
       if (reducer) {
         reducer.connect();
@@ -179,7 +172,7 @@ export function useAgentMethods<T extends Model<S>, S>(
         red.disconnect();
       };
     },
-    [version],
+    [],
   );
 
   return reducer.agent;
