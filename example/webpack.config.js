@@ -1,8 +1,7 @@
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const webpack = require('webpack');
-const apiMocker = require('webpack-api-mocker');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ReactRefreshPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const pathBuilder = require('path');
 
 const entryPath = pathBuilder.resolve('src', 'index.tsx');
@@ -13,7 +12,7 @@ const templateHtmlPath = pathBuilder.resolve('template.index.html');
 
 const indexHtml = pathBuilder.resolve('..', 'dist', 'index.html');
 
-function entry(mode) {
+function entry(mode = 'development') {
   var isDev = mode === 'development';
   var splitChunks = {
     chunks: 'all',
@@ -44,17 +43,6 @@ function entry(mode) {
       path: targetPath,
       filename: '[name].[chunkhash:8].js'
     },
-    optimization: isDev ? {
-      noEmitOnErrors: true,
-      minimize: false,
-      namedChunks: true,
-      splitChunks: splitChunks
-    } : {
-      noEmitOnErrors: true,
-      minimize: true,
-      namedChunks: true,
-      splitChunks: splitChunks
-    },
     resolve: {
       extensions: ['.js', '.ts', '.tsx', '.json', 'txt'],
       plugins: [
@@ -72,6 +60,7 @@ function entry(mode) {
               options: {
                 cacheDirectory: true,
                 plugins: [
+                  ['react-refresh/babel'],
                   ['@babel/plugin-transform-runtime'],
                   ['@babel/plugin-proposal-decorators', { legacy: true }],
                   ['@babel/plugin-proposal-class-properties', { loose: true }],
@@ -161,8 +150,7 @@ function entry(mode) {
       ]
     },
     plugins: [
-      new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /zh-cn/),
-      new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/),
+      new ReactRefreshPlugin(),
       new webpack.DefinePlugin({
         'process.env': {
           'NODE_ENV': JSON.stringify(isDev ? mode : 'production')
@@ -189,6 +177,7 @@ function buildDevServerConfig() {
     }
   };
   return {
+    hot:true,
     historyApiFallback: {
       rewrites: {from: new RegExp('^/h5/*'), to: `/index.html`}
     },
@@ -201,6 +190,6 @@ function buildDevServerConfig() {
 }
 
 module.exports = function (env) {
-  var devServer = env.mode === 'development' ? {devServer: buildDevServerConfig()} : {};
+  var devServer = {devServer: buildDevServerConfig()};
   return Object.assign({}, entry(env.mode), devServer);
 };

@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useMemo,
   useReducer,
-  useRef,
+  useRef, useState,
 } from 'react';
 import {
   create,
@@ -14,7 +14,6 @@ import {
   LifecycleMiddleWare,
   Action,
   AgentReducer,
-  DefaultActionType,
   Model,
   weakSharing,
   Factory,
@@ -27,6 +26,15 @@ import {
   EffectCallback,
 } from 'agent-reducer';
 
+function toAgentReducer<
+    T extends Model<S>, S
+    >(reducer:null | AgentReducer<S, T>):AgentReducer<S, T> {
+  if (reducer == null) {
+    throw new Error('The reducer can not be null, it is a bug of `use-agent-reducer`.');
+  }
+  return reducer;
+}
+
 export function useAgentReducer<T extends Model<S>, S>(
   entry: T | { new(): T },
   ...mdws: MiddleWare[]
@@ -35,16 +43,29 @@ export function useAgentReducer<T extends Model<S>, S>(
 
   const initialed = reducerRef.current !== null;
 
+  const remountRef = useRef<{state:S}|null>(null);
+
   if (!initialed) {
     reducerRef.current = create(entry, ...mdws);
   }
 
+  if (remountRef.current) {
+    const remountState = remountRef.current.state;
+    const agentState = toAgentReducer(reducerRef.current).agent.state;
+    if (remountState !== agentState) {
+      toAgentReducer(reducerRef.current).agent.state = remountState;
+    }
+    remountRef.current = null;
+  }
+
+  const [, update] = useState({});
+
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
-  const [state, dispatch] = useReducer(reducer, reducer.agent.state);
+  const [, dispatch] = useReducer(reducer, reducer.agent.state);
 
   const dispatcher = (action:Action) => {
-    dispatch({ ...action, state: reducer.agent.state });
+    dispatch({ ...action, state: toAgentReducer(reducerRef.current).agent.state });
   };
 
   if (!initialed) {
@@ -53,17 +74,16 @@ export function useAgentReducer<T extends Model<S>, S>(
 
   useEffect(
     () => {
-      if (reducer) {
-        reducer.connect(dispatcher);
-      }
-      if (reducer.agent.state !== state) {
-        dispatcher({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
+      if (remountRef.current != null) {
+        update({});
       }
       return () => {
         const { current: red } = reducerRef;
+        reducerRef.current = null;
         if (!red) {
           return;
         }
+        remountRef.current = { state: red.agent.state };
         red.disconnect();
       };
     },
@@ -77,8 +97,10 @@ export function useMiddleWare<T extends Model<S>, S>(
   agent: T,
   ...middleWare: (MiddleWare | LifecycleMiddleWare)[]
 ): T {
-  const { current } = useRef(withMiddleWare(agent, ...middleWare));
-  return current;
+  const copy = withMiddleWare(agent, ...middleWare);
+  const ref = useRef(copy);
+  ref.current = copy;
+  return ref.current;
 }
 
 export function useAgentSelector<T extends Model<S>, S, R>(
@@ -90,9 +112,22 @@ export function useAgentSelector<T extends Model<S>, S, R>(
 
   const initialed = reducerRef.current !== null;
 
+  const remountRef = useRef<{state:S}|null>(null);
+
   if (!initialed) {
     reducerRef.current = create(entry);
   }
+
+  if (remountRef.current) {
+    const remountState = remountRef.current.state;
+    const agentState = toAgentReducer(reducerRef.current).agent.state;
+    if (remountState !== agentState) {
+      toAgentReducer(reducerRef.current).agent.state = remountRef.current.state;
+    }
+    remountRef.current = null;
+  }
+
+  const [, update] = useState({});
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
@@ -101,7 +136,7 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   const current = useMemo(() => mapStateCallback(state), [state]);
 
   const weakDispatch = (action: Action) => {
-    const modelState = reducer.agent.state;
+    const modelState = toAgentReducer(reducerRef.current).agent.state;
     const next = mapStateCallback(modelState);
     if (current === next || (equalityFn && equalityFn(current, next))) {
       return;
@@ -109,29 +144,22 @@ export function useAgentSelector<T extends Model<S>, S, R>(
     dispatch({ ...action, state: modelState });
   };
 
-  const dispatchRef = useRef(weakDispatch);
-
-  dispatchRef.current = weakDispatch;
-
-  const dispatchWrap = (action: Action) => {
-    dispatchRef.current(action);
-  };
-
   if (!initialed) {
-    reducer.connect(dispatchWrap);
+    reducer.connect(weakDispatch);
   }
 
   useEffect(
     () => {
-      if (reducer) {
-        reducer.connect(dispatchWrap);
+      if (remountRef.current != null) {
+        update({});
       }
-      dispatchRef.current({ type: DefaultActionType.DX_MUTE_STATE, state: reducer.agent.state });
       return () => {
         const { current: red } = reducerRef;
+        reducerRef.current = null;
         if (!red) {
           return;
         }
+        remountRef.current = { state: red.agent.state };
         red.disconnect();
       };
     },
@@ -147,11 +175,24 @@ export function useAgentMethods<T extends Model<S>, S>(
 ): Omit<T, 'state'> {
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
 
+  const remountRef = useRef<{state:S}|null>(null);
+
   const initialed = reducerRef.current !== null;
 
   if (!initialed) {
     reducerRef.current = create(entry, ...middleWares);
   }
+
+  if (remountRef.current) {
+    const remountState = remountRef.current.state;
+    const agentState = toAgentReducer(reducerRef.current).agent.state;
+    if (remountState !== agentState) {
+      toAgentReducer(reducerRef.current).agent.state = remountRef.current.state;
+    }
+    remountRef.current = null;
+  }
+
+  const [, update] = useState({});
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
@@ -161,14 +202,16 @@ export function useAgentMethods<T extends Model<S>, S>(
 
   useEffect(
     () => {
-      if (reducer) {
-        reducer.connect();
+      if (remountRef.current != null) {
+        update({});
       }
       return () => {
         const { current: red } = reducerRef;
+        reducerRef.current = null;
         if (!red) {
           return;
         }
+        remountRef.current = { state: red.agent.state };
         red.disconnect();
       };
     },
@@ -193,11 +236,26 @@ export function useModelProvider(
   models: Model|Record<string, Model>|Array<Model>,
   isRootProvider?: boolean,
 ):NamedExoticComponent<{ children?: ReactNode }> {
+  const [version, setVersion] = useState({});
+
+  const remountRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    if (remountRef.current) {
+      setVersion({});
+      remountRef.current = false;
+    }
+    return () => {
+      remountRef.current = true;
+    };
+  }, []);
+
   return useMemo(() => memo((
     { children }: { children?: ReactNode },
   ) => {
     const contextValue = useContext(ModelContext);
     const parent = isRootProvider ? null : contextValue;
+
     const value = useMemo(() => {
       const entries = Object.entries(models);
       const hasState = entries.some(([k]) => k === 'state');
@@ -211,8 +269,9 @@ export function useModelProvider(
       const currents = Object.fromEntries(e);
       return { parent, currents };
     }, []);
+
     return createElement(ModelContext.Provider, { value }, children);
-  }), []);
+  }), [version]);
 }
 
 function findModelBy(
@@ -240,12 +299,12 @@ export function useModel<T extends Model>(
   defaultModel?:T,
 ):T {
   const parent = useContext(ModelContext);
-  const result = useMemo(() => {
+  const result = (function computeResult() {
     if (typeof key !== 'function') {
       return findModelBy(parent, ([k]) => k === key.toString());
     }
     return findModelBy(parent, ([, model]) => Object.getPrototypeOf(model).constructor === key);
-  }, []) as T;
+  }()) as T;
   if (result) {
     return result;
   }

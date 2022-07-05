@@ -27,7 +27,7 @@ export const ContentInput = memo(({value, onChange}: { value: string|undefined, 
     }, []);
 
     return (
-        <Input style={{width: 160, marginRight: 8}} value={value} onChange={handleChange}/>
+        <Input style={{width: 160, marginRight: 8}} value={value||''} onChange={handleChange}/>
     );
 });
 

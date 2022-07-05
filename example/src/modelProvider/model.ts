@@ -42,13 +42,13 @@ export default class SimpleTodoList implements OriginAgent<State> {
 
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
         const fetchParams = {...searchParams, currentPage, pageSize};
-        const {content: dataSource, total} = await fetchTodoList(fetchParams);
+        const {content: dataSource, total} = await fetchTodoListWithDelay(fetchParams,currentPage===2?2000:0);
         // Copy searchParams here
         return {searchParams:{...searchParams}, dataSource, currentPage, pageSize, total};
     }
 
     // this method should works with a page navigation
-    @middleWare(MiddleWarePresets.takePromiseResolve())
+    @middleWare(MiddleWarePresets.takeLatest())
     async changePage(currentPage: number, pageSize: number = 10): Promise<State> {
         const {searchParams} = this.state;
         return this.fetchDataSource(searchParams, currentPage, pageSize);

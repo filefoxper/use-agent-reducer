@@ -42,7 +42,7 @@ export default class SimpleTodoList implements OriginAgent<State> {
 
     private async fetchDataSource(searchParams: SearchParams, currentPage: number, pageSize: number): Promise<State> {
         const fetchParams = {...searchParams, currentPage, pageSize};
-        const {content: dataSource, total} = await fetchTodoList(fetchParams);
+        const {content: dataSource, total} = await fetchTodoListWithDelay(fetchParams, currentPage === 2 ? 3000 : 0);
         // Copy searchParams here
         return {searchParams:{...searchParams}, dataSource, currentPage, pageSize, total};
     }

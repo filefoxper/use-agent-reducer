@@ -102,3 +102,6 @@
 
 * [revert] rollback to 4.3.1
 
+## v4.6.0 2022-07-05
+
+* [bug] fix the problem about the code updating, when using react-refresh babel and webpack plugins. 

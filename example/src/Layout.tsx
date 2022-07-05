@@ -30,8 +30,6 @@ export default memo(() => {
                 <NewFeatures/>
                 <Title>model provider</Title>
                 <ModelProvider/>
-                <Title>effect provider</Title>
-                <Effect/>
             </div>
         </div>
     );
