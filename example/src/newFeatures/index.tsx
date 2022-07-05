@@ -14,7 +14,7 @@ import {MiddleWarePresets, weakSharing} from "agent-reducer";
 // often be reset back, if there is no living `Agent` built on it.
 const searchParamsModel = weakSharing(() => SearchParamsModel);
 
-const simpleTodoList = weakSharing(() => SimpleTodoList);
+const simpleTodoList = new SimpleTodoList();
 
 const SearchParamComponent = memo(() => {
 
@@ -27,15 +27,17 @@ const SearchParamComponent = memo(() => {
     // So, model sharing only works on 'Agents' base on a same model object.
     // API `useAgentMethods` can optimize our component,
     // it never leads its consumer (component) rerender.
-    const {search} = useAgentMethods(simpleTodoList.current);
+    const {search} = useAgentMethods(simpleTodoList);
 
     // API `useAgentSelector` can optimize our component,
     // it only leads its consumer (component) rerender, when the extracted data changes.
-    const searchParams = useAgentSelector(simpleTodoList.current, ({searchParams}) => searchParams);
+    const searchParams = useAgentSelector(simpleTodoList, ({searchParams}) => searchParams);
 
     useEffect(() => {
         feedback(searchParams);
     }, [searchParams]);
+
+    console.log('search...',state)
 
     const handleSubmit = useCallback(async () => {
         // submit current searchParams with model object `simpleTodoList`
@@ -56,14 +58,13 @@ const SearchParamComponent = memo(() => {
 export default function NewFeatures() {
 
     // `Agent` bases on model `simpleTodoList`
-    const agent = useAgentReducer(simpleTodoList.current);
+    const agent = useAgentReducer(simpleTodoList);
 
     const {
         state,
         search,
+        changePage
     } = agent;
-
-    const {changePage: changePageLatest} = useMiddleWare(agent, MiddleWarePresets.takeLatest());
 
     useEffect(() => {
         search();
@@ -72,7 +73,7 @@ export default function NewFeatures() {
     // handle page change
     const handleChangePage = useCallback(async (currentPage: number, pageSize: number = 10) => {
         // feedback searchParams with model object `searchParamsModel`.
-        await changePageLatest(currentPage, pageSize);
+        await changePage(currentPage, pageSize);
     }, [state]);
 
     const renderPriorLevel = useCallback((value: PriorLevel) => {
@@ -91,7 +92,7 @@ export default function NewFeatures() {
                 current={state.currentPage}
                 total={state.total}
                 pageSize={state.pageSize}
-                onChange={handleChangePage}
+                onChange={changePage}
             />
         </PageContent>
     );

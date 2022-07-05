@@ -73,9 +73,8 @@ export default function ModelProvider() {
     const {
         state,
         search,
+        changePage
     } = agent;
-
-    const {changePage: changePageLatest} = useMiddleWare(agent, MiddleWarePresets.takeLatest());
 
     useEffect(() => {
         search();
@@ -84,7 +83,7 @@ export default function ModelProvider() {
     // handle page change
     const handleChangePage = useCallback(async (currentPage: number, pageSize: number = 10) => {
         // feedback searchParams with model object `searchParamsModel`.
-        await changePageLatest(currentPage, pageSize);
+        await changePage(currentPage, pageSize);
     }, [state]);
 
     const renderPriorLevel = useCallback((value: PriorLevel) => {
@@ -104,7 +103,7 @@ export default function ModelProvider() {
                     current={state.currentPage}
                     total={state.total}
                     pageSize={state.pageSize}
-                    onChange={handleChangePage}
+                    onChange={changePage}
                 />
             </TodoListProvider>
         </PageContent>
