@@ -26,6 +26,8 @@ import {
   EffectCallback,
 } from 'agent-reducer';
 
+const isDev = process.env.NODE_ENV === 'development';
+
 function toAgentReducer<
     T extends Model<S>, S
     >(reducer:null | AgentReducer<S, T>):AgentReducer<S, T> {
@@ -45,20 +47,11 @@ export function useAgentReducer<T extends Model<S>, S>(
 
   const remountRef = useRef<{state:S}|null>(null);
 
-  if (!initialed) {
-    reducerRef.current = create(entry, ...mdws);
-  }
-
-  if (remountRef.current) {
-    const remountState = remountRef.current.state;
-    const agentState = toAgentReducer(reducerRef.current).agent.state;
-    if (remountState !== agentState) {
-      toAgentReducer(reducerRef.current).agent.state = remountState;
-    }
-    remountRef.current = null;
-  }
-
   const [, update] = useState({});
+
+  if (!initialed) {
+    reducerRef.current = create<S, T>(entry, ...mdws);
+  }
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
@@ -72,24 +65,57 @@ export function useAgentReducer<T extends Model<S>, S>(
     reducer.connect(dispatcher);
   }
 
+  if (remountRef.current && isDev) {
+    reducer.connect(dispatcher);
+    remountRef.current = null;
+  }
+
   useEffect(
     () => {
-      if (remountRef.current != null) {
+      if (remountRef.current != null && isDev) {
+        reducerRef.current = create<S, T>(entry, ...mdws);
+        const remountState = remountRef.current.state;
+        const agentState = toAgentReducer(reducerRef.current).agent.state;
+        if (remountState !== agentState) {
+          toAgentReducer(reducerRef.current).agent.state = remountState;
+        }
         update({});
       }
       return () => {
         const { current: red } = reducerRef;
-        reducerRef.current = null;
         if (!red) {
           return;
         }
-        remountRef.current = { state: red.agent.state };
+        if (isDev) {
+          remountRef.current = { state: red.agent.state };
+        }
         red.disconnect();
       };
     },
     [],
   );
 
+  if (isDev) {
+    return new Proxy(reducer.agent, {
+      get(target: T, p: string): any {
+        const value = target[p];
+        if (value && typeof value.implement === 'function') {
+          return new Proxy(value, {
+            get(cTarget: T, cp: string): any {
+              if (cp === 'implement') {
+                const avatarObj = toAgentReducer(reducerRef.current).agent[p];
+                if (avatarObj && avatarObj[cp]) {
+                  return avatarObj[cp].bind(avatarObj);
+                }
+              }
+              return cTarget[cp];
+            },
+          });
+        }
+        return toAgentReducer(reducerRef.current).agent[p];
+      },
+    });
+  }
   return reducer.agent;
 }
 
@@ -114,20 +140,11 @@ export function useAgentSelector<T extends Model<S>, S, R>(
 
   const remountRef = useRef<{state:S}|null>(null);
 
+  const [, update] = useState({});
+
   if (!initialed) {
     reducerRef.current = create(entry);
   }
-
-  if (remountRef.current) {
-    const remountState = remountRef.current.state;
-    const agentState = toAgentReducer(reducerRef.current).agent.state;
-    if (remountState !== agentState) {
-      toAgentReducer(reducerRef.current).agent.state = remountRef.current.state;
-    }
-    remountRef.current = null;
-  }
-
-  const [, update] = useState({});
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
@@ -148,18 +165,30 @@ export function useAgentSelector<T extends Model<S>, S, R>(
     reducer.connect(weakDispatch);
   }
 
+  if (remountRef.current && isDev) {
+    reducer.connect(weakDispatch);
+    remountRef.current = null;
+  }
+
   useEffect(
     () => {
-      if (remountRef.current != null) {
+      if (remountRef.current != null && isDev) {
+        reducerRef.current = create<S, T>(entry);
+        const remountState = remountRef.current.state;
+        const agentState = toAgentReducer(reducerRef.current).agent.state;
+        if (remountState !== agentState) {
+          toAgentReducer(reducerRef.current).agent.state = remountState;
+        }
         update({});
       }
       return () => {
         const { current: red } = reducerRef;
-        reducerRef.current = null;
         if (!red) {
           return;
         }
-        remountRef.current = { state: red.agent.state };
+        if (isDev) {
+          remountRef.current = { state: red.agent.state };
+        }
         red.disconnect();
       };
     },
@@ -179,20 +208,11 @@ export function useAgentMethods<T extends Model<S>, S>(
 
   const initialed = reducerRef.current !== null;
 
+  const [, update] = useState({});
+
   if (!initialed) {
     reducerRef.current = create(entry, ...middleWares);
   }
-
-  if (remountRef.current) {
-    const remountState = remountRef.current.state;
-    const agentState = toAgentReducer(reducerRef.current).agent.state;
-    if (remountState !== agentState) {
-      toAgentReducer(reducerRef.current).agent.state = remountRef.current.state;
-    }
-    remountRef.current = null;
-  }
-
-  const [, update] = useState({});
 
   const reducer = reducerRef.current as Reducer<S, Action>&ReducerPadding<S, T>;
 
@@ -200,18 +220,30 @@ export function useAgentMethods<T extends Model<S>, S>(
     reducer.connect();
   }
 
+  if (remountRef.current && isDev) {
+    reducer.connect();
+    remountRef.current = null;
+  }
+
   useEffect(
     () => {
-      if (remountRef.current != null) {
+      if (remountRef.current != null && isDev) {
+        reducerRef.current = create<S, T>(entry);
+        const remountState = remountRef.current.state;
+        const agentState = toAgentReducer(reducerRef.current).agent.state;
+        if (remountState !== agentState) {
+          toAgentReducer(reducerRef.current).agent.state = remountState;
+        }
         update({});
       }
       return () => {
         const { current: red } = reducerRef;
-        reducerRef.current = null;
         if (!red) {
           return;
         }
-        remountRef.current = { state: red.agent.state };
+        if (isDev) {
+          remountRef.current = { state: red.agent.state };
+        }
         red.disconnect();
       };
     },
