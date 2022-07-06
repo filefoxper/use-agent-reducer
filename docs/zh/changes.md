@@ -105,3 +105,7 @@
 ## v4.6.0 2022-07-05
 
 * [bug] 解决 react-refresh 插件热更新时，代码不能及时更新的问题。 
+
+## v4.6.1 2022-07-06
+
+* [update] 解决 react-refresh 插件热更新时，代码不能及时更新的问题。可参考文档  [react-refresh](/zh/introduction?id=react-refresh) 。

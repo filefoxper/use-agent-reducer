@@ -105,3 +105,7 @@
 ## v4.6.0 2022-07-05
 
 * [bug] fix the problem about the code updating, when using react-refresh babel and webpack plugins. 
+
+## v4.6.1 2022-07-06
+
+* [update] fix the problem about the code updating, when using react-refresh babel and webpack plugins. refer to [react-refresh usage](/introduction?id=react-refresh).

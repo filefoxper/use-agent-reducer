@@ -92,6 +92,25 @@ npm i use-agent-reducer
 ```
 You'd better add `agent-reducer` into your package.json dependencies too. When  you are installing package `use-agent-reducer`, a `agent-reducer` package is always brought into your `node_modules` directory, but this is not helpful for using `agent-reducer` API. 
 
+## React-refresh
+
+If you want to use react-refresh plugins, you'd better add `'use-agent-reducer':'use-agent-reducer/es'` to your webpack alias.
+
+code:
+
+```javascript
+module.exports = {
+    ......
+    resolve: {
+      ......
+      alias: {
+        'agent-reducer': 'agent-reducer/es',
+        'use-agent-reducer': 'use-agent-reducer/es',
+      }
+    },
+};
+```
+
 ## Getting started
 
 This section describes how to create a model, and how to call `agent-reducer` API for help. After reading this section, you can master the basic usage of `use-agent-reducer`. 

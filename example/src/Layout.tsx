@@ -5,7 +5,7 @@ import SplitModel from "@/splitModel";
 import TakeLatest from "@/takeLatest";
 import NewFeatures from "@/newFeatures";
 import ModelProvider from "@/modelProvider";
-import Effect from '@/effect';
+import Flow from "@/flow";
 
 const Title=({children})=>{
     return (
@@ -30,6 +30,8 @@ export default memo(() => {
                 <NewFeatures/>
                 <Title>model provider</Title>
                 <ModelProvider/>
+                <Title>flow</Title>
+                <Flow/>
             </div>
         </div>
     );

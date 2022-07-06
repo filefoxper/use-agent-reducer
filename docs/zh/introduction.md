@@ -93,6 +93,25 @@ npm i use-agent-reducer
 
 我们希望在使用当前工具的同时，也能将 `agent-reducer` 的最新版本加入您的 package.json 文件，这对您使用该核心包中的辅助 API，以及代码关联提示都是十分有利的。
 
+## React-refresh
+
+如果希望使用 react-refresh 插件，需要使用 es 包代码，可使用 webpack alias 功能进行链接。
+
+webpack 配置：
+
+```javascript
+module.exports = {
+    ......
+    resolve: {
+      ......
+      alias: {
+        'agent-reducer': 'agent-reducer/es',
+        'use-agent-reducer': 'use-agent-reducer/es',
+      }
+    },
+};
+```
+
 ## 快速开始
 
 本节主要阐述如何创建一个模型，以及如何使用 `agent-reducer` 辅助功能。本节内容可以辅助您快速掌握 `use-agent-reducer` 的基本用法。
