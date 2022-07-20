@@ -109,3 +109,7 @@
 ## v4.6.1 2022-07-06
 
 * [update] 解决 react-refresh 插件热更新时，代码不能及时更新的问题。可参考文档  [react-refresh](/zh/introduction?id=react-refresh) 。
+
+## v4.6.2 2022-07-20
+
+* [bug] 解决 `useAgentSelector` 更新不及时的问题，引发自 v4.6.1

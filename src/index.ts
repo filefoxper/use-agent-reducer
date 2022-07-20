@@ -155,18 +155,27 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   const weakDispatch = (action: Action) => {
     const modelState = toAgentReducer(reducerRef.current).agent.state;
     const next = mapStateCallback(modelState);
+
     if (current === next || (equalityFn && equalityFn(current, next))) {
       return;
     }
     dispatch({ ...action, state: modelState });
   };
 
+  const dispatchRef = useRef(weakDispatch);
+
+  dispatchRef.current = weakDispatch;
+
+  const dispatchWrap = (action: Action) => {
+    dispatchRef.current(action);
+  };
+
   if (!initialed) {
-    reducer.connect(weakDispatch);
+    reducer.connect(dispatchWrap);
   }
 
   if (remountRef.current && isDev) {
-    reducer.connect(weakDispatch);
+    reducer.connect(dispatchWrap);
     remountRef.current = null;
   }
 

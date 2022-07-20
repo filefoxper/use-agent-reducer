@@ -1,6 +1,6 @@
 {
   "name": "use-agent-reducer",
-  "version": "4.6.1",
+  "version": "4.6.2",
   "main": "dist/use-agent-reducer.mini.js",
   "module": "esm/use-agent-reducer.js",
   "typings": "index.d.ts",

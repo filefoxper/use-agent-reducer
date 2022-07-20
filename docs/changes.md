@@ -109,3 +109,7 @@
 ## v4.6.1 2022-07-06
 
 * [update] fix the problem about the code updating, when using react-refresh babel and webpack plugins. refer to [react-refresh usage](/introduction?id=react-refresh).
+
+## v4.6.2 2022-07-20
+
+* [bug] fix the problem about `useAgentSelector` can not update immediately. This problem is caused by adjusting react-refresh from `use-agent-reducer@4.6.1`
