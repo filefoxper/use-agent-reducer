@@ -113,3 +113,7 @@
 ## v4.6.2 2022-07-20
 
 * [bug] fix the problem about `useAgentSelector` can not update immediately. This problem is caused by adjusting react-refresh from `use-agent-reducer@4.6.1`
+
+## v4.6.3 2022-07-21
+
+* [refactor] include the `index.d.ts` into the eslint check. 
