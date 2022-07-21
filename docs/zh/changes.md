@@ -113,3 +113,7 @@
 ## v4.6.2 2022-07-20
 
 * [bug] 解决 `useAgentSelector` 更新不及时的问题，引发自 v4.6.1
+
+## v4.6.3 2022-07-21
+
+* [refactor] 将 `index.d.ts` 加入 eslint 检查. 

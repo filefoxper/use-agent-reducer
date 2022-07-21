@@ -1,5 +1,7 @@
-import {MiddleWare, Model, LifecycleMiddleWare, Factory, SharingRef, EffectCallback} from 'agent-reducer';
-import {NamedExoticComponent, ReactNode} from "react";
+import {
+  MiddleWare, Model, LifecycleMiddleWare, Factory, SharingRef, EffectCallback,
+} from 'agent-reducer';
+import { NamedExoticComponent, ReactNode } from 'react';
 
 export declare function useAgentReducer<T extends Model<S>, S>(entry: T | {
     new(): T;
