@@ -117,3 +117,7 @@
 ## v4.6.3 2022-07-21
 
 * [refactor] include the `index.d.ts` into the eslint check. 
+
+## v4.6.4 2022-10-29
+
+* [optmize] optmize `useAgentSelector`, add `comparators` param, and you can update selected state by the change of comparators too.

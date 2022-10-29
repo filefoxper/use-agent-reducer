@@ -44,15 +44,22 @@ You can see how to use it [here](/tutorial?id=use-middleware).
 This api function is a react hook, it can be used to extract data from a sharing model state. And only the extracted data change can cause its consumer (react component) rerender.
 
 ```typescript
-export function useAgentSelector<T extends Model<S>, S, R>(
-  entry: T,
-  mapStateCallback: (state: T['state']) => R,
-  equalityFn?:(prev: R, current: R) => boolean,
-): R
+export declare function useAgentSelector<T extends Model<S>, S, R>(
+    entry: T,
+    mapStateCallback: (state: T['state']) => R,
+    equalityFn?: (prev: R, current: R) => boolean,
+): R;
+export declare function useAgentSelector<T extends Model<S>, S, R>(
+    entry: T,
+    mapStateCallback: (state: T['state']) => R,
+    comparator?:(unknown[]),
+    equalityFn?: (prev: R, current: R) => boolean,
+): R;
 ```
 
 * entry - the model instance object.
 * mapStateCallback - a callback function for extracting data from model state. The callback param state is a current model state.
+* comparator - optional param, a comparator array, when some element of this array changes, the selected state will be recomputed. If you don't need it, you can use a equalityFn replace it, or ignore it.
 * equalityFn - optional param, a callback function to compare the previous extracted data with the current one. If this function returns `true`, `useAgentSelector` do not make its consumer (react component) rerender, no matter if the extracted data changes. Param `prev` is the previous extracted data, and param `current` is the current one.
   
 This function returns data extracted from a model state directly.
