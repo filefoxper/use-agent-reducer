@@ -117,3 +117,7 @@
 ## v4.6.3 2022-07-21
 
 * [refactor] 将 `index.d.ts` 加入 eslint 检查. 
+
+## v4.6.4 2022-10-29
+
+* [optmize] 优化 `useAgentSelector`，加入 `comparators` 参数，当 comparators 数组更新时，也会触发筛选出的 state 数据更新。

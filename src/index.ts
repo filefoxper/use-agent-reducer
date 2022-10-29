@@ -1,6 +1,6 @@
 import React, {
   createElement,
-  memo, NamedExoticComponent, ReactNode,
+  memo, NamedExoticComponent, ReactNode, useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -130,8 +130,20 @@ export function useMiddleWare<T extends Model<S>, S>(
 }
 
 export function useAgentSelector<T extends Model<S>, S, R>(
+    entry: T,
+    mapStateCallback: (state: T['state']) => R,
+    equalityFn?: (prev: R, current: R) => boolean,
+): R;
+export function useAgentSelector<T extends Model<S>, S, R>(
+    entry: T,
+    mapStateCallback: (state: T['state']) => R,
+    comparator?:(unknown[]),
+    equalityFn?: (prev: R, current: R) => boolean,
+): R;
+export function useAgentSelector<T extends Model<S>, S, R>(
   entry: T,
   mapStateCallback: (state: T['state']) => R,
+  comparator?:(unknown[])|((prev: R, current: R) => boolean),
   equalityFn?: (prev: R, current: R) => boolean,
 ): R {
   const reducerRef = useRef<null | AgentReducer<S, T>>(null);
@@ -150,13 +162,19 @@ export function useAgentSelector<T extends Model<S>, S, R>(
 
   const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
-  const current = useMemo(() => mapStateCallback(state), [state]);
+  const compareArray:unknown[] = Array.isArray(comparator) ? comparator : [];
+
+  const equalityCallback: ((prev: R, current: R) => boolean)|undefined = typeof comparator === 'function' ? comparator : equalityFn;
+
+  const selectCallback = useCallback(mapStateCallback, compareArray);
+
+  const current = useMemo(() => selectCallback(state), [state, selectCallback]);
 
   const weakDispatch = (action: Action) => {
     const modelState = toAgentReducer(reducerRef.current).agent.state;
-    const next = mapStateCallback(modelState);
+    const next = selectCallback(modelState);
 
-    if (current === next || (equalityFn && equalityFn(current, next))) {
+    if (current === next || (equalityCallback && equalityCallback(current, next))) {
       return;
     }
     dispatch({ ...action, state: modelState });
