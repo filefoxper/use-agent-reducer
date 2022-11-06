@@ -24,8 +24,6 @@ import {
   EffectCallback,
 } from 'agent-reducer';
 
-const isDev = process.env.NODE_ENV === 'development';
-
 function toAgentReducer<
     T extends Model<S>, S
     >(reducer:null | AgentReducer<S, T>):AgentReducer<S, T> {
@@ -58,9 +56,6 @@ function useAgent<T extends Model<S>, S>(
 
   const initialed = reducerRef.current !== null;
 
-  const mountRef = useRef(true);
-  mountRef.current = true;
-
   const entryChanged = isEntryChanged<T, S>(entryRef.current, entry);
 
   let oldReducer: AgentReducer<S, T> | null = null;
@@ -92,17 +87,6 @@ function useAgent<T extends Model<S>, S>(
         }
         red.disconnect();
       }
-
-      mountRef.current = false;
-      if (isDev) {
-        setTimeout(() => {
-          if (mountRef.current || !reducerRef.current) {
-            return;
-          }
-          disconnect();
-        });
-        return;
-      }
       disconnect();
     },
     [],
@@ -123,6 +107,10 @@ export function useAgentReducer<T extends Model<S>, S>(
   };
 
   reducer.connect(dispatcher);
+
+  useEffect(() => {
+    reducer.connect(dispatcher);
+  }, []);
 
   return reducer.agent;
 }
@@ -173,6 +161,10 @@ export function useAgentSelector<T extends Model<S>, S, R>(
 
   reducer.connect(dispatchWrap);
 
+  useEffect(() => {
+    reducer.connect(dispatchWrap);
+  }, []);
+
   if (equalityCallback(current, prevRef.current)) {
     return prevRef.current;
   }
@@ -187,6 +179,10 @@ export function useAgentMethods<T extends Model<S>, S>(
   const reducer = useAgent<T, S>(entry, ...middleWares);
 
   reducer.connect();
+
+  useEffect(() => {
+    reducer.connect();
+  }, []);
 
   return reducer.agent;
 }
