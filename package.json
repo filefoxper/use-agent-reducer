@@ -1,18 +1,17 @@
 {
   "name": "use-agent-reducer",
-  "version": "4.6.4",
-  "main": "dist/use-agent-reducer.mini.js",
-  "module": "esm/use-agent-reducer.js",
+  "version": "4.6.6",
+  "main": "dist/index.js",
   "typings": "index.d.ts",
   "author": "Jimmy.Harding",
   "description": "the purpose of this project is make useReducer classify",
   "scripts": {
-    "clear": "rm -rf ./dist & rm -rf ./es & rm -rf ./esm",
+    "clear": "rm -rf ./dist & rm -rf ./es",
     "lint": "eslint src --fix --ext .ts,.tsx ",
     "lint-init": "eslint --init",
     "es-build": "babel src --extensions '.ts' --config-file ./babel.es.config.js --out-dir es",
     "base-build": "webpack --config ./webpack.config.js --env.mode=production",
-    "build": "mkdir ./es & npm run es-build & npm run base-build",
+    "build": "mkdir ./es & npm run es-build & mkdir ./dist & cp ./npm/index.js ./dist/index.js & npm run base-build",
     "test": "jest --coverage",
     "docs": "docsify serve ./docs",
     "analyze": "webpack --config ./webpack.config.js --env.mode=production --env.analyze"
@@ -26,7 +25,6 @@
     "dist",
     "es",
     "esm",
-    "index.js",
     "index.d.ts"
   ],
   "keywords": [

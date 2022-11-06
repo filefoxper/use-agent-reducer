@@ -17,18 +17,6 @@ export declare function useAgentSelector<T extends Model<S>, S, R>(
     mapStateCallback: (state: T['state']) => R,
     equalityFn?: (prev: R, current: R) => boolean,
 ): R;
-export declare function useAgentSelector<T extends Model<S>, S, R>(
-    entry: T,
-    mapStateCallback: (state: T['state']) => R,
-    comparator?:(unknown[]),
-    equalityFn?: (prev: R, current: R) => boolean,
-): R;
-export declare function useAgentSelector<T extends Model<S>, S, R>(
-    entry: T,
-    mapStateCallback: (state: T['state']) => R,
-    comparator?:(unknown[])|((prev: R, current: R) => boolean),
-    equalityFn?: (prev: R, current: R) => boolean,
-): R;
 
 export declare function useAgentMethods<T extends Model<S>, S>(
     entry: T,

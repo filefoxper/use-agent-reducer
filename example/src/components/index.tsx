@@ -8,7 +8,7 @@ export const PriorLevelSelect = memo(({value, onChange}: { value: PriorLevel|und
 
     const handleChange=useCallback((v:PriorLevel|-1)=>{
         onChange(v<0?undefined:v);
-    },[]);
+    },[onChange]);
 
     return (
         <Select style={{width: 160, marginRight: 8}} value={value===undefined?-1:value}
@@ -24,7 +24,7 @@ export const ContentInput = memo(({value, onChange}: { value: string|undefined, 
 
     const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.value);
-    }, []);
+    }, [onChange]);
 
     return (
         <Input style={{width: 160, marginRight: 8}} value={value||''} onChange={handleChange}/>

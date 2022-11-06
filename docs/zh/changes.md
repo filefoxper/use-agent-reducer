@@ -121,3 +121,7 @@
 ## v4.6.4 2022-10-29
 
 * [optmize] 优化 `useAgentSelector`，加入 `comparators` 参数，当 comparators 数组更新时，也会触发筛选出的 state 数据更新。
+
+## v4.6.6 2022-11-06
+
+* [optmize] 优化编译过程，全面支持 ReactRefresh 以及 React 18 React.Strict 严格模式，使用者不再需要使用 webpack resolver alias 配置让 ReactRefresh 生效。
