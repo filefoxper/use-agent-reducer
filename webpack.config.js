@@ -105,7 +105,7 @@ function entry(env,name,output) {
         plugins: [
             new webpack.DefinePlugin({
                 'process.env': {
-                    'NODE_ENV': JSON.stringify('production')
+                    'NODE_ENV': JSON.stringify(name.endsWith('mini')?'production':'development')
                 }
             })
         ].concat(env.analyze ? new BundleAnalyzerPlugin() : [])
@@ -117,6 +117,6 @@ module.exports = [
         return entry(env,'use-agent-reducer.mini');
     },
     function (env) {
-        return entry(env,'use-agent-reducer',esTargetPath,);
+        return entry(env,'use-agent-reducer',);
     }
 ];

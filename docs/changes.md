@@ -121,3 +121,7 @@
 ## v4.6.4 2022-10-29
 
 * [optmize] optmize `useAgentSelector`, add `comparators` param, and you can update selected state by the change of comparators too.
+
+## v4.6.6 2022-11-06
+
+* [optmize] optmize the build script, support React 18 `React.Strict` and `ReactRefresh` in normal mode.

@@ -49,22 +49,13 @@ export declare function useAgentSelector<T extends Model<S>, S, R>(
     mapStateCallback: (state: T['state']) => R,
     equalityFn?: (prev: R, current: R) => boolean,
 ): R;
-export declare function useAgentSelector<T extends Model<S>, S, R>(
-    entry: T,
-    mapStateCallback: (state: T['state']) => R,
-    comparator?:(unknown[]),
-    equalityFn?: (prev: R, current: R) => boolean,
-): R;
 ```
 
 * entry - 模型实例 object 。
 * mapStateCallback - state 提取方法，用于提取当前模型实例 state 的部分数据，如果被提取数据保持不变则不会触发组件渲染。
-* comparator - 可选，用于决定是否需要更新 mapStateCallback。
 * equalityFn - 可选，用于对比 mapStateCallback 在模型 state 改变前后产生的数据，如果该函数返回 `true`，则 `useAgentSelector` 忽略 mapStateCallback 提取值的变化状况，不触发组件渲染。
   
 该方法返回值即为被提取数据。
-
-`useAgentSelector` 被设计于监听目标模型的 state 变化，并进行数据筛选对比，用于提高渲染效率，所以一般来说 mapStateCallback 不能包含外部闭包变量，但经过长期实践发现，我们经常需要使用外部闭包变量以进一步提升渲染效率，故添加了 comparator 参数，用以更新外部依赖变化。若不设置 comparator 更新数组或 comparator 为空数组，则保持原有特性，mapStateCallback 不会更新。
 
 ## useAgentMethods
 
