@@ -125,3 +125,7 @@
 ## v4.6.6 2022-11-06
 
 * [optmize] 优化编译过程，全面支持 ReactRefresh 以及 React 18 React.Strict 严格模式，使用者不再需要使用 webpack resolver alias 配置让 ReactRefresh 生效。
+
+## v4.7.0 2022-11-11
+
+* [design] 在保留原 useAgentReducer\useAgentMethods\useAgentSelector 的基础上增加了功能相同（或相似）的 useAgent\useMethods\useSelector hook 接口，以做调用简化，另外舍弃了原 esm 编译包。

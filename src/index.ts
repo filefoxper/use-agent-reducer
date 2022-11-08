@@ -1,6 +1,6 @@
 import React, {
   createElement,
-  memo, NamedExoticComponent, ReactNode,
+  memo, NamedExoticComponent, ReactNode, useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -46,7 +46,7 @@ function isEntryChanged<T extends Model<S>, S>(source: T | { new(): T }, target:
   return Object.getPrototypeOf(source) !== Object.getPrototypeOf(target);
 }
 
-function useAgent<T extends Model<S>, S>(
+function useAgentCreator<T extends Model<S>, S>(
   entry: T | { new(): T },
   ...mdws: MiddleWare[]
 ):AgentReducer<S, T> {
@@ -94,11 +94,32 @@ function useAgent<T extends Model<S>, S>(
   return toAgentReducer<T, S>(reducerRef.current);
 }
 
+export function useAgent<T extends Model<S>, S>(
+  entry: T | { new(): T },
+  ...mdws: MiddleWare[]
+): T {
+  const reducer = useAgentCreator<T, S>(entry, ...mdws);
+
+  const [, dispatch] = useReducer(reducer, reducer.agent.state);
+
+  const dispatcher = (action: Action) => {
+    dispatch({ ...action, state: reducer.agent.state });
+  };
+
+  reducer.connect(dispatcher);
+
+  useEffect(() => {
+    reducer.connect(dispatcher);
+  }, []);
+
+  return reducer.agent;
+}
+
 export function useAgentReducer<T extends Model<S>, S>(
   entry: T | { new(): T },
   ...mdws: MiddleWare[]
 ): T {
-  const reducer = useAgent<T, S>(entry, ...mdws);
+  const reducer = useAgentCreator<T, S>(entry, ...mdws);
 
   const [, dispatch] = useReducer(reducer, reducer.agent.state);
 
@@ -130,7 +151,45 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   mapStateCallback: (state: T['state']) => R,
   equalityFn?: (prev: R, current: R) => boolean,
 ): R {
-  const reducer = useAgent<T, S>(entry);
+  const reducer = useAgentCreator<T, S>(entry);
+
+  const [state, dispatch] = useReducer(reducer, reducer.agent.state);
+
+  const current = useMemo(() => mapStateCallback(state), [state]);
+
+  const weakDispatch = (action: Action) => {
+    const modelState = reducer.agent.state;
+    const next = mapStateCallback(modelState);
+
+    if (current === next || (equalityFn && equalityFn(current, next))) {
+      return;
+    }
+    dispatch({ ...action, state: modelState });
+  };
+
+  const dispatchRef = useRef(weakDispatch);
+
+  dispatchRef.current = weakDispatch;
+
+  const dispatchWrap = (action: Action) => {
+    dispatchRef.current(action);
+  };
+
+  reducer.connect(dispatchWrap);
+
+  useEffect(() => {
+    reducer.connect(dispatchWrap);
+  }, []);
+
+  return current;
+}
+
+export function useSelector<T extends Model<S>, S, R>(
+  entry: T,
+  mapStateCallback: (state: T['state']) => R,
+  equalityFn?: (prev: R, current: R) => boolean,
+): R {
+  const reducer = useAgentCreator<T, S>(entry);
 
   const [state, dispatch] = useReducer(reducer, reducer.agent.state);
 
@@ -172,11 +231,26 @@ export function useAgentSelector<T extends Model<S>, S, R>(
   return current;
 }
 
+export function useMethods<T extends Model<S>, S>(
+  entry: T,
+  ...middleWares: MiddleWare[]
+): Omit<T, 'state'> {
+  const reducer = useAgentCreator<T, S>(entry, ...middleWares);
+
+  reducer.connect();
+
+  useEffect(() => {
+    reducer.connect();
+  }, []);
+
+  return reducer.agent;
+}
+
 export function useAgentMethods<T extends Model<S>, S>(
   entry: T,
   ...middleWares: MiddleWare[]
 ): Omit<T, 'state'> {
-  const reducer = useAgent<T, S>(entry, ...middleWares);
+  const reducer = useAgentCreator<T, S>(entry, ...middleWares);
 
   reducer.connect();
 

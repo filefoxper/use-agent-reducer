@@ -2,6 +2,8 @@
 
 ## useAgentReducer
 
+-> useAgent
+
 这是一个 react hook 方法，可用于创建一个模型（`Model`）的 [Agent](/zh/introduction?id=模型代理-agent) 代理对象。通过使用该代理对象的方法，可以修改 state 数据。
 
 ```typescript
@@ -19,6 +21,17 @@ function useAgentReducer<T extends Model<S>, S>(
 关于运行环境配置，可参考[此处](/zh/guides?id=关于运行环境配置-runenv)，关于 `MiddleWare` 的定义可参考 `agent-reducer` 文档[关于MiddleWare](https://filefoxper.github.io/agent-reducer/#/zh/guides?id=中间件-middleware)
 
 [使用案例](/zh/tutorial?id=search-page-model)
+
+## useAgent
+
+同 `useAgentReducer`.
+
+```typescript
+function useAgent<T extends Model<S>, S>(
+    entry: T | { new(): T }, 
+    ...mdws: MiddleWare[]
+): T
+```
 
 ## useMiddleWare
 
@@ -41,6 +54,8 @@ function useMiddleWare<T extends Model<S>, S>(
 
 ## useAgentSelector
 
+-> useSelector (has differences)
+
 这是一个 react hook 方法，可用于提取被共享模型 state 中的部分数据，若被提取数据保持不变，则不会触发组件渲染。
 
 ```typescript
@@ -57,7 +72,21 @@ export declare function useAgentSelector<T extends Model<S>, S, R>(
   
 该方法返回值即为被提取数据。
 
+## useSelector
+
+与 `useAgentSelector` 不同的是，该接口不单受到 model state 变化的影响，同时也受到 `mapStateCallback` 回调函数变化的影响，当该回调函数发生改变时会重新计算返回值，并通过 `equalityFn` 对比新老值是否有变化，如果有变化就返回新值。
+
+```typescript
+export declare function useSelector<T extends Model<S>, S, R>(
+    entry: T,
+    mapStateCallback: (state: T['state']) => R,
+    equalityFn?: (prev: R, current: R) => boolean,
+): R;
+```
+
 ## useAgentMethods
+
+-> useMethods
 
 这是一个 react hook 方法，可用于提取被共享模型中的方法，该 hook 本身不会触发当前使用组件渲染。
 
@@ -72,6 +101,17 @@ export function useAgentMethods<T extends Model<S>, S>(
 * mdws - 可选项，想要设置的 MiddleWare 。
 
 该方法返回值为忽略了 state 数据的模型实例。
+
+## useMethods
+
+同 `useAgentMethods`。
+
+```typescript
+export function useMethods<T extends Model<S>, S>(
+  entry: T,
+  ...mdws: MiddleWare[],
+): Omit<T, 'state'>
+```
 
 ## shallowEqual
 
