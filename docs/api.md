@@ -2,6 +2,8 @@
 
 ## useAgentReducer
 
+-> useAgent
+
 This api function is a react hook function, it create a proxy object (`Agent`) by using a model (`Model`), and you can get latest state from `Agent` object, or use its method to change state.
 
 ```typescript
@@ -19,6 +21,17 @@ Be careful, `LifecycleMiddleWare` can not work with this api directly, so, if yo
 You can find how to config an env object [here](/guides?id=about-run-env) and what is `MiddleWare` [here](https://filefoxper.github.io/use-agent-reducer/#/guides?id=middleware).
 
 You can see how to use it [here](/tutorial?id=search-page-model).
+
+## useAgent
+
+It is alias of `useAgentReducer`.
+
+```typescript
+function useAgent<T extends Model<S>, S>(
+    entry: T | { new(): T }, 
+    ...mdws: MiddleWare[]
+): T
+```
 
 ## useMiddleWare
 
@@ -41,10 +54,12 @@ You can see how to use it [here](/tutorial?id=use-middleware).
 
 ## useAgentSelector
 
+-> useSelector (has differences)
+
 This api function is a react hook, it can be used to extract data from a sharing model state. And only the extracted data change can cause its consumer (react component) rerender.
 
 ```typescript
-export declare function useAgentSelector<T extends Model<S>, S, R>(
+export declare function useSelector<T extends Model<S>, S, R>(
     entry: T,
     mapStateCallback: (state: T['state']) => R,
     equalityFn?: (prev: R, current: R) => boolean,
@@ -57,7 +72,21 @@ export declare function useAgentSelector<T extends Model<S>, S, R>(
   
 This function returns data extracted from a model state directly.
 
+## useSelector
+
+The result of `useAgentSelector` only can be changed by model state, but what `useSelector` returns also response the change about the  `mapStateCallback` function, when this function changes, it recomputes a new result, and use `equalityFn` to compare with the old result, if they are different, the return data will be replaced by this new result.
+
+```typescript
+export declare function useAgentSelector<T extends Model<S>, S, R>(
+    entry: T,
+    mapStateCallback: (state: T['state']) => R,
+    equalityFn?: (prev: R, current: R) => boolean,
+): R;
+```
+
 ## useAgentMethods
+
+-> useMethods
 
 This api function is a react hook for calling a model methods. It never causes its consumer (react component) rerendering.
 
@@ -72,6 +101,17 @@ export function useAgentMethods<T extends Model<S>, S>(
 * mdws - optional param, MiddleWares
 
 This function returns a model like instance which has an empty state property. It only provides model methods.
+
+## useMethods
+
+It is alias of `useAgentMethods`.
+
+```typescript
+export function useMethods<T extends Model<S>, S>(
+  entry: T,
+  ...mdws: MiddleWare[],
+): Omit<T, 'state'>
+```
 
 ## shallowEqual
 

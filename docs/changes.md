@@ -125,3 +125,7 @@
 ## v4.6.6 2022-11-06
 
 * [optmize] optmize the build script, support React 18 `React.Strict` and `ReactRefresh` in normal mode.
+
+## v4.7.0 2022-11-11
+
+* [design] create new hooks `useAgent\useMethods\useSelector` to simplify the old hooks `useAgentReducer\useAgentMethods\useAgentSelector`, the old hooks will still be in usage.
